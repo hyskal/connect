@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>ATIVIDADE - IATS</title>
+</head>
+<body>
+  <h1>ATIVIDADE - IATS</h1>
+  <input type="text" id="id" placeholder="Insira sua ID">
+  <button onclick="verGrafico()">Ver gráfico</button>
+
+  <script>
+    function verGrafico() {
+      // Obtém o valor da ID digitada pelo usuário
+      var id = document.getElementById("id").value;
+
+      // Monta a URL do gráfico
+      var url = "https://www.chartgo.com/get.do?id=" + id;
+
+      // Redireciona o usuário para o gráfico
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>
