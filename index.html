@@ -1,25 +1,84 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>ATIVIDADE - IATS</title>
+    <meta charset="UTF-8">
+    <title>Protocolo de Exames</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        label { display: block; margin-top: 10px; }
+    </style>
 </head>
 <body>
-  <h1>ATIVIDADE - IATS</h1>
-  <input type="text" id="id" placeholder="Insira sua ID">
-  <button onclick="verGrafico()">Ver gráfico</button>
 
-  <script>
-    function verGrafico() {
-      // Obtém o valor da ID digitada pelo usuário
-      var id = document.getElementById("id").value;
+<h2>Cadastro para Protocolo de Exames</h2>
 
-      // Monta a URL do gráfico
-      var url = "https://www.chartgo.com/get.do?id=" + id;
+<label>Nome: <input type="text" id="nome"></label>
+<label>CPF: <input type="text" id="cpf"></label>
+<label>Data de Nascimento: <input type="date" id="data_nasc"></label>
+<label>Sexo:
+    <select id="sexo">
+        <option value="">Selecione</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Feminino">Feminino</option>
+        <option value="Outro">Outro</option>
+    </select>
+</label>
+<label>Endereço: <input type="text" id="endereco"></label>
+<label>Contato (DDD + Número): <input type="text" id="contato"></label>
 
-      // Redireciona o usuário para o gráfico
-      window.location.href = url;
+<h3>Selecione os exames:</h3>
+<label><input type="checkbox" class="exame" value="Hemograma Completo"> Hemograma Completo</label>
+<label><input type="checkbox" class="exame" value="Glicemia"> Glicemia</label>
+<label><input type="checkbox" class="exame" value="Colesterol Total"> Colesterol Total</label>
+<label><input type="checkbox" class="exame" value="Ureia"> Ureia</label>
+<label><input type="checkbox" class="exame" value="Creatinina"> Creatinina</label>
+
+<br>
+<button onclick="gerarPDF()">Gerar PDF</button>
+
+<script>
+    async function gerarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const nome = document.getElementById('nome').value;
+        const cpf = document.getElementById('cpf').value;
+        const dataNasc = document.getElementById('data_nasc').value;
+        const sexo = document.getElementById('sexo').value;
+        const endereco = document.getElementById('endereco').value;
+        const contato = document.getElementById('contato').value;
+
+        const exames = Array.from(document.querySelectorAll('.exame:checked'))
+                             .map(e => e.value);
+
+        // Cabeçalho
+        doc.setFontSize(16);
+        doc.text("Laboratório CETEP", 105, 15, null, null, "center");
+        doc.setFontSize(12);
+        doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, 23, null, null, "center");
+        doc.text(`Protocolo nº: ${Math.floor(Math.random() * 10000)}`, 10, 30);
+
+        // Dados do paciente
+        doc.text(`Nome: ${nome}`, 10, 40);
+        doc.text(`CPF: ${cpf}`, 10, 47);
+        doc.text(`Data de Nascimento: ${dataNasc}`, 10, 54);
+        doc.text(`Sexo: ${sexo}`, 10, 61);
+        doc.text(`Endereço: ${endereco}`, 10, 68);
+        doc.text(`Contato: ${contato}`, 10, 75);
+
+        // Exames
+        doc.text("Exames Selecionados:", 10, 85);
+        let y = 92;
+        exames.forEach(exame => {
+            doc.text(`- ${exame}`, 15, y);
+            y += 7;
+        });
+
+        // Salvar PDF
+        doc.save(`Protocolo_${nome.replace(/\s+/g, "_")}.pdf`);
     }
-  </script>
+</script>
+
 </body>
 </html>
