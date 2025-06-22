@@ -7,6 +7,28 @@
     <style>
         body { font-family: Arial; padding: 20px; }
         label { display: block; margin-top: 10px; }
+        input, select { padding: 4px; }
+        .nao-imprimir { margin-top: 10px; }
+        .sugestoes-box {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            background: white;
+            position: absolute;
+            z-index: 100;
+            width: 300px;
+        }
+        .sugestoes-box div {
+            padding: 5px;
+            cursor: pointer;
+        }
+        .sugestoes-box div:hover {
+            background-color: #f0f0f0;
+        }
+        @media print {
+            .nao-imprimir { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -16,6 +38,7 @@
 <label>Nome: <input type="text" id="nome"></label>
 <label>CPF: <input type="text" id="cpf"></label>
 <label>Data de Nascimento: <input type="date" id="data_nasc"></label>
+<label>Idade: <input type="text" id="idade" readonly></label>
 <label>Sexo:
     <select id="sexo">
         <option value="">Selecione</option>
@@ -27,58 +50,25 @@
 <label>Endereço: <input type="text" id="endereco"></label>
 <label>Contato (DDD + Número): <input type="text" id="contato"></label>
 
-<h3>Selecione os exames:</h3>
-<label><input type="checkbox" class="exame" value="Hemograma Completo"> Hemograma Completo</label>
-<label><input type="checkbox" class="exame" value="Glicemia"> Glicemia</label>
-<label><input type="checkbox" class="exame" value="Colesterol Total"> Colesterol Total</label>
-<label><input type="checkbox" class="exame" value="Ureia"> Ureia</label>
-<label><input type="checkbox" class="exame" value="Creatinina"> Creatinina</label>
+<h3>Pesquisar e Adicionar Exames:</h3>
+<input type="text" id="pesquisaExame" placeholder="Digite para pesquisar..." autocomplete="off">
+<div id="sugestoes" class="sugestoes-box"></div>
+
+<h3>Exames Selecionados:</h3>
+<div id="exames"></div>
 
 <br>
-<button onclick="gerarPDF()">Gerar PDF</button>
 
-<script>
-    async function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+<button class="nao-imprimir" onclick="gerarPDF()">Gerar PDF</button>
+<button class="nao-imprimir" onclick="salvarLocal()">Salvar Local</button>
+<button class="nao-imprimir" onclick="enviarParaPlanilha()">Enviar para Planilha</button>
+<button class="nao-imprimir" onclick="mostrarHistorico()">Ver Histórico</button>
+<button class="nao-imprimir" onclick="window.print()">Imprimir</button>
+<button class="nao-imprimir" onclick="limparHistorico()">Limpar Histórico</button>
 
-        const nome = document.getElementById('nome').value;
-        const cpf = document.getElementById('cpf').value;
-        const dataNasc = document.getElementById('data_nasc').value;
-        const sexo = document.getElementById('sexo').value;
-        const endereco = document.getElementById('endereco').value;
-        const contato = document.getElementById('contato').value;
+<div id="historico" class="nao-imprimir"></div>
 
-        const exames = Array.from(document.querySelectorAll('.exame:checked'))
-                             .map(e => e.value);
-
-        // Cabeçalho
-        doc.setFontSize(16);
-        doc.text("Laboratório CETEP", 105, 15, null, null, "center");
-        doc.setFontSize(12);
-        doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, 23, null, null, "center");
-        doc.text(`Protocolo nº: ${Math.floor(Math.random() * 10000)}`, 10, 30);
-
-        // Dados do paciente
-        doc.text(`Nome: ${nome}`, 10, 40);
-        doc.text(`CPF: ${cpf}`, 10, 47);
-        doc.text(`Data de Nascimento: ${dataNasc}`, 10, 54);
-        doc.text(`Sexo: ${sexo}`, 10, 61);
-        doc.text(`Endereço: ${endereco}`, 10, 68);
-        doc.text(`Contato: ${contato}`, 10, 75);
-
-        // Exames
-        doc.text("Exames Selecionados:", 10, 85);
-        let y = 92;
-        exames.forEach(exame => {
-            doc.text(`- ${exame}`, 15, y);
-            y += 7;
-        });
-
-        // Salvar PDF
-        doc.save(`Protocolo_${nome.replace(/\s+/g, "_")}.pdf`);
-    }
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
