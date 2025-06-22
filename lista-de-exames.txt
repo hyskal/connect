@@ -1,0 +1,20 @@
+Hemograma Completo
+Glicemia
+Colesterol Total
+Triglicerídeos
+Ureia
+Creatinina
+Exame de Urina
+TSH
+T4 Livre
+Vitamina D
+Ácido Úrico
+Bilirrubinas
+Ferro Sérico
+Gama GT
+PCR (Proteína C Reativa)
+Sumário de Urina
+Cálcio
+Potássio
+Sódio
+Magnésio
