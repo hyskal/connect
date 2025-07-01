@@ -5,70 +5,277 @@
     <title>Protocolo de Exames</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: Arial; padding: 20px; }
-        label { display: block; margin-top: 10px; }
-        input, select { padding: 4px; }
-        .nao-imprimir { margin-top: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            padding: 20px;
+            background-color: #f4f4f4; /* Um fundo suave para o corpo */
+            margin: 0;
+        }
+
+        h2, h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 80%; /* Largura do formulário */
+            max-width: 900px; /* Largura máxima para telas maiores */
+            box-sizing: border-box; /* Inclui padding e borda na largura */
+            margin-bottom: 20px; /* Espaço após o container do formulário */
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap; /* Permite que os itens quebrem a linha se não houver espaço */
+            justify-content: flex-start; /* Alinha itens à esquerda dentro da linha */
+            gap: 20px; /* Espaço entre os elementos da mesma linha */
+            margin-bottom: 15px; /* Espaço entre as linhas */
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px; /* Espaço entre os campos */
+            flex-grow: 1; /* Permite que os campos cresçam para preencher o espaço */
+        }
+
+        .form-field label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-field input[type="text"],
+        .form-field input[type="date"],
+        .form-field select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            width: auto; /* Ajusta largura automaticamente */
+            min-width: 150px; /* Largura mínima para campos */
+        }
+
+        #nome {
+            width: 300px; /* Largura inicial para o campo Nome */
+            max-width: 100%; /* Garante que não ultrapasse o contêiner */
+        }
+
+        #data_nasc {
+             width: 150px; /* Largura para o campo Data de Nascimento */
+        }
+
+        #idade {
+            width: 80px; /* Largura para o campo Idade */
+        }
+
+        #cpf, #sexo {
+            width: 180px;
+        }
+
+        #endereco {
+            width: 100%; /* Endereço ocupa a largura total da linha */
+        }
+
+        #contato {
+            width: 200px;
+        }
+
+        /* Estilos para a caixa de sugestões */
         .sugestoes-box {
             border: 1px solid #ccc;
             max-height: 150px;
             overflow-y: auto;
             display: none;
             background: white;
-            position: absolute;
+            position: absolute; /* Posição absoluta para sobrepor outros elementos */
             z-index: 100;
-            width: 300px;
+            width: calc(80% - 60px); /* Largura da caixa de sugestões (considerando padding do container) */
+            max-width: 840px; /* Max-width ajustado para o container */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            top: auto; /* Resetar top */
+            left: 50%; /* Centraliza a caixa de sugestões */
+            transform: translateX(-50%); /* Ajuste para centralização real */
         }
+
         .sugestoes-box div {
-            padding: 5px;
+            padding: 8px 10px;
             cursor: pointer;
+            border-bottom: 1px solid #eee;
         }
+
+        .sugestoes-box div:last-child {
+            border-bottom: none;
+        }
+
         .sugestoes-box div:hover {
             background-color: #f0f0f0;
         }
+
+        /* Estilos para a lista de exames selecionados */
+        #exames {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        #exames label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        #exames input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2); /* Aumenta um pouco o checkbox */
+        }
+
+        /* Estilos para os botões */
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Estilos para o histórico */
+        #historico {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 900px;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+
+        #historico h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        #historico ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #historico li {
+            background-color: #f9f9f9;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        /* Esconder elementos na impressão */
         @media print {
             .nao-imprimir { display: none; }
+            body { background-color: white; } /* Fundo branco para impressão */
+            .form-container, #historico {
+                box-shadow: none;
+                border: none;
+                width: auto;
+                max-width: none;
+                padding: 0;
+            }
         }
     </style>
 </head>
 <body>
 
-<h2>Cadastro para Protocolo de Exames</h2>
+    <h2>Cadastro para Protocolo de Exames</h2>
 
-<label>Nome: <input type="text" id="nome"></label>
-<label>CPF: <input type="text" id="cpf"></label>
-<label>Data de Nascimento: <input type="date" id="data_nasc"></label>
-<label>Idade: <input type="text" id="idade" readonly></label>
-<label>Sexo:
-    <select id="sexo">
-        <option value="">Selecione</option>
-        <option value="Masculino">Masculino</option>
-        <option value="Feminino">Feminino</option>
-        <option value="Outro">Outro</option>
-    </select>
-</label>
-<label>Endereço: <input type="text" id="endereco"></label>
-<label>Contato (DDD + Número): <input type="text" id="contato"></label>
+    <div class="form-container">
+        <div class="form-row">
+            <div class="form-field">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome">
+            </div>
+            <div class="form-field">
+                <label for="data_nasc">Data de Nascimento:</label>
+                <input type="date" id="data_nasc">
+            </div>
+            <div class="form-field">
+                <label for="idade">Idade:</label>
+                <input type="text" id="idade" readonly>
+            </div>
+        </div>
 
-<h3>Pesquisar e Adicionar Exames:</h3>
-<input type="text" id="pesquisaExame" placeholder="Digite para pesquisar..." autocomplete="off">
-<div id="sugestoes" class="sugestoes-box"></div>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="sexo">Sexo:</label>
+                <select id="sexo">
+                    <option value="">Selecione</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="cpf">CPF:</label>
+                <input type="text" id="cpf">
+            </div>
+        </div>
 
-<h3>Exames Selecionados:</h3>
-<div id="exames"></div>
+        <div class="form-row">
+            <div class="form-field" style="flex-grow: 2;"> <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco">
+            </div>
+        </div>
 
-<br>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="contato">Contato (DDD + Número):</label>
+                <input type="text" id="contato">
+            </div>
+        </div>
+    </div>
 
-<button class="nao-imprimir" onclick="gerarPDF()">Gerar PDF</button>
-<button class="nao-imprimir" onclick="salvarLocal()">Salvar Local</button>
-<button class="nao-imprimir" onclick="enviarParaPlanilha()">Enviar para Planilha</button>
-<button class="nao-imprimir" onclick="mostrarHistorico()">Ver Histórico</button>
-<button class="nao-imprimir" onclick="window.print()">Imprimir</button>
-<button class="nao-imprimir" onclick="limparHistorico()">Limpar Histórico</button>
+    <div class="form-container">
+        <h3>Pesquisar e Adicionar Exames:</h3>
+        <input type="text" id="pesquisaExame" placeholder="Digite para pesquisar..." autocomplete="off">
+        <div id="sugestoes" class="sugestoes-box"></div>
 
-<div id="historico" class="nao-imprimir"></div>
+        <h3>Exames Selecionados:</h3>
+        <div id="exames"></div>
+    </div>
 
-<script src="script.js"></script>
+    <div class="nao-imprimir" style="margin-top: 20px;">
+        <button onclick="gerarPDF()">Gerar PDF</button>
+        <button onclick="salvarLocal()">Salvar Local</button>
+        <button onclick="enviarParaPlanilha()">Enviar para Planilha</button>
+        <button onclick="mostrarHistorico()">Ver Histórico</button>
+        <button onclick="window.print()">Imprimir</button>
+        <button onclick="limparHistorico()">Limpar Histórico</button>
+    </div>
+
+    <div id="historico" class="nao-imprimir"></div>
+
+    <script src="script.js"></script>
 
 </body>
 </html>
