@@ -32,8 +32,8 @@
 
         /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos */
         .sislab-logo {
-            width: 90px; /* Largura total da logo */
-            height: 40px; /* Altura total da logo */
+            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
+            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
             display: flex;
             align-items: flex-end; /* Alinha os tubos na parte inferior */
             justify-content: space-between; /* Espaço entre os tubos */
@@ -41,20 +41,20 @@
 
         .tube {
             background-color: #f0f0f0; /* Corpo do tubo cinza claro */
-            width: 20px;
-            height: 30px;
-            border-radius: 5px 5px 2px 2px; /* Base levemente mais arredondada */
+            width: 15px; /* Mais fino */
+            height: 40px; /* Mais comprido */
+            border-radius: 4px 4px 2px 2px; /* Base levemente mais arredondada */
             position: relative; /* Para posicionar a tampa */
             box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidade */
         }
 
         .tube-cap {
-            width: 22px; /* Ligeiramente mais largo que o tubo para sobrepor */
-            height: 8px;
+            width: 17px; /* Ligeiramente mais largo que o tubo para sobrepor */
+            height: 7px; /* Altura da tampa */
             position: absolute;
-            top: -8px; /* Posiciona a tampa acima do tubo */
+            top: -7px; /* Posiciona a tampa acima do tubo */
             left: -1px; /* Ajusta a posição lateral para centralizar */
-            border-radius: 5px 5px 0 0;
+            border-radius: 4px 4px 0 0;
             box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para a tampa */
         }
 
@@ -68,8 +68,7 @@
         }
 
         .tube:nth-child(3) .tube-cap {
-            background-color: #FFFFFF; /* Branco */
-            border: 1px solid #ccc; /* Adiciona uma borda para o branco ser visível no fundo branco */
+            background-color: #CC3333; /* Vermelho - Agora a tampa do terceiro tubo é vermelha */
         }
 
         /* Estilo para o título principal */
