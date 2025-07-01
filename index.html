@@ -30,47 +30,90 @@
             flex-wrap: wrap; /* Permite quebrar em telas menores */
         }
 
-        /* Estilo para a Logomarca SISLAB em CSS Puros */
+        /* Estilo para a Logomarca SISLAB em CSS Puros - NOVA IDEIA: DNA Hélice */
         .sislab-logo {
             width: 50px; /* Largura total da logo */
             height: 50px; /* Altura total da logo */
-            position: relative; /* Para posicionar elementos internos */
-            display: inline-block; /* Permite alinhamento com texto */
+            position: relative;
+            overflow: hidden; /* Garante que as partes fiquem dentro do limite */
         }
 
-        .sislab-logo .tube-body {
-            width: 20px;
-            height: 40px;
-            background-color: #1A2B4C; /* Azul Marinho */
-            border-radius: 0 0 10px 10px; /* Borda arredondada na base */
+        .sislab-logo .helix-part {
             position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .sislab-logo .tube-top {
-            width: 25px;
-            height: 10px;
-            background-color: #1A2B4C; /* Azul Marinho */
-            border-radius: 10px 10px 0 0; /* Borda arredondada no topo */
-            position: absolute;
+            width: 30px; /* Largura das "fitas" do DNA */
+            height: 50px; /* Altura das "fitas" do DNA */
+            background: linear-gradient(to right, #1A2B4C 50%, transparent 50%); /* Base azul marinho */
             top: 0;
             left: 50%;
             transform: translateX(-50%);
+            border-radius: 50% / 25%; /* Curvatura para a hélice */
         }
 
-        .sislab-logo .fluid {
+        .sislab-logo .helix-part:nth-child(1) {
+            transform: translateX(-50%) rotate(20deg); /* Rotação para a primeira fita */
+            background-color: #1A2B4C; /* Azul marinho */
+            border-radius: 40% 60% 40% 60% / 100% 100% 100% 100%; /* Curvatura suave */
+            left: 20%;
+            top: 0;
+            height: 100%;
             width: 15px;
-            height: 15px;
-            background-color: #CC3333; /* Vermelho */
-            border-radius: 50%; /* Faz um círculo */
+        }
+        .sislab-logo .helix-part:nth-child(2) {
+            transform: translateX(-50%) rotate(-20deg); /* Rotação oposta para a segunda fita */
+            background-color: #1A2B4C; /* Azul marinho */
+            border-radius: 60% 40% 60% 40% / 100% 100% 100% 100%; /* Curvatura suave */
+            left: 80%;
+            top: 0;
+            height: 100%;
+            width: 15px;
+        }
+
+        .sislab-logo .helix-accent { /* Pequeno detalhe em vermelho */
             position: absolute;
-            bottom: 3px; /* Posição dentro do tubo */
+            width: 10px;
+            height: 10px;
+            background-color: #CC3333; /* Vermelho */
+            border-radius: 50%;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Para aparecer por cima */
+            box-shadow: 0 0 5px rgba(204, 51, 51, 0.5); /* Brilho sutil */
+        }
+        /* Ajustes finos para criar a ilusão da hélice com 2 divs e sobreposição */
+        .sislab-logo .dna-strand-1, .sislab-logo .dna-strand-2 {
+            position: absolute;
+            width: 10px; /* Espessura da fita */
+            height: 50px; /* Altura da hélice */
+            background-color: #1A2B4C; /* Azul Marinho */
+        }
+
+        .sislab-logo .dna-strand-1 {
+            border-radius: 5px 0 5px 0;
+            top: 0;
+            left: 15px; /* Posiciona a primeira fita */
+            transform: rotate(-15deg); /* Pequena rotação */
+        }
+
+        .sislab-logo .dna-strand-2 {
+            border-radius: 0 5px 0 5px;
+            top: 0;
+            left: 25px; /* Posiciona a segunda fita */
+            transform: rotate(15deg); /* Rotação oposta */
+        }
+        .sislab-logo .dna-strand-connector { /* "Conectores" ou bases nitrogenadas */
+            position: absolute;
+            width: 25px;
+            height: 5px;
+            background-color: #AABBDD; /* Cor clara para conectores */
             left: 50%;
             transform: translateX(-50%);
-            opacity: 0.8; /* Leve transparência para efeito de fluido */
+            z-index: 1;
         }
+        .sislab-logo .dna-strand-connector:nth-child(1) { top: 10px; }
+        .sislab-logo .dna-strand-connector:nth-child(2) { top: 25px; background-color: #CC3333; /* Um conector em vermelho */ }
+        .sislab-logo .dna-strand-connector:nth-child(3) { top: 40px; }
+
 
         /* Estilo para o título principal */
         h1 {
@@ -80,10 +123,10 @@
             font-weight: bold;
             text-align: center;
             padding: 5px 15px; /* Ajusta padding */
-            border-bottom: 3px solid #CC3333;
-            display: inline-block;
-            letter-spacing: 1.5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            border-bottom: 3px solid #CC3333; /* Linha de destaque vermelha */
+            display: inline-block; /* Para a borda envolver o texto */
+            letter-spacing: 1.5px; /* Espaçamento entre letras */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra sutil */
             white-space: nowrap; /* Evita que o título quebre linha */
         }
         @media (max-width: 600px) {
@@ -431,9 +474,11 @@
 
     <div class="main-header-container">
         <div class="sislab-logo">
-            <div class="tube-body"></div>
-            <div class="tube-top"></div>
-            <div class="fluid"></div>
+            <div class="dna-strand-1"></div>
+            <div class="dna-strand-2"></div>
+            <div class="dna-strand-connector" style="top: 10px;"></div>
+            <div class="dna-strand-connector" style="top: 25px; background-color: #CC3333;"></div>
+            <div class="dna-strand-connector" style="top: 40px;"></div>
         </div>
         <h1 class="main-title">SISLAB - Cadastro de Exames (CETEP/LNAB)</h1>
     </div>
