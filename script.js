@@ -260,7 +260,6 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// FUNÇÃO PARA VERIFICAR CPF NO HISTÓRICO LOCAL E CARREGAR O ÚLTIMO
 function checkCpfInHistory(cpf) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
     
@@ -287,7 +286,6 @@ function checkCpfInHistory(cpf) {
     }
 }
 
-// Carrega apenas os dados básicos do paciente
 function carregarDadosBasicos(cadastro) {
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
@@ -365,6 +363,7 @@ function validateContact() {
 }
 
 
+// Função para coletar todos os dados
 function coletarDados() {
     const isAgeValid = validateAge();
     const cpfLimpo = document.getElementById('cpf').value.replace(/[^\d]+/g, '');
@@ -397,11 +396,33 @@ function coletarDados() {
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
-function gerarPDF() {
+// *** MODIFICADO: Salvar Protocolo de Atendimento (antigo gerarPDF) ***
+function salvarProtocoloAtendimento() {
     try {
-        const dados = coletarDados();
-        const doc = new jsPDF();
+        const dados = coletarDados(); // Coleta dados e validações
+        let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+        
+        // Gerar número de protocolo sequencial
+        const lastProtocolNumber = cadastros.length > 0 ? (parseInt(cadastros[cadastros.length - 1].protocolo.split('-')[0]) || 0) : 0;
+        const newProtocolNumber = (lastProtocolNumber + 1).toString().padStart(4, '0');
+        
+        const now = new Date();
+        const hour = now.getHours().toString().padStart(2, '0');
+        const minute = now.getMinutes().toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Mês é 0-indexed
+        
+        // Formato: 0001-HHMMDDMM (Ex: 0001-23143006)
+        const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
+        
+        dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
 
+        // Salva o cadastro localmente (equivalente ao antigo salvarLocal)
+        cadastros.push(dados); 
+        localStorage.setItem('cadastros', JSON.stringify(cadastros));
+        
+        // Gerar o PDF
+        const doc = new jsPDF();
         const [ano, mes, dia] = dados.dataNasc.split('-');
         const dataNascFormatada = `${dia}/${mes}/${ano}`;
 
@@ -409,7 +430,7 @@ function gerarPDF() {
         doc.text("Laboratório CETEP", 105, 15, null, null, "center");
         doc.setFontSize(12);
         doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, 23, null, null, "center");
-        doc.text(`Protocolo nº: ${Math.floor(Math.random() * 10000)}`, 10, 30);
+        doc.text(`Protocolo nº: ${dados.protocolo}`, 10, 30); // Usa o protocolo gerado
         doc.text(`Nome: ${dados.nome}`, 10, 40);
         doc.text(`CPF: ${dados.cpf}`, 10, 47);
         doc.text(`Data de Nascimento: ${dataNascFormatada}`, 10, 54);
@@ -449,33 +470,19 @@ function gerarPDF() {
             doc.text(splitText, 15, y);
         }
 
+        // Abrir em nova janela e acionar a impressão
         doc.output('dataurlnewwindow', { filename: `Protocolo_${dados.nome.replace(/\s+/g, "_")}.pdf` });
 
-        alert("PDF gerado! Verifique a nova aba para visualizar e imprimir.");
-        limparCampos();
+        alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
+        limparCampos(); // Limpa os campos após salvar e gerar PDF
+        mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo
     } catch (error) {
         alert(error.message);
-        console.error("Erro ao gerar PDF:", error);
+        console.error("Erro ao salvar protocolo:", error);
     }
 }
 
-function salvarLocal() {
-    try {
-        const cadastro = coletarDados();
-        let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
-        
-        // Sempre adiciona o novo cadastro, sem verificar ou perguntar sobre atualização.
-        cadastros.push(cadastro); 
-        localStorage.setItem('cadastros', JSON.stringify(cadastros));
-        
-        alert("Cadastro salvo localmente!");
-        limparCampos();
-
-    } catch (error) {
-        alert(error.message);
-        console.error("Erro ao salvar localmente:", error);
-    }
-}
+// REMOVIDO: A função salvarLocal() não é mais necessária, pois sua funcionalidade foi integrada em salvarProtocoloAtendimento().
 
 function mostrarHistorico() {
     const historicoDiv = document.getElementById('historico');
@@ -486,7 +493,9 @@ function mostrarHistorico() {
     }
     let html = "<h3>Histórico de Cadastros</h3><ul>";
     cadastros.forEach((c, index) => {
-        html += `<li onclick="carregarCadastro(${index})"><b>${index + 1}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
+        // Exibe o número do protocolo se existir, senão usa o índice
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
+        html += `<li onclick="carregarCadastro(${index})"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
         if (c.examesNaoListados) {
             html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
         }
@@ -574,22 +583,22 @@ function limparCampos(showAlert = true) {
     }
 }
 
-// *** NOVA FUNÇÃO: Limpar Histórico com Senha ***
+// Limpar Histórico com Senha
 function limparHistorico() {
     const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
-    if (senhaDigitada === null) { // Usuário clicou em cancelar no prompt
+    if (senhaDigitada === null) {
         return;
     }
     if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
         localStorage.removeItem('cadastros');
         alert('Histórico apagado com sucesso!');
-        document.getElementById('historico').innerHTML = ""; // Limpa a exibição do histórico na tela
+        document.getElementById('historico').innerHTML = "";
     } else {
         alert('Senha incorreta. Histórico não foi limpo.');
     }
 }
 
-// *** NOVA FUNÇÃO: Imprimir Histórico ***
+// Imprimir Histórico
 function imprimirHistorico() {
     const historicoDiv = document.getElementById('historico');
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
@@ -625,9 +634,10 @@ function imprimirHistorico() {
     `;
 
     cadastros.forEach((c, index) => {
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
         printContent += `
             <li>
-                <b>Protocolo ${index + 1}</b><br>
+                <b>${protocoloDisplay}</b><br>
                 <p><strong>Nome:</strong> ${c.nome}</p>
                 <p><strong>CPF:</strong> ${c.cpf}</p>
                 <p><strong>Data de Nasc.:</strong> ${c.dataNasc}</p>
@@ -656,12 +666,10 @@ function imprimirHistorico() {
     printWindow.document.open();
     printWindow.document.write(printContent);
     printWindow.document.close();
-    printWindow.focus(); // Foca na nova janela
+    printWindow.focus();
 
-    // Usar setTimeout para garantir que o conteúdo seja renderizado antes de imprimir
     printWindow.onload = function() {
         printWindow.print();
-        // printWindow.close(); // Opcional: fechar a janela após a impressão
     };
 }
 
@@ -669,7 +677,7 @@ function imprimirHistorico() {
 function enviarParaPlanilha() {
     try {
         const dados = coletarDados();
-        const url = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse'; // Substituir pelo seu ID do Google Form
+        const url = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
 
         const formData = new FormData();
         formData.append('entry.1111111111', dados.nome);
@@ -681,7 +689,7 @@ function enviarParaPlanilha() {
         formData.append('entry.7777777777', dados.contato);
         formData.append('entry.8888888888', dados.exames.join(", "));
         formData.append('entry.9999999999', dados.observacoes);
-        formData.append('entry.0000000000', dados.examesNaoListados); // NOVO CAMPO para Google Forms (substitua o entry.ID)
+        formData.append('entry.0000000000', dados.examesNaoListados);
 
         fetch(url, {
             method: 'POST',
