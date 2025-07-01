@@ -2,9 +2,28 @@ const { jsPDF } = window.jspdf;
 let listaExames = [];
 
 // Definir a senha para limpar o histórico
-const SENHA_LIMPAR_HISTORICO = "sislab"; // Você pode alterar esta senha
+const SENHA_LIMPAR_HISTORICO = "sislab";
+// Definir a senha para editar a lista de exames
+const SENHA_EDITAR_LISTA = "sislab2025";
 
-// Lista de DDIs brasileiros válidos (mantida)
+// --- CONFIGURAÇÃO DA GIST PÚBLICA ---
+const GITHUB_USERNAME = 'hyskal'; 
+const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
+const GIST_FILENAME = 'exames.txt'; 
+
+// *** TOKEN MASCARADO (Obfuscação - NÃO SEGURANÇA REAL) ***
+const GITHUB_PAT_GIST = (function() {
+    const p1 = "ghp_PksP";
+    const p2 = "EYHmMl";
+    const p3 = "xrC06k";
+    const p4 = "c5lqB5";
+    const p5 = "pbeq63";
+    const p6 = "gT2Z3QV9";
+    return p1 + p2 + p3 + p4 + p5 + p6;
+})();
+// Fim do token mascarado
+
+// Lista de DDIs brasileiros válidos
 const dddsValidos = [
     11, 12, 13, 14, 15, 16, 17, 18, 19, // São Paulo
     21, 22, 24, // Rio de Janeiro
@@ -39,23 +58,30 @@ window.onload = () => {
     document.getElementById('cpf').addEventListener('input', formatarCPF);
     document.getElementById('contato').addEventListener('input', formatarContato);
 
-    // Adiciona os event listeners onblur para validação
     document.getElementById('data_nasc').addEventListener('blur', validateAge);
     document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
     document.getElementById('contato').addEventListener('blur', validateContact);
 };
 
 function carregarExames() {
-    fetch('lista-de-exames.txt')
-        .then(response => response.text())
+    const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}`;
+
+    fetch(gistRawUrl)
+        .then(response => {
+            if (!response.ok) {
+                console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
+                return fetch('lista-de-exames.txt');
+            }
+            return response.text();
+        })
         .then(text => {
-            listaExames = text.trim().split('\n').map(e => e.trim());
+            listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
             atualizarListaExamesCompleta();
             configurarPesquisa();
         })
         .catch(error => {
-            console.error("Erro ao carregar lista-de-exames.txt:", error);
-            alert("Não foi possível carregar a lista de exames. Verifique o arquivo 'lista-de-exames.txt'.");
+            console.error("Erro ao carregar lista de exames:", error);
+            alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
         });
 }
 
@@ -129,7 +155,6 @@ function marcarExame(exameNome) {
         label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
-
 
 function showError(elementId, message) {
     const inputElement = document.getElementById(elementId);
@@ -228,7 +253,7 @@ function formatarCPF() {
 
 function validateCpfAndCheckHistory() {
     const inputCPF = document.getElementById('cpf');
-    const cpf = inputCPF.value.replace(/[^\d]+/g, '');
+    const cpf = inputCPF.value.replace(/\D/g, '');
 
     if (cpf.length === 0) {
         clearError('cpf');
@@ -265,7 +290,7 @@ function checkCpfInHistory(cpf) {
     
     const cadastrosComCpf = cadastros
         .map((cad, index) => ({ ...cad, originalIndex: index }))
-        .filter(cad => cad.cpf.replace(/[^\d]+/g, '') === cpf)
+        .filter(cad => cad.cpf.replace(/\D/g, '') === cpf)
         .sort((a, b) => b.originalIndex - a.originalIndex);
 
     if (cadastrosComCpf.length > 0) {
@@ -363,10 +388,9 @@ function validateContact() {
 }
 
 
-// Função para coletar todos os dados
 function coletarDados() {
     const isAgeValid = validateAge();
-    const cpfLimpo = document.getElementById('cpf').value.replace(/[^\d]+/g, '');
+    const cpfLimpo = document.getElementById('cpf').value.replace(/\D/g, '');
     const isCpfFormatValid = validarCPF(cpfLimpo);
     const isContactValid = validateContact();
 
@@ -396,32 +420,30 @@ function coletarDados() {
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
-// *** MODIFICADO: Salvar Protocolo de Atendimento (antigo gerarPDF) ***
 function salvarProtocoloAtendimento() {
     try {
-        const dados = coletarDados(); // Coleta dados e validações
+        const dados = coletarDados();
         let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
         
-        // Gerar número de protocolo sequencial
-        const lastProtocolNumber = cadastros.length > 0 ? (parseInt(cadastros[cadastros.length - 1].protocolo.split('-')[0]) || 0) : 0;
+        const lastCadastro = cadastros.length > 0 ? cadastros[cadastros.length - 1] : null;
+        const lastProtocolNumber = lastCadastro && lastCadastro.protocolo ? 
+                                   (parseInt(lastCadastro.protocolo.split('-')[0]) || 0) : 0;
+        
         const newProtocolNumber = (lastProtocolNumber + 1).toString().padStart(4, '0');
         
         const now = new Date();
         const hour = now.getHours().toString().padStart(2, '0');
         const minute = now.getMinutes().toString().padStart(2, '0');
         const day = now.getDate().toString().padStart(2, '0');
-        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Mês é 0-indexed
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
         
-        // Formato: 0001-HHMMDDMM (Ex: 0001-23143006)
         const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
         
-        dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
+        dados.protocolo = protocolo;
 
-        // Salva o cadastro localmente (equivalente ao antigo salvarLocal)
         cadastros.push(dados); 
         localStorage.setItem('cadastros', JSON.stringify(cadastros));
         
-        // Gerar o PDF
         const doc = new jsPDF();
         const [ano, mes, dia] = dados.dataNasc.split('-');
         const dataNascFormatada = `${dia}/${mes}/${ano}`;
@@ -430,7 +452,7 @@ function salvarProtocoloAtendimento() {
         doc.text("Laboratório CETEP", 105, 15, null, null, "center");
         doc.setFontSize(12);
         doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, 23, null, null, "center");
-        doc.text(`Protocolo nº: ${dados.protocolo}`, 10, 30); // Usa o protocolo gerado
+        doc.text(`Protocolo nº: ${dados.protocolo}`, 10, 30);
         doc.text(`Nome: ${dados.nome}`, 10, 40);
         doc.text(`CPF: ${dados.cpf}`, 10, 47);
         doc.text(`Data de Nascimento: ${dataNascFormatada}`, 10, 54);
@@ -470,19 +492,16 @@ function salvarProtocoloAtendimento() {
             doc.text(splitText, 15, y);
         }
 
-        // Abrir em nova janela e acionar a impressão
         doc.output('dataurlnewwindow', { filename: `Protocolo_${dados.nome.replace(/\s+/g, "_")}.pdf` });
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
-        limparCampos(); // Limpa os campos após salvar e gerar PDF
-        mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo
+        limparCampos();
+        mostrarHistorico();
     } catch (error) {
         alert(error.message);
         console.error("Erro ao salvar protocolo:", error);
     }
 }
-
-// REMOVIDO: A função salvarLocal() não é mais necessária, pois sua funcionalidade foi integrada em salvarProtocoloAtendimento().
 
 function mostrarHistorico() {
     const historicoDiv = document.getElementById('historico');
@@ -493,7 +512,6 @@ function mostrarHistorico() {
     }
     let html = "<h3>Histórico de Cadastros</h3><ul>";
     cadastros.forEach((c, index) => {
-        // Exibe o número do protocolo se existir, senão usa o índice
         const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
         html += `<li onclick="carregarCadastro(${index})"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
         if (c.examesNaoListados) {
@@ -583,7 +601,6 @@ function limparCampos(showAlert = true) {
     }
 }
 
-// Limpar Histórico com Senha
 function limparHistorico() {
     const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
     if (senhaDigitada === null) {
@@ -598,9 +615,7 @@ function limparHistorico() {
     }
 }
 
-// Imprimir Histórico
 function imprimirHistorico() {
-    const historicoDiv = document.getElementById('historico');
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
 
     if (cadastros.length === 0) {
@@ -673,6 +688,83 @@ function imprimirHistorico() {
     };
 }
 
+function editarListaExamesComSenha() {
+    const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
+    if (senhaDigitada === null) {
+        return;
+    }
+    if (senhaDigitada === SENHA_EDITAR_LISTA) {
+        carregarListaExamesParaEdicao();
+    } else {
+        alert('Senha incorreta. Edição não permitida.');
+    }
+}
+
+async function carregarListaExamesParaEdicao() {
+    const editorElement = document.getElementById('editorExames');
+    const textarea = document.getElementById('listaExamesEditor');
+
+    try {
+        const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}`;
+        const response = await fetch(gistRawUrl);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ao buscar lista de exames da Gist: ${response.status} - ${errorText}`);
+        }
+
+        const fileContent = await response.text();
+        textarea.value = fileContent;
+        editorElement.style.display = 'block';
+        alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.');
+
+    } catch (error) {
+        console.error("Erro ao carregar lista de exames da Gist:", error);
+        alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID.");
+    }
+}
+
+async function salvarListaExamesNoGitHub() {
+    const textarea = document.getElementById('listaExamesEditor');
+    const novoConteudo = textarea.value;
+
+    const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização.");
+    if (!confirmSave) {
+        return;
+    }
+
+    try {
+        const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
+        
+        const response = await fetch(gistApiUrl, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${GITHUB_PAT_GIST}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({
+                files: {
+                    [GIST_FILENAME]: {
+                        content: novoConteudo
+                    }
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ao salvar na Gist: ${response.status} - ${errorText}`);
+        }
+
+        alert('Lista de exames atualizada com sucesso na Gist!');
+        document.getElementById('editorExames').style.display = 'none';
+        carregarExames();
+    } catch (error) {
+        console.error("Erro ao salvar lista de exames na Gist:", error);
+        alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
+    }
+}
 
 function enviarParaPlanilha() {
     try {
