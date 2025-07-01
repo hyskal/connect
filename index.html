@@ -25,13 +25,13 @@
             margin-bottom: 20px;
         }
 
-        /* Contêiner principal para as duas colunas */
+        /* Contêiner principal para as três colunas */
         .main-content-container {
             display: flex;
             flex-wrap: wrap; /* Permite que as colunas quebrem para nova linha em telas pequenas */
             gap: 20px; /* Espaço entre as colunas */
-            width: 80%; /* Mesma largura que o form-container anterior */
-            max-width: 900px;
+            width: 95%; /* Aumenta a largura para caber 3 colunas */
+            max-width: 1200px; /* Aumenta o max-width */
             margin-bottom: 20px;
         }
 
@@ -43,21 +43,24 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             box-sizing: border-box;
             flex: 1; /* Permite que as colunas cresçam e ocupem o espaço disponível */
-            min-width: 300px; /* Largura mínima antes de quebrar a linha */
+            min-width: 280px; /* Largura mínima antes de quebrar a linha para 3 colunas */
+            display: flex; /* Para flex-direction column dentro da coluna */
+            flex-direction: column;
         }
 
-        /* Largura específica para a coluna de cadastro (esquerda) */
-        .column.left {
-            flex-basis: calc(50% - 10px); /* 50% menos metade do gap */
+        /* Largura específica para cada coluna */
+        .column.left, .column.center, .column.right-display {
+            flex-basis: calc(33.33% - 14px); /* Aprox. 33.33% menos 2/3 do gap (20px * 2/3 = 13.33px) */
         }
 
-        /* Largura específica para a coluna de exames (direita) */
-        .column.right {
-            flex-basis: calc(50% - 10px); /* 50% menos metade do gap */
-            /* Bloco com contorno */
+        /* Bloco com contorno para a coluna central */
+        .column.center {
             border: 1px solid #AABBDD; /* Borda suave para o bloco */
         }
-
+        /* Bloco com contorno para a coluna de exibição (opcional, mas bom para o design) */
+        .column.right-display {
+            border: 1px solid #AABBDD;
+        }
 
         /* Seção 3: Estilos das Linhas do Formulário (dentro das colunas) */
         .form-row {
@@ -66,6 +69,7 @@
             justify-content: flex-start;
             gap: 20px;
             margin-bottom: 15px;
+            width: 100%; /* Garante que a linha ocupe a largura total da coluna */
         }
 
         /* Seção 4: Estilos dos Campos Individuais do Formulário */
@@ -74,7 +78,7 @@
             flex-direction: column;
             flex-grow: 1;
             flex-basis: 0;
-            min-width: 150px;
+            min-width: 120px; /* Reduz min-width para caber em 3 colunas */
         }
 
         .form-field.full-width {
@@ -100,30 +104,15 @@
         }
 
         /* Seção 5: Larguras Específicas dos Campos */
-        #nome {
-            min-width: auto; /* Ajusta para a largura da coluna */
-        }
-
-        #data_nasc {
-             min-width: 150px;
-        }
-
-        #idade {
-            min-width: 80px;
-        }
-
-        #cpf {
-            min-width: 180px;
-        }
-
-        #sexo {
-            min-width: 150px;
+        /* Ajustes para caber em 3 colunas - min-width foi para o .form-field */
+        #nome, #data_nasc, #idade, #cpf, #sexo, #contato, #endereco, #observacoes, #examesNaoListados {
+            min-width: auto; /* Deixa o flex-basis e flex-grow do form-field controlar */
         }
 
         /* Endereço e Observações agora são textareas */
         #endereco,
         #observacoes,
-        #examesNaoListados { /* Adicionado o novo campo */
+        #examesNaoListados {
             min-height: 80px; /* Altura para 2-3 linhas de texto */
             resize: vertical; /* Permite redimensionar verticalmente */
         }
@@ -144,16 +133,17 @@
         }
 
         /* Seção 6: Estilos para a Caixa de Sugestões (Exames) */
+        /* A largura da sugestão precisa se adaptar à nova largura da coluna */
         .sugestoes-box {
             border: 1px solid #ccc;
             max-height: 150px;
             overflow-y: auto;
             display: none;
             background: white;
-            position: absolute; /* Posição absoluta */
+            position: absolute;
             z-index: 100;
-            width: calc(100% - 60px); /* Ajusta à largura do contêiner da coluna direita */
-            max-width: 840px; /* Mantém max-width */
+            width: calc(100% - 60px); /* Ajustado para a largura da coluna central */
+            max-width: none; /* remove max-width fixo */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
             top: auto;
@@ -175,7 +165,7 @@
             background-color: #f0f0f0;
         }
 
-        /* Seção 7: Estilos para a Lista de Exames Selecionados */
+        /* Seção 7: Estilos para a Lista de Exames Selecionados (coluna central) */
         #exames {
             border: 1px solid #eee;
             padding: 15px;
@@ -185,6 +175,7 @@
             overflow-y: auto;
             margin-top: 15px;
             margin-bottom: 20px;
+            flex-grow: 1; /* Permite que a lista de exames cresça para preencher o espaço vertical */
         }
 
         #exames label {
@@ -199,13 +190,56 @@
             transform: scale(1.2);
         }
 
+        /* Estilos para a Nova Coluna de Exibição (Coluna Direita) */
+        #examesSelecionadosDisplay {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+            max-height: 350px; /* Ajusta a altura da lista de exibição */
+            overflow-y: auto;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            flex-grow: 1; /* Permite que a lista de exibição cresça */
+        }
+
+        .display-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        .display-item:last-child {
+            border-bottom: none;
+        }
+        .remove-item-btn {
+            background-color: #CC3333;
+            color: white;
+            border: none;
+            border-radius: 50%; /* Faz um círculo */
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            line-height: 1; /* Alinha o "-" verticalmente */
+        }
+        .remove-item-btn:hover {
+            background-color: #A02222;
+        }
+
+
         /* Seção 8: Estilos dos Botões de Ação */
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center; /* Centraliza os botões */
-            width: 80%;
-            max-width: 900px;
+            justify-content: center;
+            width: 95%; /* Ajusta a largura */
+            max-width: 1200px; /* Ajusta o max-width */
             margin-top: 20px;
             padding: 20px;
             background-color: white;
@@ -232,13 +266,13 @@
 
         /* Estilo para o botão de Salvar Protocolo de Atendimento (destaque) */
         button.highlight-button {
-            background-color: #CC3333; /* Vermelho forte para destaque */
+            background-color: #CC3333;
             font-weight: bold;
-            padding: 12px 25px; /* Um pouco maior */
+            padding: 12px 25px;
         }
 
         button.highlight-button:hover {
-            background-color: #A02222; /* Vermelho mais escuro no hover */
+            background-color: #A02222;
         }
 
         /* Seção 9: Estilos para o Histórico de Cadastros */
@@ -247,8 +281,8 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 900px;
+            width: 95%; /* Ajusta a largura */
+            max-width: 1200px; /* Ajusta o max-width */
             margin-top: 20px;
             box-sizing: border-box;
         }
@@ -292,8 +326,25 @@
                 flex-direction: column; /* Impressão em coluna única */
                 gap: 0;
             }
-            .column.right {
-                border: none; /* Remove a borda do bloco direito na impressão */
+            .column.center, .column.right-display { /* Esconde a coluna de exibição na impressão */
+                 display: none; /* Garante que ela não apareça na impressão */
+            }
+            /* Exibir apenas a coluna de paciente na impressão */
+            .column.left {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        /* Media Query para telas menores: colunas empilham */
+        @media (max-width: 900px) {
+            .main-content-container {
+                flex-direction: column;
+                width: 95%;
+            }
+            .column.left, .column.center, .column.right-display {
+                flex-basis: 100%;
+                min-width: unset; /* Remove a largura mínima para se ajustar totalmente */
             }
         }
     </style>
@@ -360,12 +411,12 @@
             </div>
         </div>
 
-        <div class="column right">
+        <div class="column center">
             <h3>Pesquisar e Adicionar Exames:</h3>
             <input type="text" id="pesquisaExame" placeholder="Digite para pesquisar..." autocomplete="off">
             <div id="sugestoes" class="sugestoes-box"></div>
 
-            <h3>Exames Selecionados:</h3>
+            <h3>Exames Disponíveis:</h3>
             <div id="exames">
                 </div>
 
@@ -374,6 +425,13 @@
                     <label for="examesNaoListados">Acrescentar Exames não Listados:</label>
                     <textarea id="examesNaoListados" rows="4" placeholder="Informe exames não encontrados na lista, um por linha."></textarea>
                 </div>
+            </div>
+        </div>
+
+        <div class="column right-display">
+            <h3>Exames Selecionados:</h3>
+            <div id="examesSelecionadosDisplay">
+                <p>Nenhum exame selecionado.</p>
             </div>
         </div>
     </div>
@@ -385,7 +443,8 @@
         <button onclick="window.print()">Imprimir Tela</button>
         <button onclick="limparCampos()">Limpar Campos</button>
         <button onclick="limparHistorico()">Limpar Histórico</button>
-        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button> </div>
+        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
+    </div>
 
     <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
         <h3>Editar Lista de Exames</h3>
