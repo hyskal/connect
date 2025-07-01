@@ -47,7 +47,7 @@ function carregarExames() {
         .then(response => response.text())
         .then(text => {
             listaExames = text.trim().split('\n').map(e => e.trim());
-            atualizarListaExamesCompleta(); // <-- GARANTE QUE A LISTA COMPLETA É EXIBIDA AO CARREGAR
+            atualizarListaExamesCompleta(); // GARANTE QUE A LISTA COMPLETA É EXIBIDA AO CARREGAR
             configurarPesquisa(); // Configura a busca APÓS a lista estar carregada
         })
         .catch(error => {
@@ -56,7 +56,7 @@ function carregarExames() {
         });
 }
 
-// FUNÇÃO PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES
+// FUNÇÃO PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES (mantida)
 function atualizarListaExamesCompleta() {
     const container = document.getElementById('exames');
     container.innerHTML = ""; // Limpa o container antes de popular
@@ -69,7 +69,6 @@ function atualizarListaExamesCompleta() {
         container.appendChild(document.createElement('br'));
     });
 }
-
 
 function configurarPesquisa() {
     const inputPesquisa = document.getElementById('pesquisaExame');
@@ -84,7 +83,6 @@ function configurarPesquisa() {
             return;
         }
 
-        // Filtra os exames da lista completa (listaExames)
         const filtrados = listaExames.filter(exame =>
             exame.toLowerCase().includes(termo)
         );
@@ -97,9 +95,8 @@ function configurarPesquisa() {
         filtrados.forEach(exame => {
             const div = document.createElement('div');
             div.textContent = exame;
-            // Ao clicar na sugestão, chama marcarExame para selecionar o checkbox correspondente
             div.addEventListener('click', () => {
-                marcarExame(exame); // Esta função irá encontrar o checkbox existente e marcá-lo
+                marcarExame(exame);
                 inputPesquisa.value = '';
                 sugestoesBox.style.display = 'none';
             });
@@ -316,6 +313,7 @@ function validateContact() {
 }
 
 
+// Função para coletar todos os dados, incluindo o novo campo "examesNaoListados"
 function coletarDados() {
     const isAgeValid = validateAge();
     const isCpfValid = validateCpf();
@@ -333,21 +331,23 @@ function coletarDados() {
     const contato = document.getElementById('contato').value.trim();
     const observacoes = document.getElementById('observacoes').value.trim();
     const exames = Array.from(document.querySelectorAll('.exame:checked')).map(e => e.value);
+    const examesNaoListados = document.getElementById('examesNaoListados').value.trim(); // NOVO CAMPO
 
     if (!nome) throw new Error("Preencha o campo: Nome.");
     if (!sexo) throw new Error("Selecione o sexo.");
-    if (exames.length === 0) throw new Error("Selecione pelo menos um exame.");
+    // Agora exames.length pode ser 0 se houver exames não listados
+    if (exames.length === 0 && !examesNaoListados) throw new Error("Selecione pelo menos um exame ou preencha 'Acrescentar Exames não Listados'.");
 
-    return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames };
+
+    return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados }; // Retorna o novo campo
 }
 
-// FUNÇÃO GERAR PDF COM DATA FORMATADA E IMPRESSÃO DIRETA (mantida, com ajuste de texto)
+// FUNÇÃO GERAR PDF com "Exames Adicionais"
 function gerarPDF() {
     try {
         const dados = coletarDados();
         const doc = new jsPDF();
 
-        // Formata a data de nascimento para dd/mm/yyyy
         const [ano, mes, dia] = dados.dataNasc.split('-');
         const dataNascFormatada = `${dia}/${mes}/${ano}`;
 
@@ -363,26 +363,43 @@ function gerarPDF() {
         doc.text(`Sexo: ${dados.sexo}`, 10, 68);
         doc.text(`Endereço: ${dados.endereco}`, 10, 75);
         doc.text(`Contato: ${dados.contato}`, 10, 82);
-        doc.text("Exames Selecionados:", 10, 92);
-        let y = 100;
-        dados.exames.forEach(exame => {
-            doc.text(`- ${exame}`, 15, y);
+        
+        let y = 92; // Posição inicial para exames
+
+        if (dados.exames.length > 0) {
+            doc.text("Exames Selecionados:", 10, y);
             y += 7;
-        });
+            dados.exames.forEach(exame => {
+                doc.text(`- ${exame}`, 15, y);
+                y += 7;
+            });
+        }
+
+        // ADICIONAR EXAMES NÃO LISTADOS NO PDF
+        if (dados.examesNaoListados) {
+            if (dados.exames.length > 0) { // Adiciona um espaço se já houver exames listados
+                y += 10;
+            } else { // Se não houver exames listados, ajusta o y para ficar próximo
+                y = Math.max(y, 92); // Garante que não sobreponha dados do paciente se não houver exames listados
+            }
+            doc.text("Exames Adicionais:", 10, y);
+            y += 7;
+            const splitText = doc.splitTextToSize(dados.examesNaoListados, 180);
+            doc.text(splitText, 15, y);
+        }
 
         if (dados.observacoes) {
-            y += 10;
+            y += 10; // Espaço antes das observações
             doc.text("Observações:", 10, y);
             y += 7;
             const splitText = doc.splitTextToSize(dados.observacoes, 180);
             doc.text(splitText, 15, y);
         }
 
-        // Abre o PDF em uma nova janela para impressão
         doc.output('dataurlnewwindow', { filename: `Protocolo_${dados.nome.replace(/\s+/g, "_")}.pdf` });
 
         alert("PDF gerado! Verifique a nova aba para visualizar e imprimir.");
-        limparCampos(); // Limpa os campos após gerar o PDF
+        limparCampos();
     } catch (error) {
         alert(error.message);
         console.error("Erro ao gerar PDF:", error);
@@ -396,7 +413,7 @@ function salvarLocal() {
         cadastros.push(cadastro);
         localStorage.setItem('cadastros', JSON.stringify(cadastros));
         alert("Cadastro salvo localmente!");
-        limparCampos(); // Limpa os campos após salvar
+        limparCampos();
     } catch (error) {
         alert(error.message);
         console.error("Erro ao salvar localmente:", error);
@@ -412,8 +429,10 @@ function mostrarHistorico() {
     }
     let html = "<h3>Histórico de Cadastros</h3><ul>";
     cadastros.forEach((c, index) => {
-        // Adiciona onclick para carregar o cadastro
         html += `<li onclick="carregarCadastro(${index})"><b>${index + 1}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
+        if (c.examesNaoListados) { // Inclui no histórico
+            html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
+        }
         if (c.observacoes) {
             html += `<br>Observações: ${c.observacoes.substring(0, 100)}${c.observacoes.length > 100 ? '...' : ''}`;
         }
@@ -423,7 +442,7 @@ function mostrarHistorico() {
     historicoDiv.innerHTML = html;
 }
 
-// FUNÇÃO PARA CARREGAR CADASTRO DO HISTÓRICO (mantida)
+// FUNÇÃO PARA CARREGAR CADASTRO DO HISTÓRICO (com novo campo)
 function carregarCadastro(index) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
     const cadastro = cadastros[index];
@@ -433,50 +452,45 @@ function carregarCadastro(index) {
         return;
     }
 
-    // Verifica se os campos atuais estão preenchidos antes de perguntar
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
 
-    if (nomeAtual || cpfAtual) { // Se nome ou CPF atual não estiverem vazios
+    if (nomeAtual || cpfAtual) {
         const confirmar = confirm("Existem dados não salvos no formulário. Deseja substituí-los pelo cadastro do histórico?");
         if (!confirmar) {
-            return; // Usuário cancelou
+            return;
         }
     }
 
-    // Limpa os campos antes de carregar novos dados
-    limparCampos(false); // Passa false para não mostrar o alert de "Campos limpos"
+    limparCampos(false);
 
-    // Preenche os campos com os dados do histórico
     document.getElementById('nome').value = cadastro.nome;
     document.getElementById('cpf').value = cadastro.cpf;
     document.getElementById('data_nasc').value = cadastro.dataNasc;
     document.getElementById('idade').value = cadastro.idade;
     document.getElementById('sexo').value = cadastro.sexo;
-    document.getElementById('endereco').value = cadastro.endereco;
+    document.getElementById('endereco').value = cadastro.endereco; // Endereço agora é textarea
     document.getElementById('contato').value = cadastro.contato;
     document.getElementById('observacoes').value = cadastro.observacoes;
+    document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || ''; // Carrega o novo campo
 
-    // Desmarca todos os exames e marca os do histórico
     const allCheckboxes = document.querySelectorAll('.exame');
-    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos
+    allCheckboxes.forEach(cb => cb.checked = false);
 
     cadastro.exames.forEach(exameNome => {
         const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
         if (checkbox) {
             checkbox.checked = true;
         } else {
-            // Se o exame do histórico não está na lista atual de exames, adiciona dinamicamente
-            marcarExame(exameNome); // Reutiliza a função marcarExame
+            marcarExame(exameNome);
         }
     });
 
     alert(`Cadastro de ${cadastro.nome} carregado com sucesso!`);
-    // Opcional: rolar para o topo do formulário
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO (com parâmetro opcional para alert)
+// FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO (com novo campo)
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
     document.getElementById('cpf').value = '';
@@ -486,17 +500,15 @@ function limparCampos(showAlert = true) {
     document.getElementById('endereco').value = '';
     document.getElementById('contato').value = '';
     document.getElementById('observacoes').value = '';
+    document.getElementById('examesNaoListados').value = ''; // Limpa o novo campo
 
-    // Desmarcar todos os checkboxes de exames
     const allCheckboxes = document.querySelectorAll('.exame');
     allCheckboxes.forEach(cb => cb.checked = false);
 
-    // Limpar mensagens de erro
     clearError('data_nasc');
     clearError('cpf');
     clearError('contato');
 
-    // Opcional: Limpar campo de pesquisa de exames e sugestões
     document.getElementById('pesquisaExame').value = '';
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
@@ -528,6 +540,7 @@ function enviarParaPlanilha() {
         formData.append('entry.7777777777', dados.contato);
         formData.append('entry.8888888888', dados.exames.join(", "));
         formData.append('entry.9999999999', dados.observacoes);
+        formData.append('entry.0000000000', dados.examesNaoListados); // NOVO CAMPO para Google Forms (substitua o entry.ID)
 
         fetch(url, {
             method: 'POST',
@@ -535,7 +548,7 @@ function enviarParaPlanilha() {
             body: formData
         }).then(() => {
             alert('Dados enviados para a planilha com sucesso!');
-            limparCampos(); // Limpa os campos após enviar
+            limparCampos();
         }).catch(error => {
             console.error("Erro ao enviar para planilha:", error);
             alert("Erro ao enviar dados para a planilha. Verifique o console para mais detalhes.");
