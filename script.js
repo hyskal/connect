@@ -1,7 +1,7 @@
 const { jsPDF } = window.jspdf;
 let listaExames = [];
 
-// Lista de DDIs brasileiros válidos
+// Lista de DDIs brasileiros válidos (mantida)
 const dddsValidos = [
     11, 12, 13, 14, 15, 16, 17, 18, 19, // São Paulo
     21, 22, 24, // Rio de Janeiro
@@ -47,14 +47,31 @@ function carregarExames() {
         .then(response => response.text())
         .then(text => {
             listaExames = text.trim().split('\n').map(e => e.trim());
+            atualizarListaExamesCompleta(); // <-- CHAMADA PARA EXIBIR A LISTA COMPLETA INICIALMENTE
             configurarPesquisa();
         });
 }
 
+// *** FUNÇÃO ATUALIZADA PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES ***
+function atualizarListaExamesCompleta() {
+    const container = document.getElementById('exames');
+    container.innerHTML = ""; // Limpa para evitar duplicidade na carga inicial
+
+    listaExames.forEach(exame => {
+        const label = document.createElement('label');
+        // Verifica se o exame já estava selecionado (útil se você tivesse um histórico pré-carregado)
+        // Por enquanto, todos começam desmarcados.
+        label.innerHTML = `<input type="checkbox" class="exame" value="${exame}"> ${exame}`;
+        container.appendChild(label);
+        container.appendChild(document.createElement('br'));
+    });
+}
+
+
 function configurarPesquisa() {
     const inputPesquisa = document.getElementById('pesquisaExame');
     const sugestoesBox = document.getElementById('sugestoes');
-    const examesSelecionadosContainer = document.getElementById('exames'); // Container para os exames selecionados
+    // Não precisamos mais do examesSelecionadosContainer aqui, pois marcarExame o acessa diretamente.
 
     inputPesquisa.addEventListener('input', () => {
         const termo = inputPesquisa.value.trim().toLowerCase();
@@ -79,7 +96,7 @@ function configurarPesquisa() {
             div.textContent = exame;
             // Ao clicar na sugestão, chama marcarExame para adicionar à lista de selecionados
             div.addEventListener('click', () => {
-                marcarExame(exame); // Não precisa mais passar o container, ele será acessado diretamente
+                marcarExame(exame); // Esta função irá encontrar o checkbox existente ou criar um
                 inputPesquisa.value = '';
                 sugestoesBox.style.display = 'none';
             });
@@ -96,21 +113,25 @@ function configurarPesquisa() {
     });
 }
 
-// FUNÇÃO MARCAR EXAME CORRIGIDA
+// FUNÇÃO MARCAR EXAME: Agora ela busca o checkbox existente na lista completa
 function marcarExame(exameNome) {
     const examesContainer = document.getElementById('exames');
-    // Verifica se o exame já está presente como um checkbox
     const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
 
     if (checkboxExistente) {
         // Se já existe, apenas garante que está marcado
         checkboxExistente.checked = true;
+        // Opcional: Rolagem suave para o exame selecionado
+        checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
-        // Se não existe, cria um novo label com checkbox e adiciona
+        // Se, por algum motivo, o exame não estiver na lista completa (o que não deveria ocorrer
+        // se listaExames está completa), ele o adiciona.
+        // No cenário ideal, ele sempre existirá e apenas será marcado.
         const label = document.createElement('label');
         label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
         examesContainer.appendChild(label);
         examesContainer.appendChild(document.createElement('br'));
+        label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
@@ -291,8 +312,6 @@ function coletarDados() {
 
     // Se qualquer uma das validações falhar, impede a coleta e retorna
     if (!isAgeValid || !isCpfValid || !isContactValid) {
-        // Não é necessário um alert aqui, pois as mensagens de erro já estão visíveis nos campos.
-        // O alert seria redundante e possivelmente irritante para o usuário.
         throw new Error("Por favor, corrija os erros nos campos antes de prosseguir.");
     }
 
