@@ -379,11 +379,20 @@
     </div>
 
     <div class="action-buttons-container nao-imprimir">
-        <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button> <button onclick="enviarParaPlanilha()">Enviar para Planilha</button>
+        <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
+        <button onclick="enviarParaPlanilha()">Enviar para Planilha</button>
         <button onclick="mostrarHistorico()">Ver Histórico</button>
-        <button onclick="imprimirHistorico()">Imprimir Histórico</button> <button onclick="window.print()">Imprimir Tela</button>
+        <button onclick="imprimirHistorico()">Imprimir Histórico</button>
+        <button onclick="window.print()">Imprimir Tela</button>
         <button onclick="limparCampos()">Limpar Campos</button>
         <button onclick="limparHistorico()">Limpar Histórico</button>
+        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button> </div>
+
+    <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3>Editar Lista de Exames</h3>
+        <textarea id="listaExamesEditor" rows="15" style="width:100%; border:1px solid #ccc; padding:10px; box-sizing:border-box;"></textarea><br>
+        <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
+        <button onclick="document.getElementById('editorExames').style.display='none';">Cancelar</button>
     </div>
 
     <div id="historico" class="nao-imprimir"></div>
