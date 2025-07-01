@@ -120,9 +120,12 @@
             min-width: 150px;
         }
 
-        #observacoes {
-            min-height: 80px;
-            resize: vertical;
+        /* Endereço e Observações agora são textareas */
+        #endereco,
+        #observacoes,
+        #examesNaoListados { /* Adicionado o novo campo */
+            min-height: 80px; /* Altura para 2-3 linhas de texto */
+            resize: vertical; /* Permite redimensionar verticalmente */
         }
 
         /* Estilo para campos com erro */
@@ -334,14 +337,14 @@
             <div class="form-row">
                 <div class="form-field full-width">
                     <label for="endereco">Endereço:</label>
-                    <input type="text" id="endereco">
+                    <textarea id="endereco" rows="2" resize="vertical"></textarea>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-field full-width">
-                    <label for="observacoes">Observações (até 500 caracteres):</label>
-                    <textarea id="observacoes" rows="4" maxlength="500"></textarea>
+                    <label for="observacoes">Observações:</label>
+                    <textarea id="observacoes" rows="4"></textarea>
                 </div>
             </div>
         </div>
@@ -354,6 +357,13 @@
             <h3>Exames Selecionados:</h3>
             <div id="exames">
                 </div>
+
+            <div class="form-row" style="margin-top: 20px;">
+                <div class="form-field full-width">
+                    <label for="examesNaoListados">Acrescentar Exames não Listados:</label>
+                    <textarea id="examesNaoListados" rows="4" placeholder="Informe exames não encontrados na lista, um por linha."></textarea>
+                </div>
+            </div>
         </div>
     </div>
 
