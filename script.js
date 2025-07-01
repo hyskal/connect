@@ -7,13 +7,9 @@ const SENHA_LIMPAR_HISTORICO = "sislab";
 const SENHA_EDITAR_LISTA = "sislab2025";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
-// Substitua SEU_USUARIO_GITHUB e SEU_GIST_ID pelos seus dados reais.
-// O GIST_FILENAME deve corresponder ao nome do arquivo dentro da sua Gist.
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; // Nome do arquivo dentro da sua Gist
-// ATENÇÃO: Este PAT será visível no frontend. Embora mais seguro que um PAT de repositório,
-// ainda é uma consideração de segurança. Para produção, o ideal é usar um backend.
+const GIST_FILENAME = 'exames.txt'; 
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -25,10 +21,7 @@ const GITHUB_PAT_GIST = (function() {
 })();
 
 // --- CONFIGURAÇÃO DA PLANILHA (Google Forms) ---
-// Substitua 'SEU_FORM_ID' pelo ID real do seu Google Form
-// Se esta URL não for configurada corretamente, o envio para a planilha será ignorado.
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
-// Mapeamento dos campos do formulário HTML para os 'entry.XXXXXXXXXX' do Google Forms
 const GOOGLE_FORM_ENTRIES = {
     nome: 'entry.1111111111',
     cpf: 'entry.2222222222',
@@ -42,7 +35,6 @@ const GOOGLE_FORM_ENTRIES = {
     examesNaoListados: 'entry.0000000000'
 };
 
-// Lista de DDIs brasileiros válidos
 const dddsValidos = [
     11, 12, 13, 14, 15, 16, 17, 18, 19,
     21, 22, 24,
@@ -515,11 +507,16 @@ function salvarProtocoloAtendimento() {
 
         // --- Seção: Cabeçalho ---
         doc.setFontSize(18);
-        doc.text("Laboratório CETEP", 105, currentY, null, null, "center");
+        doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); // Título atualizado
         currentY += 10;
         doc.setFontSize(10);
         doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, currentY, null, null, "center");
-        currentY += 10;
+        currentY += 5; // Espaço para dados do lab
+        doc.setFontSize(8); // Fonte menor para dados do lab
+        doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
+        currentY += 4;
+        doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
+        currentY += 6; // Espaço após dados do lab
         doc.setLineWidth(0.5);
         doc.line(20, currentY, 190, currentY);
         currentY += 10;
@@ -604,7 +601,7 @@ function salvarProtocoloAtendimento() {
             currentY += 10;
         }
 
-        // --- Rodapé (Opcional) ---
+        // --- Rodapé do PDF (para Salvar Protocolo) ---
         doc.setFontSize(9);
         doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
 
@@ -694,6 +691,7 @@ function carregarCadastro(index) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
     document.getElementById('cpf').value = '';
@@ -702,419 +700,3 @@ function limparCampos(showAlert = true) {
     document.getElementById('sexo').value = '';
     document.getElementById('endereco').value = '';
     document.getElementById('contato').value = '';
-    document.getElementById('observacoes').value = '';
-    document.getElementById('examesNaoListados').value = '';
-
-    const allCheckboxes = document.querySelectorAll('.exame');
-    allCheckboxes.forEach(cb => cb.checked = false);
-
-    clearError('data_nasc');
-    clearError('cpf');
-    clearError('contato');
-
-    document.getElementById('pesquisaExame').value = '';
-    document.getElementById('sugestoes').innerHTML = '';
-    document.getElementById('sugestoes').style.display = 'none';
-
-    atualizarExamesSelecionadosDisplay();
-
-    if (showAlert) {
-        alert("Campos limpos para um novo cadastro!");
-    }
-}
-
-function limparHistorico() {
-    const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
-    if (senhaDigitada === null) {
-        return;
-    }
-    if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
-        localStorage.removeItem('cadastros');
-        alert('Histórico apagado com sucesso!');
-        document.getElementById('historico').innerHTML = "";
-    } else {
-        alert('Senha incorreta. Histórico não foi limpo.');
-    }
-}
-
-// MODIFICADO: Imprimir Tela agora gera PDF com conteúdo específico e rodapé
-function imprimirTela() {
-    // 1. Coleta todos os dados necessários do formulário
-    const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
-    const dataNasc = document.getElementById('data_nasc').value;
-    const sexo = document.getElementById('sexo').value;
-    const endereco = document.getElementById('endereco').value.trim();
-    const contato = document.getElementById('contato').value.trim();
-    const observacoes = document.getElementById('observacoes').value.trim(); // Pega as observações
-    const exames = Array.from(document.querySelectorAll('#exames .exame:checked')).map(e => e.value); // Pega os exames selecionados
-    const examesNaoListados = document.getElementById('examesNaoListados').value.trim(); // Pega exames não listados
-
-    // 2. Validações básicas antes de gerar o PDF
-    if (!nome) { alert("Preencha o nome para imprimir."); return; }
-    if (exames.length === 0 && !examesNaoListados && !observacoes) { alert("Selecione ou adicione exames, ou preencha observações para imprimir."); return; } // Ajustado para permitir impressão de só observações
-
-    const doc = new jsPDF();
-    const [ano, mes, dia] = dataNasc.split('-');
-    const dataNascFormatada = `${dia}/${mes}/${ano}`;
-
-    let currentY = 15; // Posição Y inicial
-    const lineHeight = 7; // Altura de cada linha de texto
-    const marginX = 20; // Margem lateral padrão
-    const pageHeightLimit = 270; // Altura limite antes de adicionar nova página (para A4 com margens de 20mm)
-
-    // Helper para adicionar rodapé e nova página com título da seção
-    const addPageAndFooterWithTitle = (sectionTitle = null) => {
-        // Adiciona rodapé na página atual antes de adicionar uma nova
-        const now = new Date();
-        const dateTimeString = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-        doc.setFontSize(8);
-        doc.text(`Documento gerado automaticamente pelo SISLAB - ${dateTimeString}`, 105, 290, null, null, "center");
-
-        doc.addPage(); // Adiciona nova página
-        currentY = 20; // Nova posição Y no início da nova página (margem superior)
-
-        // Reimprime o cabeçalho principal do documento em cada nova página
-        doc.setFontSize(18);
-        doc.text("Laboratório CETEP", 105, 15, null, null, "center");
-        doc.setFontSize(10);
-        doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, 23, null, null, "center");
-        doc.setLineWidth(0.5);
-        doc.line(marginX, 28, 190, 28); // Linha após o cabeçalho
-        currentY = 35; // Ajusta currentY após o cabeçalho da nova página
-
-        // Se houver um título de seção, reimprime-o
-        if (sectionTitle) {
-            doc.setFontSize(14);
-            doc.text(sectionTitle, marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-    };
-
-    // --- Título Principal do Documento (apenas na primeira página, logo abaixo do cabeçalho do lab) ---
-    doc.setFontSize(20);
-    doc.text("SISLAB - Cadastro de Exames", 105, currentY, null, null, "center");
-    currentY += 15;
-    doc.setLineWidth(0.5);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Dados do Paciente ---
-    // Estima espaço necessário para a seção inteira (título + 6 linhas de dados + separador)
-    if (currentY + (lineHeight * 6) + 20 > pageHeightLimit) { 
-        addPageAndFooterWithTitle("DADOS DO PACIENTE:");
-    } else {
-        doc.setFontSize(14);
-        doc.text("DADOS DO PACIENTE:", marginX, currentY);
-        currentY += 8;
-        doc.setFontSize(11);
-    }
-    
-    const col1X = marginX + 5;
-    const col2X = 110;
-
-    doc.text(`Nome: ${nome}`, col1X, currentY);
-    doc.text(`CPF: ${cpf}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Data de Nasc.: ${dataNascFormatada}`, col1X, currentY);
-    doc.text(`Idade: ${document.getElementById('idade').value}`, col2X, currentY); 
-    currentY += lineHeight;
-    doc.text(`Sexo: ${sexo}`, col1X, currentY);
-    doc.text(`Contato: ${contato}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Endereço: ${endereco}`, col1X, currentY);
-    currentY += lineHeight;
-    
-    currentY += 5; 
-    if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); } // Quebra se a linha separadora não couber
-    doc.setLineWidth(0.2);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Exames Selecionados ---
-    // Estima espaço necessário para a lista de exames selecionados
-    if (exames.length > 0 || examesNaoListados || observacoes) { // Só adiciona a seção se tiver conteúdo
-        if (currentY + (exames.length * lineHeight) + (lineHeight * 2) + 10 > pageHeightLimit && exames.length > 0) {
-            addPageAndFooterWithTitle("EXAMES SELECIONADOS:");
-        } else {
-            doc.setFontSize(14);
-            doc.text("EXAMES SELECIONADOS:", marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-
-        if (exames.length > 0) {
-            exames.forEach(exame => {
-                if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("EXAMES SELECIONADOS (Cont.):"); }
-                doc.text(`- ${exame}`, marginX + 5, currentY);
-                currentY += lineHeight;
-            });
-        } else {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("EXAMES SELECIONADOS (Cont.):"); }
-            doc.text("Nenhum exame da lista selecionado.", marginX + 5, currentY);
-            currentY += lineHeight;
-        }
-        
-        currentY += 5; // Espaço antes do separador de exames não listados
-        if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-
-
-    // --- Seção: Exames Não Listados ---
-    if (examesNaoListados) {
-        if (currentY + (lineHeight * 2) > pageHeightLimit) { 
-            addPageAndFooterWithTitle("EXAMES ADICIONAIS (NÃO LISTADOS):");
-        } else {
-            doc.setFontSize(14);
-            doc.text("EXAMES ADICIONAIS (NÃO LISTADOS):", marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-        
-        const splitText = doc.splitTextToSize(examesNaoListados, 170); // Largura do texto
-        
-        splitText.forEach(line => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("EXAMES ADICIONAIS (NÃO LISTADOS) (Cont.):"); }
-            doc.text(line, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-        currentY += 5;
-        if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-    
-    // --- Seção: Observações ---
-    if (observacoes) {
-        if (currentY + (lineHeight * 2) > pageHeightLimit) { 
-            addPageAndFooterWithTitle("OBSERVAÇÕES:");
-        } else {
-            doc.setFontSize(14);
-            doc.text("OBSERVAÇÕES:", marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-        
-        const splitText = doc.splitTextToSize(observacoes, 170);
-        
-        splitText.forEach(line => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("OBSERVAÇÕES (Cont.):"); }
-            doc.text(line, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-        currentY += 5;
-        if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-
-    // Adiciona o rodapé a todas as páginas geradas
-    const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        const now = new Date(); // Garante que a data/hora seja a da impressão
-        const dateTimeString = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-        doc.text(`Documento gerado automaticamente pelo SISLAB - ${dateTimeString}`, 105, 290, null, null, "center");
-    }
-
-    doc.output('dataurlnewwindow', { filename: `Impressao_Tela_${nome.replace(/\s+/g, "_")}.pdf` });
-}
-
-function imprimirHistorico() {
-    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
-
-    if (cadastros.length === 0) {
-        alert("Não há histórico para imprimir.");
-        return;
-    }
-
-    let printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Histórico de Cadastros - Impressão</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                h1 { text-align: center; color: #1A2B4C; }
-                ul { list-style-type: none; padding: 0; }
-                li {
-                    border: 1px solid #ddd;
-                    padding: 10px;
-                    margin-bottom: 10px;
-                    border-radius: 5px;
-                    background-color: #f9f9f9;
-                }
-                li b { color: #333; }
-                li p { margin: 5px 0; }
-            </style>
-        </head>
-        <body>
-            <h1>Histórico de Cadastros do Laboratório CETEP</h1>
-            <ul>
-    `;
-
-    cadastros.forEach((c, index) => {
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
-        printContent += `
-            <li>
-                <b>${protocoloDisplay}</b><br>
-                <p><strong>Nome:</strong> ${c.nome}</p>
-                <p><strong>CPF:</strong> ${c.cpf}</p>
-                <p><strong>Data de Nasc.:</strong> ${c.dataNasc}</p>
-                <p><strong>Idade:</strong> ${c.idade}</p>
-                <p><strong>Sexo:</strong> ${c.sexo}</p>
-                <p><strong>Endereço:</strong> ${c.endereco}</p>
-                <p><strong>Contato:</strong> ${c.contato}</p>
-                <p><strong>Exames Selecionados:</strong> ${c.exames.join(", ")}</p>
-        `;
-        if (c.examesNaoListados) {
-            printContent += `<p><strong>Exames Adicionais:</strong> ${c.examesNaoListados}</p>`;
-        }
-        if (c.observacoes) {
-            printContent += `<p><strong>Observações:</strong> ${c.observacoes}</p>`;
-        }
-        printContent += `</li>`;
-    });
-
-    printContent += `
-            </ul>
-        </body>
-        </html>
-    `;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.focus();
-
-    printWindow.onload = function() {
-        printWindow.print();
-    };
-}
-
-function editarListaExamesComSenha() {
-    const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
-    if (senhaDigitada === null) {
-        return;
-    }
-    if (senhaDigitada === SENHA_EDITAR_LISTA) {
-        carregarListaExamesParaEdicao();
-    } else {
-        alert('Senha incorreta. Edição não permitida.');
-    }
-}
-
-async function carregarListaExamesParaEdicao() {
-    const editorElement = document.getElementById('editorExames');
-    const textarea = document.getElementById('listaExamesEditor');
-
-    try {
-        const timestamp = new Date().getTime();
-        const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
-        const response = await fetch(gistRawUrl);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao buscar lista de exames da Gist: ${response.status} - ${errorText}`);
-        }
-
-        const fileContent = await response.text();
-        textarea.value = fileContent;
-        editorElement.style.display = 'block';
-        alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.');
-
-    } catch (error) {
-        console.error("Erro ao carregar lista de exames da Gist:", error);
-        alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID.");
-    }
-}
-
-async function salvarListaExamesNoGitHub() {
-    const textarea = document.getElementById('listaExamesEditor');
-    const novoConteudo = textarea.value;
-
-    const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização.");
-    if (!confirmSave) {
-        return;
-    }
-
-    try {
-        const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
-        
-        const response = await fetch(gistApiUrl, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `token ${GITHUB_PAT_GIST}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({
-                files: {
-                    [GIST_FILENAME]: {
-                        content: novoConteudo
-                    }
-                }
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao salvar na Gist: ${response.status} - ${errorText}`);
-        }
-
-        alert('Lista de exames atualizada com sucesso na Gist!');
-        document.getElementById('editorExames').style.display = 'none';
-        carregarExames();
-    } catch (error) {
-        console.error("Erro ao salvar lista de exames na Gist:", error);
-        alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
-    }
-}
-
-async function enviarParaPlanilha(dados) {
-    if (GOOGLE_FORM_URL.includes('SEU_FORM_ID')) {
-        console.warn("URL do Google Form não configurada. Envio para planilha ignorado.");
-        return;
-    }
-
-    try {
-        const formData = new FormData();
-        formData.append(GOOGLE_FORM_ENTRIES.nome, dados.nome); 
-        formData.append(GOOGLE_FORM_ENTRIES.cpf, dados.cpf);
-        formData.append(GOOGLE_FORM_ENTRIES.dataNasc, dados.dataNasc);
-        formData.append(GOOGLE_FORM_ENTRIES.idade, dados.idade);
-        formData.append(GOOGLE_FORM_ENTRIES.sexo, dados.sexo);
-        formData.append(GOOGLE_FORM_ENTRIES.endereco, dados.endereco);
-        formData.append(GOOGLE_FORM_ENTRIES.contato, dados.contato);
-        formData.append(GOOGLE_FORM_ENTRIES.exames, dados.exames.join(", "));
-        formData.append(GOOGLE_FORM_ENTRIES.observacoes, dados.observacoes);
-        formData.append(GOOGLE_FORM_ENTRIES.examesNaoListados, dados.examesNaoListados);
-
-        const controller = new AbortController();
-        const signal = controller.signal;
-
-        const requestPromise = fetch(GOOGLE_FORM_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: formData,
-            signal: signal
-        });
-
-        const timeoutId = setTimeout(() => controller.abort(), 10000); 
-
-        await requestPromise;
-        clearTimeout(timeoutId);
-
-        console.log('Dados enviados para a planilha (no-cors).');
-    } catch (error) {
-        console.error("Erro ao enviar dados para a planilha:", error);
-    }
-}
