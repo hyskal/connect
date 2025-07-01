@@ -10,8 +10,6 @@ const SENHA_EDITAR_LISTA = "sislab2025";
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
 const GIST_FILENAME = 'exames.txt'; 
-
-// *** TOKEN MASCARADO (Obfuscação - NÃO SEGURANÇA REAL) ***
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -21,7 +19,6 @@ const GITHUB_PAT_GIST = (function() {
     const p6 = "gT2Z3QV9";
     return p1 + p2 + p3 + p4 + p5 + p6;
 })();
-// Fim do token mascarado
 
 // Lista de DDIs brasileiros válidos
 const dddsValidos = [
