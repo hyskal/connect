@@ -20,8 +20,22 @@
             background-size: 200px 200px; /* Tamanho do tile do padrão */
         }
 
-        h2, h3 {
-            color: #1A2B4C; /* Azul Marinho mais escuro para títulos */
+        /* Estilo para o título principal (agora h1) */
+        h1 {
+            color: #1A2B4C; /* Azul Marinho mais escuro */
+            margin-bottom: 25px; /* Mais espaço */
+            font-size: 2.5em; /* Fonte maior */
+            font-weight: bold; /* Negrito */
+            text-align: center;
+            padding: 10px 20px;
+            border-bottom: 3px solid #CC3333; /* Linha de destaque vermelha */
+            display: inline-block; /* Para a borda envolver o texto */
+            letter-spacing: 1.5px; /* Espaçamento entre letras */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra sutil */
+        }
+
+        h2, h3 { /* Mantém o estilo para os demais títulos */
+            color: #1A2B4C;
             margin-bottom: 20px;
         }
 
@@ -351,10 +365,11 @@
 </head>
 <body>
 
-    <h2>Cadastro para Protocolo de Exames</h2>
+    <h1 class="main-title">SISLAB - Cadastro de Exames (CETEP/LNAB)</h1>
 
     <div class="main-content-container">
         <div class="column left">
+            <h3>Dados do Paciente:</h3>
             <div class="form-row">
                 <div class="form-field full-width">
                     <label for="nome">Nome:</label>
