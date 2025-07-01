@@ -1,7 +1,7 @@
 const { jsPDF } = window.jspdf;
 let listaExames = [];
 
-// Lista de DDIs brasileiros válidos (mantida)
+// Lista de DDIs brasileiros válidos
 const dddsValidos = [
     11, 12, 13, 14, 15, 16, 17, 18, 19, // São Paulo
     21, 22, 24, // Rio de Janeiro
@@ -38,7 +38,7 @@ window.onload = () => {
 
     // Adiciona os event listeners onblur para validação
     document.getElementById('data_nasc').addEventListener('blur', validateAge);
-    document.getElementById('cpf').addEventListener('blur', validateCpf);
+    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory); // Modificado para verificar histórico
     document.getElementById('contato').addEventListener('blur', validateContact);
 };
 
@@ -56,7 +56,7 @@ function carregarExames() {
         });
 }
 
-// FUNÇÃO PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES (mantida)
+// FUNÇÃO PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES
 function atualizarListaExamesCompleta() {
     const container = document.getElementById('exames');
     container.innerHTML = ""; // Limpa o container antes de popular
@@ -237,9 +237,10 @@ function formatarCPF() {
     inputCPF.value = cpf;
 }
 
-function validateCpf() {
+// *** NOVA FUNÇÃO PARA VALIDAR CPF E VERIFICAR HISTÓRICO ***
+function validateCpfAndCheckHistory() {
     const inputCPF = document.getElementById('cpf');
-    const cpf = inputCPF.value.replace(/[^\d]+/g, '');
+    const cpf = inputCPF.value.replace(/[^\d]+/g, ''); // Limpa a máscara para validar
 
     if (cpf.length === 0) {
         clearError('cpf');
@@ -250,10 +251,14 @@ function validateCpf() {
         showError('cpf', "CPF inválido.");
         return false;
     }
-    clearError('cpf');
+    
+    // Se o CPF é válido, limpa qualquer erro e verifica o histórico
+    clearError('cpf'); 
+    checkCpfInHistory(cpf); // Chama a nova função para verificar histórico
     return true;
 }
 
+// Função de validação de CPF (sem máscara)
 function validarCPF(cpf) {
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -267,6 +272,30 @@ function validarCPF(cpf) {
     resto = (soma * 10) % 11;
     if ((resto === 10) || (resto === 11)) resto = 0;
     return resto === parseInt(cpf.substring(10, 11));
+}
+
+// *** NOVA FUNÇÃO PARA VERIFICAR CPF NO HISTÓRICO LOCAL ***
+function checkCpfInHistory(cpf) {
+    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+    const indexFound = cadastros.findIndex(c => c.cpf.replace(/[^\d]+/g, '') === cpf);
+
+    if (indexFound !== -1) {
+        // Se o CPF foi encontrado no histórico
+        const cadastroEncontrado = cadastros[indexFound];
+        const confirmLoad = confirm(
+            `CPF (${cadastroEncontrado.cpf}) encontrado no histórico para:\n\n` +
+            `Nome: ${cadastroEncontrado.nome}\n` +
+            `Data de Nascimento: ${cadastroEncontrado.dataNasc}\n` +
+            `Sexo: ${cadastroEncontrado.sexo}\n` +
+            `Endereço: ${cadastroEncontrado.endereco}\n` +
+            `Contato: ${cadastroEncontrado.contato}\n\n` +
+            `Deseja carregar esses dados no formulário?`
+        );
+
+        if (confirmLoad) {
+            carregarCadastro(indexFound); // Reutiliza a função carregarCadastro
+        }
+    }
 }
 
 function formatarContato() {
@@ -316,7 +345,7 @@ function validateContact() {
 // Função para coletar todos os dados, incluindo o novo campo "examesNaoListados"
 function coletarDados() {
     const isAgeValid = validateAge();
-    const isCpfValid = validateCpf();
+    const isCpfValid = validateCpfAndCheckHistory(); // Chamada de validação atualizada
     const isContactValid = validateContact();
 
     if (!isAgeValid || !isCpfValid || !isContactValid) {
@@ -331,15 +360,14 @@ function coletarDados() {
     const contato = document.getElementById('contato').value.trim();
     const observacoes = document.getElementById('observacoes').value.trim();
     const exames = Array.from(document.querySelectorAll('.exame:checked')).map(e => e.value);
-    const examesNaoListados = document.getElementById('examesNaoListados').value.trim(); // NOVO CAMPO
+    const examesNaoListados = document.getElementById('examesNaoListados').value.trim();
 
     if (!nome) throw new Error("Preencha o campo: Nome.");
     if (!sexo) throw new Error("Selecione o sexo.");
-    // Agora exames.length pode ser 0 se houver exames não listados
     if (exames.length === 0 && !examesNaoListados) throw new Error("Selecione pelo menos um exame ou preencha 'Acrescentar Exames não Listados'.");
 
 
-    return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados }; // Retorna o novo campo
+    return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
 // FUNÇÃO GERAR PDF com "Exames Adicionais"
@@ -410,9 +438,17 @@ function salvarLocal() {
     try {
         const cadastro = coletarDados();
         let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
-        cadastros.push(cadastro);
+        // Verifica se o CPF já existe para atualizar o registro em vez de duplicar
+        const existingIndex = cadastros.findIndex(c => c.cpf.replace(/[^\d]+/g, '') === cadastro.cpf.replace(/[^\d]+/g, ''));
+        if (existingIndex !== -1) {
+            cadastros[existingIndex] = cadastro; // Atualiza o cadastro existente
+            alert("Cadastro atualizado localmente!");
+        } else {
+            cadastros.push(cadastro); // Adiciona novo cadastro
+            alert("Cadastro salvo localmente!");
+        }
         localStorage.setItem('cadastros', JSON.stringify(cadastros));
-        alert("Cadastro salvo localmente!");
+        
         limparCampos();
     } catch (error) {
         alert(error.message);
@@ -442,7 +478,7 @@ function mostrarHistorico() {
     historicoDiv.innerHTML = html;
 }
 
-// FUNÇÃO PARA CARREGAR CADASTRO DO HISTÓRICO (com novo campo)
+// FUNÇÃO PARA CARREGAR CADASTRO DO HISTÓRICO
 function carregarCadastro(index) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
     const cadastro = cadastros[index];
@@ -462,17 +498,17 @@ function carregarCadastro(index) {
         }
     }
 
-    limparCampos(false);
+    limparCampos(false); // Limpa sem exibir alerta
 
     document.getElementById('nome').value = cadastro.nome;
     document.getElementById('cpf').value = cadastro.cpf;
     document.getElementById('data_nasc').value = cadastro.dataNasc;
     document.getElementById('idade').value = cadastro.idade;
     document.getElementById('sexo').value = cadastro.sexo;
-    document.getElementById('endereco').value = cadastro.endereco; // Endereço agora é textarea
+    document.getElementById('endereco').value = cadastro.endereco;
     document.getElementById('contato').value = cadastro.contato;
     document.getElementById('observacoes').value = cadastro.observacoes;
-    document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || ''; // Carrega o novo campo
+    document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || '';
 
     const allCheckboxes = document.querySelectorAll('.exame');
     allCheckboxes.forEach(cb => cb.checked = false);
@@ -482,7 +518,8 @@ function carregarCadastro(index) {
         if (checkbox) {
             checkbox.checked = true;
         } else {
-            marcarExame(exameNome);
+            // Caso um exame do histórico não esteja na lista atual (ex: lista-de-exames.txt mudou)
+            marcarExame(exameNome); 
         }
     });
 
@@ -490,7 +527,7 @@ function carregarCadastro(index) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO (com novo campo)
+// FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
     document.getElementById('cpf').value = '';
@@ -500,7 +537,7 @@ function limparCampos(showAlert = true) {
     document.getElementById('endereco').value = '';
     document.getElementById('contato').value = '';
     document.getElementById('observacoes').value = '';
-    document.getElementById('examesNaoListados').value = ''; // Limpa o novo campo
+    document.getElementById('examesNaoListados').value = '';
 
     const allCheckboxes = document.querySelectorAll('.exame');
     allCheckboxes.forEach(cb => cb.checked = false);
