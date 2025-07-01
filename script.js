@@ -31,14 +31,14 @@ const dddsValidos = [
 ];
 
 window.onload = () => {
-    carregarExames(); // Chama a função para carregar e exibir a lista
+    carregarExames();
     document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
     document.getElementById('cpf').addEventListener('input', formatarCPF);
     document.getElementById('contato').addEventListener('input', formatarContato);
 
-    // Adiciona os event listeners onblur para validação
+    // Event listeners onblur para validação
     document.getElementById('data_nasc').addEventListener('blur', validateAge);
-    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory); // Modificado para verificar histórico
+    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory); // Chamada para verificar histórico ao sair do campo
     document.getElementById('contato').addEventListener('blur', validateContact);
 };
 
@@ -47,8 +47,8 @@ function carregarExames() {
         .then(response => response.text())
         .then(text => {
             listaExames = text.trim().split('\n').map(e => e.trim());
-            atualizarListaExamesCompleta(); // GARANTE QUE A LISTA COMPLETA É EXIBIDA AO CARREGAR
-            configurarPesquisa(); // Configura a busca APÓS a lista estar carregada
+            atualizarListaExamesCompleta();
+            configurarPesquisa();
         })
         .catch(error => {
             console.error("Erro ao carregar lista-de-exames.txt:", error);
@@ -59,11 +59,10 @@ function carregarExames() {
 // FUNÇÃO PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES
 function atualizarListaExamesCompleta() {
     const container = document.getElementById('exames');
-    container.innerHTML = ""; // Limpa o container antes de popular
+    container.innerHTML = "";
 
     listaExames.forEach(exame => {
         const label = document.createElement('label');
-        // Cria um checkbox para cada exame da lista, inicialmente desmarcado
         label.innerHTML = `<input type="checkbox" class="exame" value="${exame}"> ${exame}`;
         container.appendChild(label);
         container.appendChild(document.createElement('br'));
@@ -106,7 +105,6 @@ function configurarPesquisa() {
         sugestoesBox.style.display = 'block';
     });
 
-    // Oculta sugestões se clicar fora
     document.addEventListener('click', function(event) {
         if (!event.target.closest('#pesquisaExame') && !event.target.closest('#sugestoes')) {
             sugestoesBox.style.display = 'none';
@@ -117,18 +115,12 @@ function configurarPesquisa() {
 // FUNÇÃO MARCAR EXAME: Agora ela busca o checkbox existente na lista completa e o marca
 function marcarExame(exameNome) {
     const examesContainer = document.getElementById('exames');
-    // Encontra o checkbox específico pelo seu valor
     const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
 
     if (checkboxExistente) {
-        // Se o checkbox existe na lista, apenas o marca
         checkboxExistente.checked = true;
-        // Rola a visualização para o checkbox marcado (opcional, para UX)
         checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
-        // Esta parte só seria acionada se, por algum erro, um exame da pesquisa não estivesse na lista inicial.
-        // No cenário ideal, todos os exames da `listaExames` (e, portanto, da busca) já deveriam ter seu checkbox criado por `atualizarListaExamesCompleta()`.
-        // Mas para robustez, adicionamos:
         const label = document.createElement('label');
         label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
         examesContainer.appendChild(label);
@@ -138,7 +130,7 @@ function marcarExame(exameNome) {
 }
 
 
-// Funções de Validação com Feedback Visual (mantidas)
+// Funções de Validação com Feedback Visual
 function showError(elementId, message) {
     const inputElement = document.getElementById(elementId);
     const errorDiv = document.getElementById(`${elementId}-error`);
@@ -157,23 +149,22 @@ function clearError(elementId) {
     }
 }
 
-// FUNÇÃO DE CÁLCULO DE IDADE COM MESES (mantida)
+// FUNÇÃO DE CÁLCULO DE IDADE COM MESES
 function calcularIdade(dataString) {
     const hoje = new Date();
-    const nascimento = new Date(dataString + 'T00:00:00'); // Adiciona T00:00:00 para evitar problemas de fuso horário
+    const nascimento = new Date(dataString + 'T00:00:00');
     if (isNaN(nascimento.getTime()) || nascimento > hoje) return null;
 
     let anos = hoje.getFullYear() - nascimento.getFullYear();
     let meses = hoje.getMonth() - nascimento.getMonth();
 
-    if (hoje.getDate() < nascimento.getDate()) { // Se o dia atual é menor que o dia de nascimento
-        meses--; // Diminui um mês
+    if (hoje.getDate() < nascimento.getDate()) {
+        meses--;
     }
 
-    if (meses < 0) { // Se os meses ficaram negativos (ex: nasceu em nov, hoje é jan)
-        meses += 12; // Adiciona 12 meses
+    if (meses < 0) {
+        meses += 12;
     }
-
 
     return { anos: anos, meses: meses };
 }
@@ -221,7 +212,7 @@ function validateAge() {
     return true;
 }
 
-// Máscaras e Validações de CPF e Contato (mantidas)
+// Máscaras e Validações de CPF e Contato
 function formatarCPF() {
     const inputCPF = document.getElementById('cpf');
     let cpf = inputCPF.value.replace(/\D/g, '');
@@ -237,10 +228,10 @@ function formatarCPF() {
     inputCPF.value = cpf;
 }
 
-// *** NOVA FUNÇÃO PARA VALIDAR CPF E VERIFICAR HISTÓRICO ***
+// MODIFICADO: A validação principal do CPF, incluindo a verificação do histórico.
 function validateCpfAndCheckHistory() {
     const inputCPF = document.getElementById('cpf');
-    const cpf = inputCPF.value.replace(/[^\d]+/g, ''); // Limpa a máscara para validar
+    const cpf = inputCPF.value.replace(/[^\d]+/g, '');
 
     if (cpf.length === 0) {
         clearError('cpf');
@@ -252,13 +243,14 @@ function validateCpfAndCheckHistory() {
         return false;
     }
     
-    // Se o CPF é válido, limpa qualquer erro e verifica o histórico
     clearError('cpf'); 
     checkCpfInHistory(cpf); // Chama a nova função para verificar histórico
-    return true;
+    return true; // CPF válido, permite continuar
 }
 
-// Função de validação de CPF (sem máscara)
+// REMOVIDO: A função validateCpf() original não é mais necessária, pois suas responsabilidades foram absorvidas por validateCpfAndCheckHistory().
+
+// Função de validação de CPF (sem máscara, mantida)
 function validarCPF(cpf) {
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -274,13 +266,12 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// *** NOVA FUNÇÃO PARA VERIFICAR CPF NO HISTÓRICO LOCAL ***
+// FUNÇÃO PARA VERIFICAR CPF NO HISTÓRICO LOCAL
 function checkCpfInHistory(cpf) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
     const indexFound = cadastros.findIndex(c => c.cpf.replace(/[^\d]+/g, '') === cpf);
 
     if (indexFound !== -1) {
-        // Se o CPF foi encontrado no histórico
         const cadastroEncontrado = cadastros[indexFound];
         const confirmLoad = confirm(
             `CPF (${cadastroEncontrado.cpf}) encontrado no histórico para:\n\n` +
@@ -293,10 +284,51 @@ function checkCpfInHistory(cpf) {
         );
 
         if (confirmLoad) {
-            carregarCadastro(indexFound); // Reutiliza a função carregarCadastro
+            // Chamada para carregar apenas os dados básicos no formulário
+            carregarDadosBasicos(cadastroEncontrado);
         }
     }
 }
+
+// NOVA FUNÇÃO: Carrega apenas os dados básicos do paciente
+function carregarDadosBasicos(cadastro) {
+    const nomeAtual = document.getElementById('nome').value.trim();
+    const cpfAtual = document.getElementById('cpf').value.trim();
+
+    // Pergunta se deseja substituir dados se o formulário não estiver vazio
+    if (nomeAtual || cpfAtual) {
+        const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
+        if (!confirmarSubstituicao) {
+            return; // Usuário cancelou a substituição
+        }
+    }
+
+    // Limpa campos básicos antes de preencher
+    document.getElementById('nome').value = '';
+    document.getElementById('data_nasc').value = '';
+    document.getElementById('idade').value = ''; // Idade é readonly, será recalculada
+    document.getElementById('sexo').value = '';
+    document.getElementById('endereco').value = '';
+    document.getElementById('contato').value = '';
+    clearError('data_nasc'); // Limpa erros de validação
+    clearError('cpf');
+    clearError('contato');
+
+    // Preenche apenas os dados básicos
+    document.getElementById('nome').value = cadastro.nome;
+    document.getElementById('cpf').value = cadastro.cpf; // Preenche o CPF formatado
+    document.getElementById('data_nasc').value = cadastro.dataNasc;
+    // Dispara o evento change para recalcular a idade e preencher o campo 'idade'
+    document.getElementById('data_nasc').dispatchEvent(new Event('change'));
+    document.getElementById('sexo').value = cadastro.sexo;
+    document.getElementById('endereco').value = cadastro.endereco;
+    document.getElementById('contato').value = cadastro.contato;
+    
+    // NÂO TOCA: observacoes, exames selecionados, exames nao listados
+    // alert(`Dados básicos de ${cadastro.nome} carregados!`); // Opcional: feedback de carregamento
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo do formulário
+}
+
 
 function formatarContato() {
     const inputContato = document.getElementById('contato');
@@ -342,13 +374,18 @@ function validateContact() {
 }
 
 
-// Função para coletar todos os dados, incluindo o novo campo "examesNaoListados"
+// Função para coletar todos os dados, sem chamar a verificação de histórico
 function coletarDados() {
+    // A validação do CPF aqui deve ser apenas da lógica, sem check de histórico
     const isAgeValid = validateAge();
-    const isCpfValid = validateCpfAndCheckHistory(); // Chamada de validação atualizada
+    const isCpfFormatValid = validarCPF(document.getElementById('cpf').value.replace(/[^\d]+/g, '')); // Valida apenas o formato
     const isContactValid = validateContact();
 
-    if (!isAgeValid || !isCpfValid || !isContactValid) {
+    if (!isAgeValid || !isCpfFormatValid || !isContactValid) {
+        // Exibe erro no campo CPF se o formato for inválido
+        if (!isCpfFormatValid) {
+            showError('cpf', "CPF inválido.");
+        }
         throw new Error("Por favor, corrija os erros nos campos antes de prosseguir.");
     }
 
@@ -370,7 +407,7 @@ function coletarDados() {
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
-// FUNÇÃO GERAR PDF com "Exames Adicionais"
+// FUNÇÃO GERAR PDF (mantida)
 function gerarPDF() {
     try {
         const dados = coletarDados();
@@ -403,12 +440,11 @@ function gerarPDF() {
             });
         }
 
-        // ADICIONAR EXAMES NÃO LISTADOS NO PDF
         if (dados.examesNaoListados) {
-            if (dados.exames.length > 0) { // Adiciona um espaço se já houver exames listados
+            if (dados.exames.length > 0) {
                 y += 10;
-            } else { // Se não houver exames listados, ajusta o y para ficar próximo
-                y = Math.max(y, 92); // Garante que não sobreponha dados do paciente se não houver exames listados
+            } else {
+                y = Math.max(y, 92);
             }
             doc.text("Exames Adicionais:", 10, y);
             y += 7;
@@ -417,7 +453,7 @@ function gerarPDF() {
         }
 
         if (dados.observacoes) {
-            y += 10; // Espaço antes das observações
+            y += 10;
             doc.text("Observações:", 10, y);
             y += 7;
             const splitText = doc.splitTextToSize(dados.observacoes, 180);
@@ -434,19 +470,29 @@ function gerarPDF() {
     }
 }
 
+// FUNÇÃO SALVAR LOCAL (ajustada para atualização de cadastro)
 function salvarLocal() {
     try {
         const cadastro = coletarDados();
         let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
         // Verifica se o CPF já existe para atualizar o registro em vez de duplicar
         const existingIndex = cadastros.findIndex(c => c.cpf.replace(/[^\d]+/g, '') === cadastro.cpf.replace(/[^\d]+/g, ''));
+        
         if (existingIndex !== -1) {
-            cadastros[existingIndex] = cadastro; // Atualiza o cadastro existente
-            alert("Cadastro atualizado localmente!");
+            // Se o CPF existe, pergunta se o usuário quer atualizar
+            const confirmUpdate = confirm(`CPF (${cadastro.cpf}) já existe no histórico. Deseja atualizar o cadastro existente?`);
+            if (confirmUpdate) {
+                cadastros[existingIndex] = cadastro; // Atualiza o cadastro existente
+                alert("Cadastro atualizado localmente!");
+            } else {
+                alert("Atualização cancelada. Cadastro não salvo.");
+                return; // Não prossegue com o salvamento
+            }
         } else {
             cadastros.push(cadastro); // Adiciona novo cadastro
             alert("Cadastro salvo localmente!");
         }
+        
         localStorage.setItem('cadastros', JSON.stringify(cadastros));
         
         limparCampos();
@@ -465,8 +511,9 @@ function mostrarHistorico() {
     }
     let html = "<h3>Histórico de Cadastros</h3><ul>";
     cadastros.forEach((c, index) => {
+        // O onclick aqui chama carregarCadastro (função mais completa)
         html += `<li onclick="carregarCadastro(${index})"><b>${index + 1}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
-        if (c.examesNaoListados) { // Inclui no histórico
+        if (c.examesNaoListados) {
             html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
         }
         if (c.observacoes) {
@@ -478,7 +525,7 @@ function mostrarHistorico() {
     historicoDiv.innerHTML = html;
 }
 
-// FUNÇÃO PARA CARREGAR CADASTRO DO HISTÓRICO
+// FUNÇÃO PARA CARREGAR CADASTRO COMPLETO (usada pelo "Ver Histórico")
 function carregarCadastro(index) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
     const cadastro = cadastros[index];
@@ -492,18 +539,18 @@ function carregarCadastro(index) {
     const cpfAtual = document.getElementById('cpf').value.trim();
 
     if (nomeAtual || cpfAtual) {
-        const confirmar = confirm("Existem dados não salvos no formulário. Deseja substituí-los pelo cadastro do histórico?");
+        const confirmar = confirm("Existem dados não salvos no formulário. Deseja substituí-los pelo cadastro completo do histórico?");
         if (!confirmar) {
             return;
         }
     }
 
-    limparCampos(false); // Limpa sem exibir alerta
+    limparCampos(false); // Limpa todos os campos sem alert
 
     document.getElementById('nome').value = cadastro.nome;
     document.getElementById('cpf').value = cadastro.cpf;
     document.getElementById('data_nasc').value = cadastro.dataNasc;
-    document.getElementById('idade').value = cadastro.idade;
+    document.getElementById('idade').value = cadastro.idade; // Idade já formatada
     document.getElementById('sexo').value = cadastro.sexo;
     document.getElementById('endereco').value = cadastro.endereco;
     document.getElementById('contato').value = cadastro.contato;
@@ -511,21 +558,23 @@ function carregarCadastro(index) {
     document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || '';
 
     const allCheckboxes = document.querySelectorAll('.exame');
-    allCheckboxes.forEach(cb => cb.checked = false);
+    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos os exames antes de preencher
 
+    // Marca os exames do histórico
     cadastro.exames.forEach(exameNome => {
         const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
         if (checkbox) {
             checkbox.checked = true;
         } else {
-            // Caso um exame do histórico não esteja na lista atual (ex: lista-de-exames.txt mudou)
-            marcarExame(exameNome); 
+            // Se o exame do histórico não está na lista atual de exames, adiciona dinamicamente
+            marcarExame(exameNome);
         }
     });
 
     alert(`Cadastro de ${cadastro.nome} carregado com sucesso!`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
 
 // FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO
 function limparCampos(showAlert = true) {
