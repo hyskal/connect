@@ -1,7 +1,10 @@
 const { jsPDF } = window.jspdf;
 let listaExames = [];
 
-// Lista de DDIs brasileiros válidos
+// Definir a senha para limpar o histórico
+const SENHA_LIMPAR_HISTORICO = "sislab"; // Você pode alterar esta senha
+
+// Lista de DDIs brasileiros válidos (mantida)
 const dddsValidos = [
     11, 12, 13, 14, 15, 16, 17, 18, 19, // São Paulo
     21, 22, 24, // Rio de Janeiro
@@ -36,9 +39,9 @@ window.onload = () => {
     document.getElementById('cpf').addEventListener('input', formatarCPF);
     document.getElementById('contato').addEventListener('input', formatarContato);
 
-    // Event listeners onblur para validação
+    // Adiciona os event listeners onblur para validação
     document.getElementById('data_nasc').addEventListener('blur', validateAge);
-    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory); // Chamada para verificar histórico ao sair do campo
+    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
     document.getElementById('contato').addEventListener('blur', validateContact);
 };
 
@@ -56,7 +59,6 @@ function carregarExames() {
         });
 }
 
-// FUNÇÃO PARA EXIBIR TODOS OS EXAMES COMO CHECKBOXES
 function atualizarListaExamesCompleta() {
     const container = document.getElementById('exames');
     container.innerHTML = "";
@@ -112,7 +114,6 @@ function configurarPesquisa() {
     });
 }
 
-// FUNÇÃO MARCAR EXAME: Agora ela busca o checkbox existente na lista completa e o marca
 function marcarExame(exameNome) {
     const examesContainer = document.getElementById('exames');
     const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
@@ -130,7 +131,6 @@ function marcarExame(exameNome) {
 }
 
 
-// Funções de Validação com Feedback Visual
 function showError(elementId, message) {
     const inputElement = document.getElementById(elementId);
     const errorDiv = document.getElementById(`${elementId}-error`);
@@ -149,7 +149,6 @@ function clearError(elementId) {
     }
 }
 
-// FUNÇÃO DE CÁLCULO DE IDADE COM MESES
 function calcularIdade(dataString) {
     const hoje = new Date();
     const nascimento = new Date(dataString + 'T00:00:00');
@@ -212,7 +211,6 @@ function validateAge() {
     return true;
 }
 
-// Máscaras e Validações de CPF e Contato
 function formatarCPF() {
     const inputCPF = document.getElementById('cpf');
     let cpf = inputCPF.value.replace(/\D/g, '');
@@ -228,7 +226,6 @@ function formatarCPF() {
     inputCPF.value = cpf;
 }
 
-// MODIFICADO: A validação principal do CPF, incluindo a verificação do histórico.
 function validateCpfAndCheckHistory() {
     const inputCPF = document.getElementById('cpf');
     const cpf = inputCPF.value.replace(/[^\d]+/g, '');
@@ -244,13 +241,10 @@ function validateCpfAndCheckHistory() {
     }
     
     clearError('cpf'); 
-    checkCpfInHistory(cpf); // Chama a nova função para verificar histórico
-    return true; // CPF válido, permite continuar
+    checkCpfInHistory(cpf);
+    return true;
 }
 
-// REMOVIDO: A função validateCpf() original não é mais necessária, pois suas responsabilidades foram absorvidas por validateCpfAndCheckHistory().
-
-// Função de validação de CPF (sem máscara, mantida)
 function validarCPF(cpf) {
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -266,67 +260,64 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// FUNÇÃO PARA VERIFICAR CPF NO HISTÓRICO LOCAL
+// FUNÇÃO PARA VERIFICAR CPF NO HISTÓRICO LOCAL E CARREGAR O ÚLTIMO
 function checkCpfInHistory(cpf) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
-    const indexFound = cadastros.findIndex(c => c.cpf.replace(/[^\d]+/g, '') === cpf);
+    
+    const cadastrosComCpf = cadastros
+        .map((cad, index) => ({ ...cad, originalIndex: index }))
+        .filter(cad => cad.cpf.replace(/[^\d]+/g, '') === cpf)
+        .sort((a, b) => b.originalIndex - a.originalIndex);
 
-    if (indexFound !== -1) {
-        const cadastroEncontrado = cadastros[indexFound];
+    if (cadastrosComCpf.length > 0) {
+        const ultimoCadastro = cadastrosComCpf[0];
         const confirmLoad = confirm(
-            `CPF (${cadastroEncontrado.cpf}) encontrado no histórico para:\n\n` +
-            `Nome: ${cadastroEncontrado.nome}\n` +
-            `Data de Nascimento: ${cadastroEncontrado.dataNasc}\n` +
-            `Sexo: ${cadastroEncontrado.sexo}\n` +
-            `Endereço: ${cadastroEncontrado.endereco}\n` +
-            `Contato: ${cadastroEncontrado.contato}\n\n` +
-            `Deseja carregar esses dados no formulário?`
+            `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
+            `Nome: ${ultimoCadastro.nome}\n` +
+            `Data de Nascimento: ${ultimoCadastro.dataNasc}\n` +
+            `Sexo: ${ultimoCadastro.sexo}\n` +
+            `Endereço: ${ultimoCadastro.endereco}\n` +
+            `Contato: ${ultimoCadastro.contato}\n\n` +
+            `Deseja carregar esses dados básicos no formulário?`
         );
 
         if (confirmLoad) {
-            // Chamada para carregar apenas os dados básicos no formulário
-            carregarDadosBasicos(cadastroEncontrado);
+            carregarDadosBasicos(ultimoCadastro);
         }
     }
 }
 
-// NOVA FUNÇÃO: Carrega apenas os dados básicos do paciente
+// Carrega apenas os dados básicos do paciente
 function carregarDadosBasicos(cadastro) {
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
 
-    // Pergunta se deseja substituir dados se o formulário não estiver vazio
     if (nomeAtual || cpfAtual) {
         const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
         if (!confirmarSubstituicao) {
-            return; // Usuário cancelou a substituição
+            return;
         }
     }
 
-    // Limpa campos básicos antes de preencher
     document.getElementById('nome').value = '';
     document.getElementById('data_nasc').value = '';
-    document.getElementById('idade').value = ''; // Idade é readonly, será recalculada
+    document.getElementById('idade').value = '';
     document.getElementById('sexo').value = '';
     document.getElementById('endereco').value = '';
     document.getElementById('contato').value = '';
-    clearError('data_nasc'); // Limpa erros de validação
+    clearError('data_nasc');
     clearError('cpf');
     clearError('contato');
 
-    // Preenche apenas os dados básicos
     document.getElementById('nome').value = cadastro.nome;
-    document.getElementById('cpf').value = cadastro.cpf; // Preenche o CPF formatado
+    document.getElementById('cpf').value = cadastro.cpf;
     document.getElementById('data_nasc').value = cadastro.dataNasc;
-    // Dispara o evento change para recalcular a idade e preencher o campo 'idade'
     document.getElementById('data_nasc').dispatchEvent(new Event('change'));
     document.getElementById('sexo').value = cadastro.sexo;
     document.getElementById('endereco').value = cadastro.endereco;
     document.getElementById('contato').value = cadastro.contato;
     
-    // NÂO TOCA: observacoes, exames selecionados, exames nao listados
-    // alert(`Dados básicos de ${cadastro.nome} carregados!`); // Opcional: feedback de carregamento
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo do formulário
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 
@@ -374,18 +365,17 @@ function validateContact() {
 }
 
 
-// Função para coletar todos os dados, sem chamar a verificação de histórico
 function coletarDados() {
-    // A validação do CPF aqui deve ser apenas da lógica, sem check de histórico
     const isAgeValid = validateAge();
-    const isCpfFormatValid = validarCPF(document.getElementById('cpf').value.replace(/[^\d]+/g, '')); // Valida apenas o formato
+    const cpfLimpo = document.getElementById('cpf').value.replace(/[^\d]+/g, '');
+    const isCpfFormatValid = validarCPF(cpfLimpo);
     const isContactValid = validateContact();
 
+    if (!isCpfFormatValid) {
+        showError('cpf', "CPF inválido.");
+    }
+
     if (!isAgeValid || !isCpfFormatValid || !isContactValid) {
-        // Exibe erro no campo CPF se o formato for inválido
-        if (!isCpfFormatValid) {
-            showError('cpf', "CPF inválido.");
-        }
         throw new Error("Por favor, corrija os erros nos campos antes de prosseguir.");
     }
 
@@ -407,7 +397,6 @@ function coletarDados() {
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
-// FUNÇÃO GERAR PDF (mantida)
 function gerarPDF() {
     try {
         const dados = coletarDados();
@@ -429,7 +418,7 @@ function gerarPDF() {
         doc.text(`Endereço: ${dados.endereco}`, 10, 75);
         doc.text(`Contato: ${dados.contato}`, 10, 82);
         
-        let y = 92; // Posição inicial para exames
+        let y = 92;
 
         if (dados.exames.length > 0) {
             doc.text("Exames Selecionados:", 10, y);
@@ -470,32 +459,18 @@ function gerarPDF() {
     }
 }
 
-// FUNÇÃO SALVAR LOCAL (ajustada para atualização de cadastro)
 function salvarLocal() {
     try {
         const cadastro = coletarDados();
         let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
-        // Verifica se o CPF já existe para atualizar o registro em vez de duplicar
-        const existingIndex = cadastros.findIndex(c => c.cpf.replace(/[^\d]+/g, '') === cadastro.cpf.replace(/[^\d]+/g, ''));
         
-        if (existingIndex !== -1) {
-            // Se o CPF existe, pergunta se o usuário quer atualizar
-            const confirmUpdate = confirm(`CPF (${cadastro.cpf}) já existe no histórico. Deseja atualizar o cadastro existente?`);
-            if (confirmUpdate) {
-                cadastros[existingIndex] = cadastro; // Atualiza o cadastro existente
-                alert("Cadastro atualizado localmente!");
-            } else {
-                alert("Atualização cancelada. Cadastro não salvo.");
-                return; // Não prossegue com o salvamento
-            }
-        } else {
-            cadastros.push(cadastro); // Adiciona novo cadastro
-            alert("Cadastro salvo localmente!");
-        }
-        
+        // Sempre adiciona o novo cadastro, sem verificar ou perguntar sobre atualização.
+        cadastros.push(cadastro); 
         localStorage.setItem('cadastros', JSON.stringify(cadastros));
         
+        alert("Cadastro salvo localmente!");
         limparCampos();
+
     } catch (error) {
         alert(error.message);
         console.error("Erro ao salvar localmente:", error);
@@ -511,7 +486,6 @@ function mostrarHistorico() {
     }
     let html = "<h3>Histórico de Cadastros</h3><ul>";
     cadastros.forEach((c, index) => {
-        // O onclick aqui chama carregarCadastro (função mais completa)
         html += `<li onclick="carregarCadastro(${index})"><b>${index + 1}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
         if (c.examesNaoListados) {
             html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
@@ -525,7 +499,6 @@ function mostrarHistorico() {
     historicoDiv.innerHTML = html;
 }
 
-// FUNÇÃO PARA CARREGAR CADASTRO COMPLETO (usada pelo "Ver Histórico")
 function carregarCadastro(index) {
     const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
     const cadastro = cadastros[index];
@@ -545,12 +518,12 @@ function carregarCadastro(index) {
         }
     }
 
-    limparCampos(false); // Limpa todos os campos sem alert
+    limparCampos(false);
 
     document.getElementById('nome').value = cadastro.nome;
     document.getElementById('cpf').value = cadastro.cpf;
     document.getElementById('data_nasc').value = cadastro.dataNasc;
-    document.getElementById('idade').value = cadastro.idade; // Idade já formatada
+    document.getElementById('idade').value = cadastro.idade;
     document.getElementById('sexo').value = cadastro.sexo;
     document.getElementById('endereco').value = cadastro.endereco;
     document.getElementById('contato').value = cadastro.contato;
@@ -558,16 +531,14 @@ function carregarCadastro(index) {
     document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || '';
 
     const allCheckboxes = document.querySelectorAll('.exame');
-    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos os exames antes de preencher
+    allCheckboxes.forEach(cb => cb.checked = false);
 
-    // Marca os exames do histórico
     cadastro.exames.forEach(exameNome => {
         const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
         if (checkbox) {
             checkbox.checked = true;
         } else {
-            // Se o exame do histórico não está na lista atual de exames, adiciona dinamicamente
-            marcarExame(exameNome);
+            marcarExame(exameNome); 
         }
     });
 
@@ -576,7 +547,6 @@ function carregarCadastro(index) {
 }
 
 
-// FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
     document.getElementById('cpf').value = '';
@@ -604,12 +574,97 @@ function limparCampos(showAlert = true) {
     }
 }
 
-
+// *** NOVA FUNÇÃO: Limpar Histórico com Senha ***
 function limparHistorico() {
-    localStorage.removeItem('cadastros');
-    alert('Histórico apagado!');
-    document.getElementById('historico').innerHTML = "";
+    const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
+    if (senhaDigitada === null) { // Usuário clicou em cancelar no prompt
+        return;
+    }
+    if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
+        localStorage.removeItem('cadastros');
+        alert('Histórico apagado com sucesso!');
+        document.getElementById('historico').innerHTML = ""; // Limpa a exibição do histórico na tela
+    } else {
+        alert('Senha incorreta. Histórico não foi limpo.');
+    }
 }
+
+// *** NOVA FUNÇÃO: Imprimir Histórico ***
+function imprimirHistorico() {
+    const historicoDiv = document.getElementById('historico');
+    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+
+    if (cadastros.length === 0) {
+        alert("Não há histórico para imprimir.");
+        return;
+    }
+
+    let printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Histórico de Cadastros - Impressão</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1 { text-align: center; color: #1A2B4C; }
+                ul { list-style-type: none; padding: 0; }
+                li {
+                    border: 1px solid #ddd;
+                    padding: 10px;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
+                    background-color: #f9f9f9;
+                }
+                li b { color: #333; }
+                li p { margin: 5px 0; }
+            </style>
+        </head>
+        <body>
+            <h1>Histórico de Cadastros do Laboratório CETEP</h1>
+            <ul>
+    `;
+
+    cadastros.forEach((c, index) => {
+        printContent += `
+            <li>
+                <b>Protocolo ${index + 1}</b><br>
+                <p><strong>Nome:</strong> ${c.nome}</p>
+                <p><strong>CPF:</strong> ${c.cpf}</p>
+                <p><strong>Data de Nasc.:</strong> ${c.dataNasc}</p>
+                <p><strong>Idade:</strong> ${c.idade}</p>
+                <p><strong>Sexo:</strong> ${c.sexo}</p>
+                <p><strong>Endereço:</strong> ${c.endereco}</p>
+                <p><strong>Contato:</strong> ${c.contato}</p>
+                <p><strong>Exames Selecionados:</strong> ${c.exames.join(", ")}</p>
+        `;
+        if (c.examesNaoListados) {
+            printContent += `<p><strong>Exames Adicionais:</strong> ${c.examesNaoListados}</p>`;
+        }
+        if (c.observacoes) {
+            printContent += `<p><strong>Observações:</strong> ${c.observacoes}</p>`;
+        }
+        printContent += `</li>`;
+    });
+
+    printContent += `
+            </ul>
+        </body>
+        </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.open();
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus(); // Foca na nova janela
+
+    // Usar setTimeout para garantir que o conteúdo seja renderizado antes de imprimir
+    printWindow.onload = function() {
+        printWindow.print();
+        // printWindow.close(); // Opcional: fechar a janela após a impressão
+    };
+}
+
 
 function enviarParaPlanilha() {
     try {
