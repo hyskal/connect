@@ -71,6 +71,7 @@ const dddsValidos = [
     98, 99
 ];
 
+// Garante que o código é executado após o carregamento completo da página
 window.onload = () => {
     carregarExames();
     document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
@@ -87,287 +88,302 @@ window.onload = () => {
         }
     });
 
-    // Removidos listeners beforeprint e afterprint para o rodapé da página HTML
-    // O rodapé será inserido diretamente no PDF gerado pela função imprimirTela()
 };
 
-// Removidas as funções preparePrintFooter e clearPrintFooter
-// Elas não são mais necessárias, pois o rodapé será inserido no PDF diretamente.
-
-
+// Função para carregar a lista de exames da Gist ou do arquivo local 
 function carregarExames() {
-    const timestamp = new Date().getTime();
-    const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
+    // Adiciona um timestamp para evitar cache 
+    const timestamp = new Date().getTime(); [cite: 1]
+    const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`; [cite: 1]
 
     fetch(gistRawUrl)
         .then(response => {
             if (!response.ok) {
-                console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
+                // Se a Gist não puder ser carregada, tenta o arquivo local como fallback 
+                console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`); [cite: 1]
+                // Adiciona timestamp também ao fallback para evitar cache local 
                 return fetch(`lista-de-exames.txt?t=${timestamp}`); 
             }
             return response.text();
         })
         .then(text => {
-            listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-            atualizarListaExamesCompleta();
-            configurarPesquisa();
+            // Processa o texto, removendo espaços e linhas vazias 
+            listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== ''); 
+            atualizarListaExamesCompleta(); [cite: 1]
+            configurarPesquisa(); [cite: 1]
         })
         .catch(error => {
-            console.error("Erro ao carregar lista de exames:", error);
-            alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
+            console.error("Erro ao carregar lista de exames:", error); [cite: 1]
+            alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local."); [cite: 1]
         });
 }
 
+// Função para exibir todos os exames como checkboxes para seleção manual 
 function atualizarListaExamesCompleta() {
-    const container = document.getElementById('exames');
-    container.innerHTML = "";
+    const container = document.getElementById('exames'); [cite: 1]
+    container.innerHTML = ""; [cite: 1]
 
     listaExames.forEach(exame => {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" class="exame" value="${exame}"> ${exame}`;
-        container.appendChild(label);
-        container.appendChild(document.createElement('br'));
+        const label = document.createElement('label'); [cite: 1]
+        label.innerHTML = `<input type="checkbox" class="exame" value="${exame}"> ${exame}`; [cite: 1]
+        container.appendChild(label); [cite: 1]
+        container.appendChild(document.createElement('br')); [cite: 1]
     });
-    atualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay(); [cite: 1]
 }
 
+// Função para configurar a barra de pesquisa de exames 
 function configurarPesquisa() {
-    const inputPesquisa = document.getElementById('pesquisaExame');
-    const sugestoesBox = document.getElementById('sugestoes');
+    const inputPesquisa = document.getElementById('pesquisaExame'); [cite: 1]
+    const sugestoesBox = document.getElementById('sugestoes'); [cite: 1]
 
     inputPesquisa.addEventListener('input', () => {
-        const termo = inputPesquisa.value.trim().toLowerCase();
-        sugestoesBox.innerHTML = "";
+        const termo = inputPesquisa.value.trim().toLowerCase(); [cite: 1]
+        sugestoesBox.innerHTML = ""; [cite: 1]
 
         if (termo.length === 0) {
-            sugestoesBox.style.display = 'none';
-            return;
+            sugestoesBox.style.display = 'none'; [cite: 1]
+            return; [cite: 1]
         }
 
         const filtrados = listaExames.filter(exame =>
             exame.toLowerCase().includes(termo)
-        );
+        ); [cite: 1]
 
         if (filtrados.length === 0) {
-            sugestoesBox.style.display = 'none';
-            return;
+            sugestoesBox.style.display = 'none'; [cite: 1]
+            return; [cite: 1]
         }
 
         filtrados.forEach(exame => {
-            const div = document.createElement('div');
-            div.textContent = exame;
+            const div = document.createElement('div'); [cite: 1]
+            div.textContent = exame; [cite: 1]
             div.addEventListener('click', () => {
-                marcarExame(exame);
-                inputPesquisa.value = '';
-                sugestoesBox.style.display = 'none';
+                marcarExame(exame); [cite: 1]
+                inputPesquisa.value = ''; [cite: 1]
+                sugestoesBox.style.display = 'none'; [cite: 1]
             });
-            sugestoesBox.appendChild(div);
+            sugestoesBox.appendChild(div); [cite: 1]
         });
 
-        sugestoesBox.style.display = 'block';
+        sugestoesBox.style.display = 'block'; [cite: 1]
     });
 
     document.addEventListener('click', function(event) {
         if (!event.target.closest('#pesquisaExame') && !event.target.closest('#sugestoes')) {
-            sugestoesBox.style.display = 'none';
+            sugestoesBox.style.display = 'none'; [cite: 1]
         }
     });
 }
 
+// Função para marcar um exame na lista de checkboxes 
 function marcarExame(exameNome) {
-    const examesContainer = document.getElementById('exames');
-    const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
+    const examesContainer = document.getElementById('exames'); [cite: 1]
+    const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`); [cite: 1]
 
     if (checkboxExistente) {
-        checkboxExistente.checked = true;
-        checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        checkboxExistente.checked = true; [cite: 1]
+        checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); [cite: 1]
     } else {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
-        examesContainer.appendChild(label);
-        examesContainer.appendChild(document.createElement('br'));
-        label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const label = document.createElement('label'); [cite: 1]
+        label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`; [cite: 1]
+        examesContainer.appendChild(label); [cite: 1]
+        examesContainer.appendChild(document.createElement('br')); [cite: 1]
+        label.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); [cite: 1]
     }
-    atualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay(); [cite: 1]
 }
 
+// Função para atualizar a lista de exames selecionados na terceira coluna 
 function atualizarExamesSelecionadosDisplay() {
-    const displayContainer = document.getElementById('examesSelecionadosDisplay');
-    const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
+    const displayContainer = document.getElementById('examesSelecionadosDisplay'); [cite: 1]
+    const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked')); [cite: 1]
     
-    displayContainer.innerHTML = "";
+    displayContainer.innerHTML = ""; [cite: 1]
 
     if (selectedExams.length === 0) {
-        displayContainer.innerHTML = "<p>Nenhum exame selecionado.</p>";
-        return;
+        displayContainer.innerHTML = "<p>Nenhum exame selecionado.</p>"; [cite: 1]
+        return; [cite: 1]
     }
 
     selectedExams.forEach(checkbox => {
-        const exameNome = checkbox.value;
-        const displayItem = document.createElement('div');
-        displayItem.classList.add('display-item');
+        const exameNome = checkbox.value; [cite: 1]
+        const displayItem = document.createElement('div'); [cite: 1]
+        displayItem.classList.add('display-item'); [cite: 1]
         displayItem.innerHTML = `
             <span>${exameNome}</span>
             <button class="remove-item-btn" data-exame="${exameNome}">-</button>
-        `;
-        displayContainer.appendChild(displayItem);
+        `; [cite: 1]
+        displayContainer.appendChild(displayItem); [cite: 1]
     });
 
     displayContainer.querySelectorAll('.remove-item-btn').forEach(button => {
         button.addEventListener('click', (event) => {
-            const exameParaRemover = event.target.dataset.exame;
-            removerExameDisplay(exameParaRemover);
+            const exameParaRemover = event.target.dataset.exame; [cite: 1]
+            removerExameDisplay(exameParaRemover); [cite: 1]
         });
     });
 }
 
+// Função para remover um exame da lista de exibição e desmarcar seu checkbox 
 function removerExameDisplay(exameNome) {
-    const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
+    const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`); [cite: 1]
     if (checkbox) {
-        checkbox.checked = false;
+        checkbox.checked = false; [cite: 1]
     }
-    atualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay(); [cite: 1]
 }
 
+// Função auxiliar para exibir mensagens de erro visualmente 
 function showError(elementId, message) {
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
+    const inputElement = document.getElementById(elementId); [cite: 1]
+    const errorDiv = document.getElementById(`${elementId}-error`); [cite: 1]
     if (inputElement && errorDiv) {
-        inputElement.classList.add('error');
-        errorDiv.textContent = message;
+        inputElement.classList.add('error'); [cite: 1]
+        errorDiv.textContent = message; [cite: 1]
     }
 }
 
+// Função auxiliar para limpar mensagens de erro visualmente 
 function clearError(elementId) {
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
+    const inputElement = document.getElementById(elementId); [cite: 1]
+    const errorDiv = document.getElementById(`${elementId}-error`); [cite: 1]
     if (inputElement && errorDiv) {
-        inputElement.classList.remove('error');
-        errorDiv.textContent = '';
+        inputElement.classList.remove('error'); [cite: 1]
+        errorDiv.textContent = ''; [cite: 1]
     }
 }
 
+// Função para calcular a idade em anos e meses 
 function calcularIdade(dataString) {
-    const hoje = new Date();
-    const nascimento = new Date(dataString + 'T00:00:00');
-    if (isNaN(nascimento.getTime()) || nascimento > hoje) return null;
+    const hoje = new Date(); [cite: 1]
+    const nascimento = new Date(dataString + 'T00:00:00'); [cite: 1]
+    if (isNaN(nascimento.getTime()) || nascimento > hoje) return null; [cite: 1]
 
-    let anos = hoje.getFullYear() - nascimento.getFullYear();
-    let meses = hoje.getMonth() - nascimento.getMonth();
+    let anos = hoje.getFullYear() - nascimento.getFullYear(); [cite: 1]
+    let meses = hoje.getMonth() - nascimento.getMonth(); [cite: 1]
 
-    if (hoje.getDate() < nascimento.getDate()) {
-        meses--;
+    if (hoje.getDate() < nascimento.getDate()) { 
+        meses--; [cite: 1]
     }
 
-    if (meses < 0) {
-        meses += 12;
+    if (meses < 0) { 
+        meses += 12; [cite: 1]
     }
 
-    return { anos: anos, meses: meses };
+    return { anos: anos, meses: meses }; [cite: 1]
 }
 
+// Função para validar a data de nascimento (não pode ser no futuro) 
 function validarDataNascimento(dataString) {
-    const nascimento = new Date(dataString + 'T00:00:00');
-    const hoje = new Date();
-    return !isNaN(nascimento.getTime()) && nascimento <= hoje;
+    const nascimento = new Date(dataString + 'T00:00:00'); [cite: 1]
+    const hoje = new Date(); [cite: 1]
+    return !isNaN(nascimento.getTime()) && nascimento <= hoje; [cite: 1]
 }
 
+// Disparada ao mudar a data de nascimento para recalcular e validar idade 
 function atualizarIdade() {
-    validateAge();
+    validateAge(); [cite: 1]
 }
 
+// Valida a idade e atualiza o campo Idade 
 function validateAge() {
-    const dataNascInput = document.getElementById('data_nasc');
-    const dataNasc = dataNascInput.value;
-    const idadeInput = document.getElementById('idade');
+    const dataNascInput = document.getElementById('data_nasc'); [cite: 1]
+    const dataNasc = dataNascInput.value; [cite: 1]
+    const idadeInput = document.getElementById('idade'); [cite: 1]
 
     if (!dataNasc) {
-        clearError('data_nasc');
-        idadeInput.value = "";
-        return true;
+        clearError('data_nasc'); [cite: 1]
+        idadeInput.value = ""; [cite: 1]
+        return true; [cite: 1]
     }
 
     if (!validarDataNascimento(dataNasc)) {
-        showError('data_nasc', "Data de nascimento inválida ou no futuro.");
-        idadeInput.value = "";
-        return false;
+        showError('data_nasc', "Data de nascimento inválida ou no futuro."); [cite: 1]
+        idadeInput.value = ""; [cite: 1]
+        return false; [cite: 1]
     }
 
-    const idadeObj = calcularIdade(dataNasc);
+    const idadeObj = calcularIdade(dataNasc); [cite: 1]
     if (idadeObj === null) {
-        showError('data_nasc', "Data de nascimento no futuro.");
-        idadeInput.value = "";
-        return false;
+        showError('data_nasc', "Data de nascimento no futuro."); [cite: 1]
+        idadeInput.value = ""; [cite: 1]
+        return false; [cite: 1]
     }
 
-    let idadeTexto = `${idadeObj.anos} anos`;
+    let idadeTexto = `${idadeObj.anos} anos`; [cite: 1]
     if (idadeObj.meses > 0) {
-        idadeTexto += ` e ${idadeObj.meses} meses`;
+        idadeTexto += ` e ${idadeObj.meses} meses`; [cite: 1]
     }
-    idadeInput.value = idadeTexto;
-    clearError('data_nasc');
-    return true;
+    idadeInput.value = idadeTexto; [cite: 1]
+    clearError('data_nasc'); [cite: 1]
+    return true; [cite: 1]
 }
 
+// Máscara automática para o campo CPF 
 function formatarCPF() {
-    const inputCPF = document.getElementById('cpf');
-    let cpf = inputCPF.value.replace(/\D/g, '');
-    if (cpf.length > 11) cpf = cpf.substring(0, 11);
+    const inputCPF = document.getElementById('cpf'); [cite: 1]
+    let cpf = inputCPF.value.replace(/\D/g, ''); [cite: 1]
+    if (cpf.length > 11) cpf = cpf.substring(0, 11); [cite: 1]
 
     if (cpf.length > 9) {
-        cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4'); [cite: 1]
     } else if (cpf.length > 6) {
-        cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+        cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3'); [cite: 1]
     } else if (cpf.length > 3) {
-        cpf = cpf.replace(/(\d{3})(\d{3})/, '$1.$2');
+        cpf = cpf.replace(/(\d{3})(\d{3})/, '$1.$2'); [cite: 1]
     }
-    inputCPF.value = cpf;
+    inputCPF.value = cpf; [cite: 1]
 }
 
+// Valida o CPF e verifica o histórico local (disparado ao sair do campo CPF) 
 function validateCpfAndCheckHistory() {
-    const inputCPF = document.getElementById('cpf');
-    const cpf = inputCPF.value.replace(/\D/g, '');
+    const inputCPF = document.getElementById('cpf'); [cite: 1]
+    const cpf = inputCPF.value.replace(/\D/g, ''); [cite: 1]
 
     if (cpf.length === 0) {
-        clearError('cpf');
-        return true;
+        clearError('cpf'); [cite: 1]
+        return true; [cite: 1]
     }
 
     if (!validarCPF(cpf)) {
-        showError('cpf', "CPF inválido.");
-        return false;
+        showError('cpf', "CPF inválido."); [cite: 1]
+        return false; [cite: 1]
     }
     
-    clearError('cpf'); 
-    checkCpfInHistory(cpf);
-    return true;
+    clearError('cpf'); [cite: 1] 
+    checkCpfInHistory(cpf); [cite: 1]
+    return true; [cite: 1]
 }
 
+// Função de validação da lógica do CPF 
 function validarCPF(cpf) {
-    cpf = cpf.replace(/[^\d]+/g, '');
-    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-    let soma = 0, resto;
-    for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
-    resto = (soma * 10) % 11;
-    if ((resto === 10) || (resto === 11)) resto = 0;
-    if (resto !== parseInt(cpf.substring(9, 10))) return false;
-    soma = 0;
-    for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
-    resto = (soma * 10) % 11;
-    if ((resto === 10) || (resto === 11)) resto = 0;
-    return resto === parseInt(cpf.substring(10, 11));
+    cpf = cpf.replace(/[^\d]+/g, ''); [cite: 1]
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false; [cite: 1]
+    let soma = 0, resto; [cite: 1]
+    for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i); [cite: 1]
+    resto = (soma * 10) % 11; [cite: 1]
+    if ((resto === 10) || (resto === 11)) resto = 0; [cite: 1]
+    if (resto !== parseInt(cpf.substring(9, 10))) return false; [cite: 1]
+    soma = 0; [cite: 1]
+    for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i); [cite: 1]
+    resto = (soma * 10) % 11; [cite: 1]
+    if ((resto === 10) || (resto === 11)) resto = 0; [cite: 1]
+    return resto === parseInt(cpf.substring(10, 11)); [cite: 1]
 }
 
+// Verifica o CPF no histórico local e sugere carregar o último cadastro 
 function checkCpfInHistory(cpf) {
-    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || []; [cite: 1]
     
+    // Filtra e ordena os cadastros pelo CPF, pegando o mais recente 
     const cadastrosComCpf = cadastros
-        .map((cad, index) => ({ ...cad, originalIndex: index }))
-        .filter(cad => cad.cpf.replace(/\D/g, '') === cpf)
-        .sort((a, b) => b.originalIndex - a.originalIndex);
+        .map((cad, index) => ({ ...cad, originalIndex: index })) [cite: 1]
+        .filter(cad => cad.cpf.replace(/\D/g, '') === cpf) [cite: 1]
+        .sort((a, b) => b.originalIndex - a.originalIndex); [cite: 1]
 
     if (cadastrosComCpf.length > 0) {
-        const ultimoCadastro = cadastrosComCpf[0];
+        const ultimoCadastro = cadastrosComCpf[0]; [cite: 1]
         const confirmLoad = confirm(
             `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
             `Nome: ${ultimoCadastro.nome}\n` +
@@ -376,528 +392,399 @@ function checkCpfInHistory(cpf) {
             `Endereço: ${ultimoCadastro.endereco}\n` +
             `Contato: ${ultimoCadastro.contato}\n\n` +
             `Deseja carregar esses dados básicos no formulário?`
-        );
+        ); [cite: 1]
 
         if (confirmLoad) {
-            carregarDadosBasicos(ultimoCadastro);
+            carregarDadosBasicos(ultimoCadastro); [cite: 1]
         }
     }
 }
 
+// Carrega apenas os dados básicos do paciente no formulário (Nome, Data Nasc., Sexo, Endereço, Contato) 
 function carregarDadosBasicos(cadastro) {
-    const nomeAtual = document.getElementById('nome').value.trim();
-    const cpfAtual = document.getElementById('cpf').value.trim();
+    const nomeAtual = document.getElementById('nome').value.trim(); [cite: 1]
+    const cpfAtual = document.getElementById('cpf').value.trim(); [cite: 1]
 
     if (nomeAtual || cpfAtual) {
-        const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
+        const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?"); [cite: 1]
         if (!confirmarSubstituicao) {
-            return;
+            return; [cite: 1]
         }
     }
 
-    document.getElementById('nome').value = '';
-    document.getElementById('data_nasc').value = '';
-    document.getElementById('idade').value = '';
-    document.getElementById('sexo').value = '';
-    document.getElementById('endereco').value = '';
-    document.getElementById('contato').value = '';
-    clearError('data_nasc');
-    clearError('cpf');
-    clearError('contato');
+    document.getElementById('nome').value = ''; [cite: 1]
+    document.getElementById('data_nasc').value = ''; [cite: 1]
+    document.getElementById('idade').value = ''; [cite: 1]
+    document.getElementById('sexo').value = ''; [cite: 1]
+    document.getElementById('endereco').value = ''; [cite: 1]
+    document.getElementById('contato').value = ''; [cite: 1]
+    clearError('data_nasc'); [cite: 1]
+    clearError('cpf'); [cite: 1]
+    clearError('contato'); [cite: 1]
 
-    document.getElementById('nome').value = cadastro.nome;
-    document.getElementById('cpf').value = cadastro.cpf;
-    document.getElementById('data_nasc').value = cadastro.dataNasc;
-    document.getElementById('data_nasc').dispatchEvent(new Event('change'));
-    document.getElementById('sexo').value = cadastro.sexo;
-    document.getElementById('endereco').value = cadastro.endereco;
-    document.getElementById('contato').value = cadastro.contato;
+    document.getElementById('nome').value = cadastro.nome; [cite: 1]
+    document.getElementById('cpf').value = cadastro.cpf; [cite: 1] 
+    document.getElementById('data_nasc').value = cadastro.dataNasc; [cite: 1]
+    document.getElementById('data_nasc').dispatchEvent(new Event('change')); [cite: 1]
+    document.getElementById('sexo').value = cadastro.sexo; [cite: 1]
+    document.getElementById('endereco').value = cadastro.endereco; [cite: 1]
+    document.getElementById('contato').value = cadastro.contato; [cite: 1]
     
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Campos de observações e exames NÃO são tocados aqui. 
+    window.scrollTo({ top: 0, behavior: 'smooth' }); [cite: 1]
 }
 
+// Máscara automática para o campo Contato (telefone) 
 function formatarContato() {
-    const inputContato = document.getElementById('contato');
-    let contato = inputContato.value.replace(/\D/g, '');
+    const inputContato = document.getElementById('contato'); [cite: 1]
+    let contato = inputContato.value.replace(/\D/g, ''); [cite: 1]
 
-    if (contato.length > 11) contato = contato.substring(0, 11);
+    if (contato.length > 11) contato = contato.substring(0, 11); [cite: 1]
 
     if (contato.length > 2) {
-        if (contato.length <= 6) {
-            contato = `(${contato.substring(0, 2)}) ${contato.substring(2)}`;
-        } else if (contato.length <= 10) {
-            contato = `(${contato.substring(0, 2)}) ${contato.substring(2, 6)}-${contato.substring(6)}`;
-        } else {
-            contato = `(${contato.substring(0, 2)}) ${contato.substring(2, 7)}-${contato.substring(7)}`;
+        if (contato.length <= 6) { 
+            contato = `(${contato.substring(0, 2)}) ${contato.substring(2)}`; [cite: 1]
+        } else if (contato.length <= 10) { 
+            contato = `(${contato.substring(0, 2)}) ${contato.substring(2, 6)}-${contato.substring(6)}`; [cite: 1]
+        } else { // Para números de 9 dígitos (celular)
+            contato = `(${contato.substring(0, 2)}) ${contato.substring(2, 7)}-${contato.substring(7)}`; [cite: 1]
         }
     }
-    inputContato.value = contato;
+    inputContato.value = contato; [cite: 1]
 }
 
+// Valida o campo Contato (DDD e formato básico) 
 function validateContact() {
-    const inputContato = document.getElementById('contato');
-    const contato = inputContato.value.replace(/\D/g, '');
+    const inputContato = document.getElementById('contato'); [cite: 1]
+    const contato = inputContato.value.replace(/\D/g, ''); [cite: 1]
 
     if (contato.length === 0) {
-        clearError('contato');
-        return true;
+        clearError('contato'); [cite: 1]
+        return true; [cite: 1]
     }
 
-    if (contato.length < 2) {
-        showError('contato', "Número de contato incompleto.");
-        return false;
+    if (contato.length < 2) { // Precisa de pelo menos o DDD 
+        showError('contato', "Número de contato incompleto."); [cite: 1]
+        return false; [cite: 1]
     }
 
-    const ddd = parseInt(contato.substring(0, 2));
+    const ddd = parseInt(contato.substring(0, 2)); [cite: 1]
 
-    if (!dddsValidos.includes(ddd)) {
-        showError('contato', "DDD inválido. Insira um DDD brasileiro válido.");
-        return false;
+    if (!dddsValidos.includes(ddd)) { // Verifica se o DDD é válido 
+        showError('contato', "DDD inválido. Insira um DDD brasileiro válido."); [cite: 1]
+        return false; [cite: 1]
     }
 
-    clearError('contato');
-    return true;
+    clearError('contato'); [cite: 1]
+    return true; [cite: 1]
 }
 
+// Coleta todos os dados do formulário para processamento 
 function coletarDados() {
-    const isAgeValid = validateAge();
-    const cpfLimpo = document.getElementById('cpf').value.replace(/\D/g, '');
-    const isCpfFormatValid = validarCPF(cpfLimpo);
-    const isContactValid = validateContact();
+    // Validações antes de coletar os dados 
+    const isAgeValid = validateAge(); [cite: 1]
+    const cpfLimpo = document.getElementById('cpf').value.replace(/\D/g, ''); [cite: 1]
+    const isCpfFormatValid = validarCPF(cpfLimpo); [cite: 1]
+    const isContactValid = validateContact(); [cite: 1]
 
     if (!isCpfFormatValid) {
-        showError('cpf', "CPF inválido.");
+        showError('cpf', "CPF inválido."); [cite: 1]
     }
 
     if (!isAgeValid || !isCpfFormatValid || !isContactValid) {
-        throw new Error("Por favor, corrija os erros nos campos antes de prosseguir.");
+        throw new Error("Por favor, corrija os erros nos campos antes de prosseguir."); [cite: 1]
     }
 
-    const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
-    const dataNasc = document.getElementById('data_nasc').value;
-    const sexo = document.getElementById('sexo').value;
-    const endereco = document.getElementById('endereco').value.trim();
-    const contato = document.getElementById('contato').value.trim();
-    const observacoes = document.getElementById('observacoes').value.trim();
-    const exames = Array.from(document.querySelectorAll('#exames .exame:checked')).map(e => e.value);
-    const examesNaoListados = document.getElementById('examesNaoListados').value.trim();
+    // Coleta os valores dos campos 
+    const nome = document.getElementById('nome').value.trim(); [cite: 1]
+    const cpf = document.getElementById('cpf').value.trim(); [cite: 1]
+    const dataNasc = document.getElementById('data_nasc').value; [cite: 1]
+    const sexo = document.getElementById('sexo').value; [cite: 1]
+    const endereco = document.getElementById('endereco').value.trim(); [cite: 1]
+    const contato = document.getElementById('contato').value.trim(); [cite: 1]
+    const observacoes = document.getElementById('observacoes').value.trim(); [cite: 1]
+    const exames = Array.from(document.querySelectorAll('#exames .exame:checked')).map(e => e.value); [cite: 1]
+    const examesNaoListados = document.getElementById('examesNaoListados').value.trim(); [cite: 1]
 
-    if (!nome) throw new Error("Preencha o campo: Nome.");
-    if (!sexo) throw new Error("Selecione o sexo.");
-    if (exames.length === 0 && !examesNaoListados) throw new Error("Selecione pelo menos um exame ou preencha 'Acrescentar Exames não Listados'.");
+    // Validações finais de campos obrigatórios 
+    if (!nome) throw new Error("Preencha o campo: Nome."); [cite: 1]
+    if (!sexo) throw new Error("Selecione o sexo."); [cite: 1]
+    // Garante que pelo menos um exame (listado ou não listado) foi informado 
+    if (exames.length === 0 && !examesNaoListados) throw new Error("Selecione pelo menos um exame ou preencha 'Acrescentar Exames não Listados'."); [cite: 1]
 
-    return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
+    return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados }; [cite: 1]
 }
 
+// Salvar Protocolo de Atendimento - Agora inclui envio para planilha 
 function salvarProtocoloAtendimento() {
     try {
-        const dados = coletarDados();
-        let cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+        const dados = coletarDados(); [cite: 1]
+        let cadastros = JSON.parse(localStorage.getItem('cadastros')) || []; [cite: 1]
         
-        const lastCadastro = cadastros.length > 0 ? cadastros[cadastros.length - 1] : null;
+        // --- Geração do número de protocolo sequencial e baseado em data/hora --- 
+        const lastCadastro = cadastros.length > 0 ? cadastros[cadastros.length - 1] : null; [cite: 1]
         const lastProtocolNumber = lastCadastro && lastCadastro.protocolo ? 
-                                   (parseInt(lastCadastro.protocolo.split('-')[0]) || 0) : 0;
+                                   (parseInt(lastCadastro.protocolo.split('-')[0]) || 0) : 0; [cite: 1]
         
-        const newProtocolNumber = (lastProtocolNumber + 1).toString().padStart(4, '0');
+        const newProtocolNumber = (lastProtocolNumber + 1).toString().padStart(4, '0'); [cite: 1]
         
-        const now = new Date();
-        const hour = now.getHours().toString().padStart(2, '0');
-        const minute = now.getMinutes().toString().padStart(2, '0');
-        const day = now.getDate().toString().padStart(2, '0');
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const now = new Date(); [cite: 1]
+        const hour = now.getHours().toString().padStart(2, '0'); [cite: 1]
+        const minute = now.getMinutes().toString().padStart(2, '0'); [cite: 1]
+        const day = now.getDate().toString().padStart(2, '0'); [cite: 1]
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); [cite: 1]
         
-        const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
+        // Formato: 0001-HHMMDDMM (Ex: 0001-23143006) 
+        const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`; [cite: 1]
         
-        dados.protocolo = protocolo;
+        dados.protocolo = protocolo; [cite: 1]
 
-        cadastros.push(dados); 
-        localStorage.setItem('cadastros', JSON.stringify(cadastros));
+        // Salva o cadastro localmente 
+        cadastros.push(dados); [cite: 1] 
+        localStorage.setItem('cadastros', JSON.stringify(cadastros)); [cite: 1]
         
-        const doc = new jsPDF();
-        const [ano, mes, dia] = dados.dataNasc.split('-');
-        const dataNascFormatada = `${dia}/${mes}/${ano}`;
+        // --- Geração do PDF --- 
+        const doc = new jsPDF(); [cite: 1]
+        const [ano, mes, dia] = dados.dataNasc.split('-'); [cite: 1]
+        const dataNascFormatada = `${dia}/${mes}/${ano}`; [cite: 1]
 
-        let currentY = 15;
+        let currentY = 15; [cite: 1]
 
-        // --- Seção: Cabeçalho ---
-        doc.setFontSize(18);
-        doc.text("Laboratório CETEP", 105, currentY, null, null, "center");
-        currentY += 10;
-        doc.setFontSize(10);
-        doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, currentY, null, null, "center");
-        currentY += 10;
-        doc.setLineWidth(0.5);
-        doc.line(20, currentY, 190, currentY);
-        currentY += 10;
+        // --- Seção: Cabeçalho --- 
+        doc.setFontSize(18); [cite: 1]
+        doc.text("Laboratório CETEP", 105, currentY, null, null, "center"); [cite: 1]
+        currentY += 10; [cite: 1]
+        doc.setFontSize(10); [cite: 1]
+        doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, currentY, null, null, "center"); [cite: 1]
+        currentY += 10; [cite: 1]
+        doc.setLineWidth(0.5); [cite: 1]
+        doc.line(20, currentY, 190, currentY); [cite: 1]
+        currentY += 10; [cite: 1]
 
-        // --- Seção: Identificação do Protocolo ---
-        doc.setFontSize(14);
-        doc.text(`PROTOCOLO DE ATENDIMENTO Nº: ${dados.protocolo}`, 20, currentY);
-        currentY += 8;
-        doc.setFontSize(10);
-        doc.setLineWidth(0.2);
-        doc.line(20, currentY, 190, currentY);
-        currentY += 10;
+        // --- Seção: Identificação do Protocolo --- 
+        doc.setFontSize(14); [cite: 1]
+        doc.text(`PROTOCOLO DE ATENDIMENTO Nº: ${dados.protocolo}`, 20, currentY); [cite: 1]
+        currentY += 8; [cite: 1]
+        doc.setFontSize(10); [cite: 1]
+        doc.setLineWidth(0.2); [cite: 1]
+        doc.line(20, currentY, 190, currentY); [cite: 1]
+        currentY += 10; [cite: 1]
 
-        // --- Seção: Dados do Paciente ---
-        doc.setFontSize(12);
-        doc.text("DADOS DO PACIENTE:", 20, currentY);
-        currentY += 8;
-        doc.setFontSize(11);
+        // --- Seção: Dados do Paciente --- 
+        doc.setFontSize(12); [cite: 1]
+        doc.text("DADOS DO PACIENTE:", 20, currentY); [cite: 1]
+        currentY += 8; [cite: 1]
+        doc.setFontSize(11); [cite: 1]
         
-        const col1X = 25;
-        const col2X = 110;
-        const lineHeight = 7;
+        const col1X = 25; [cite: 1]
+        const col2X = 110; [cite: 1]
+        const lineHeight = 7; [cite: 1]
 
-        doc.text(`Nome: ${dados.nome}`, col1X, currentY);
-        doc.text(`CPF: ${dados.cpf}`, col2X, currentY);
-        currentY += lineHeight;
-        doc.text(`Data de Nasc.: ${dataNascFormatada}`, col1X, currentY);
-        doc.text(`Idade: ${dados.idade}`, col2X, currentY);
-        currentY += lineHeight;
-        doc.text(`Sexo: ${dados.sexo}`, col1X, currentY);
-        doc.text(`Contato: ${dados.contato}`, col2X, currentY);
-        currentY += lineHeight;
-        doc.text(`Endereço: ${dados.endereco}`, col1X, currentY);
-        currentY += lineHeight;
+        doc.text(`Nome: ${dados.nome}`, col1X, currentY); [cite: 1]
+        doc.text(`CPF: ${dados.cpf}`, col2X, currentY); [cite: 1]
+        currentY += lineHeight; [cite: 1]
+        doc.text(`Data de Nasc.: ${dataNascFormatada}`, col1X, currentY); [cite: 1]
+        doc.text(`Idade: ${dados.idade}`, col2X, currentY); [cite: 1]
+        currentY += lineHeight; [cite: 1]
+        doc.text(`Sexo: ${dados.sexo}`, col1X, currentY); [cite: 1]
+        doc.text(`Contato: ${dados.contato}`, col2X, currentY); [cite: 1]
+        currentY += lineHeight; [cite: 1]
+        doc.text(`Endereço: ${dados.endereco}`, col1X, currentY); [cite: 1]
+        currentY += lineHeight; [cite: 1]
         
-        doc.setLineWidth(0.2);
-        doc.line(20, currentY, 190, currentY);
-        currentY += 10;
+        doc.setLineWidth(0.2); [cite: 1]
+        doc.line(20, currentY, 190, currentY); [cite: 1]
+        currentY += 10; [cite: 1]
 
-        // --- Seção: Exames ---
-        doc.setFontSize(12);
-        doc.text("EXAMES:", 20, currentY);
-        currentY += 8;
-        doc.setFontSize(11);
+        // --- Seção: Exames --- 
+        doc.setFontSize(12); [cite: 1]
+        doc.text("EXAMES:", 20, currentY); [cite: 1]
+        currentY += 8; [cite: 1]
+        doc.setFontSize(11); [cite: 1]
 
         if (dados.exames.length > 0) {
-            doc.text("Exames Selecionados:", 25, currentY);
-            currentY += lineHeight;
+            doc.text("Exames Selecionados:", 25, currentY); [cite: 1]
+            currentY += lineHeight; [cite: 1]
             dados.exames.forEach(exame => {
-                doc.text(`- ${exame}`, 30, currentY);
-                currentY += lineHeight;
+                doc.text(`- ${exame}`, 30, currentY); [cite: 1]
+                currentY += lineHeight; [cite: 1]
             });
         }
 
         if (dados.examesNaoListados) {
             if (dados.exames.length > 0) {
-                currentY += 5;
+                currentY += 5; [cite: 1]
             }
-            doc.text("Exames Adicionais:", 25, currentY);
-            currentY += lineHeight;
-            const splitText = doc.splitTextToSize(dados.examesNaoListados, 150);
-            doc.text(splitText, 30, currentY);
-            currentY += (splitText.length * lineHeight);
+            doc.text("Exames Adicionais:", 25, currentY); [cite: 1]
+            currentY += lineHeight; [cite: 1]
+            const splitText = doc.splitTextToSize(dados.examesNaoListados, 150); [cite: 1]
+            doc.text(splitText, 30, currentY); [cite: 1]
+            currentY += (splitText.length * lineHeight); [cite: 1]
         }
         
-        doc.setLineWidth(0.2);
-        doc.line(20, currentY, 190, currentY);
-        currentY += 10;
+        doc.setLineWidth(0.2); [cite: 1]
+        doc.line(20, currentY, 190, currentY); [cite: 1]
+        currentY += 10; [cite: 1]
 
-        // --- Seção: Observações ---
+        // --- Seção: Observações --- 
         if (dados.observacoes) {
-            doc.setFontSize(12);
-            doc.text("OBSERVAÇÕES:", 20, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-            const splitText = doc.splitTextToSize(dados.observacoes, 170);
-            doc.text(splitText, 25, currentY);
-            currentY += (splitText.length * lineHeight);
+            doc.setFontSize(12); [cite: 1]
+            doc.text("OBSERVAÇÕES:", 20, currentY); [cite: 1]
+            currentY += 8; [cite: 1]
+            doc.setFontSize(11); [cite: 1]
+            const splitText = doc.splitTextToSize(dados.observacoes, 170); [cite: 1]
+            doc.text(splitText, 25, currentY); [cite: 1]
+            currentY += (splitText.length * lineHeight); [cite: 1]
             
-            doc.setLineWidth(0.2);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 10;
+            doc.setLineWidth(0.2); [cite: 1]
+            doc.line(20, currentY, 190, currentY); [cite: 1]
+            currentY += 10; [cite: 1]
         }
 
-        // --- Rodapé (Opcional) ---
-        doc.setFontSize(9);
-        doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
+        // --- Rodapé (Opcional) --- 
+        doc.setFontSize(9); [cite: 1]
+        doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center"); [cite: 1]
 
-        doc.output('dataurlnewwindow', { filename: `Protocolo_${dados.nome.replace(/\s+/g, "_")}.pdf` });
+        doc.output('dataurlnewwindow', { filename: `Protocolo_${dados.nome.replace(/\s+/g, "_")}.pdf` }); [cite: 1]
 
-        alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
+        alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`); [cite: 1]
         
-        enviarParaPlanilha(dados);
+        enviarParaPlanilha(dados); [cite: 1]
 
-        limparCampos();
-        mostrarHistorico();
+        limparCampos(); [cite: 1]
+        mostrarHistorico(); [cite: 1]
     } catch (error) {
-        alert(error.message);
-        console.error("Erro ao salvar protocolo:", error);
+        alert(error.message); [cite: 1]
+        console.error("Erro ao salvar protocolo:", error); [cite: 1]
     }
 }
 
+// Exibe o histórico de cadastros 
 function mostrarHistorico() {
-    const historicoDiv = document.getElementById('historico');
-    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+    const historicoDiv = document.getElementById('historico'); [cite: 1]
+    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || []; [cite: 1]
     if (cadastros.length === 0) {
-        historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado.</p>";
-        return;
+        historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado.</p>"; [cite: 1]
+        return; [cite: 1]
     }
-    let html = "<h3>Histórico de Cadastros</h3><ul>";
+    let html = "<h3>Histórico de Cadastros</h3><ul>"; [cite: 1]
     cadastros.forEach((c, index) => {
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
-        html += `<li onclick="carregarCadastro(${index})"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`; [cite: 1]
+        html += `<li onclick="carregarCadastro(${index})"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`; [cite: 1]
         if (c.examesNaoListados) {
-            html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
+            html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`; [cite: 1]
         }
         if (c.observacoes) {
-            html += `<br>Observações: ${c.observacoes.substring(0, 100)}${c.observacoes.length > 100 ? '...' : ''}`;
+            html += `<br>Observações: ${c.observacoes.substring(0, 100)}${c.observacoes.length > 100 ? '...' : ''}`; [cite: 1]
         }
-        html += `</li>`;
+        html += `</li>`; [cite: 1]
     });
-    html += "</ul>";
-    historicoDiv.innerHTML = html;
+    html += "</ul>"; [cite: 1]
+    historicoDiv.innerHTML = html; [cite: 1]
 }
 
+// Carrega um cadastro completo do histórico para o formulário 
 function carregarCadastro(index) {
-    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
-    const cadastro = cadastros[index];
+    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || []; [cite: 1]
+    const cadastro = cadastros[index]; [cite: 1]
 
     if (!cadastro) {
-        alert("Cadastro não encontrado.");
-        return;
+        alert("Cadastro não encontrado."); [cite: 1]
+        return; [cite: 1]
     }
 
-    const nomeAtual = document.getElementById('nome').value.trim();
-    const cpfAtual = document.getElementById('cpf').value.trim();
+    const nomeAtual = document.getElementById('nome').value.trim(); [cite: 1]
+    const cpfAtual = document.getElementById('cpf').value.trim(); [cite: 1]
 
     if (nomeAtual || cpfAtual) {
-        const confirmar = confirm("Existem dados não salvos no formulário. Deseja substituí-los pelo cadastro completo do histórico?");
+        const confirmar = confirm("Existem dados não salvos no formulário. Deseja substituí-los pelo cadastro completo do histórico?"); [cite: 1]
         if (!confirmar) {
-            return;
+            return; [cite: 1]
         }
     }
 
-    limparCampos(false);
+    limparCampos(false); [cite: 1]
 
-    document.getElementById('nome').value = cadastro.nome;
-    document.getElementById('cpf').value = cadastro.cpf;
-    document.getElementById('data_nasc').value = cadastro.dataNasc;
-    document.getElementById('idade').value = cadastro.idade;
-    document.getElementById('sexo').value = cadastro.sexo;
-    document.getElementById('endereco').value = cadastro.endereco;
-    document.getElementById('contato').value = cadastro.contato;
-    document.getElementById('observacoes').value = cadastro.observacoes;
-    document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || '';
+    document.getElementById('nome').value = cadastro.nome; [cite: 1]
+    document.getElementById('cpf').value = cadastro.cpf; [cite: 1]
+    document.getElementById('data_nasc').value = cadastro.dataNasc; [cite: 1]
+    document.getElementById('idade').value = cadastro.idade; [cite: 1]
+    document.getElementById('sexo').value = cadastro.sexo; [cite: 1]
+    document.getElementById('endereco').value = cadastro.endereco; [cite: 1]
+    document.getElementById('contato').value = cadastro.contato; [cite: 1]
+    document.getElementById('observacoes').value = cadastro.observacoes; [cite: 1]
+    document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || ''; [cite: 1]
 
-    const allCheckboxes = document.querySelectorAll('.exame');
-    allCheckboxes.forEach(cb => cb.checked = false);
+    const allCheckboxes = document.querySelectorAll('.exame'); [cite: 1]
+    allCheckboxes.forEach(cb => cb.checked = false); [cite: 1]
 
     cadastro.exames.forEach(exameNome => {
-        const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
+        const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`); [cite: 1]
         if (checkbox) {
-            checkbox.checked = true;
+            checkbox.checked = true; [cite: 1]
         } else {
-            marcarExame(exameNome); 
+            marcarExame(exameNome); [cite: 1] 
         }
     });
 
-    atualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay(); [cite: 1]
 
-    alert(`Cadastro de ${cadastro.nome} carregado com sucesso!`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    alert(`Cadastro de ${cadastro.nome} carregado com sucesso!`); [cite: 1]
+    window.scrollTo({ top: 0, behavior: 'smooth' }); [cite: 1]
 }
 
-
+// Limpa todos os campos do formulário 
 function limparCampos(showAlert = true) {
-    document.getElementById('nome').value = '';
-    document.getElementById('cpf').value = '';
-    document.getElementById('data_nasc').value = '';
-    document.getElementById('idade').value = '';
-    document.getElementById('sexo').value = '';
-    document.getElementById('endereco').value = '';
-    document.getElementById('contato').value = '';
-    document.getElementById('observacoes').value = '';
-    document.getElementById('examesNaoListados').value = '';
+    document.getElementById('nome').value = ''; [cite: 1]
+    document.getElementById('cpf').value = ''; [cite: 1]
+    document.getElementById('data_nasc').value = ''; [cite: 1]
+    document.getElementById('idade').value = ''; [cite: 1]
+    document.getElementById('sexo').value = ''; [cite: 1]
+    document.getElementById('endereco').value = ''; [cite: 1]
+    document.getElementById('contato').value = ''; [cite: 1]
+    document.getElementById('observacoes').value = ''; [cite: 1]
+    document.getElementById('examesNaoListados').value = ''; [cite: 1]
 
-    const allCheckboxes = document.querySelectorAll('.exame');
-    allCheckboxes.forEach(cb => cb.checked = false);
+    const allCheckboxes = document.querySelectorAll('.exame'); [cite: 1]
+    allCheckboxes.forEach(cb => cb.checked = false); [cite: 1]
 
-    clearError('data_nasc');
-    clearError('cpf');
-    clearError('contato');
+    clearError('data_nasc'); [cite: 1]
+    clearError('cpf'); [cite: 1]
+    clearError('contato'); [cite: 1]
 
-    document.getElementById('pesquisaExame').value = '';
-    document.getElementById('sugestoes').innerHTML = '';
-    document.getElementById('sugestoes').style.display = 'none';
+    document.getElementById('pesquisaExame').value = ''; [cite: 1]
+    document.getElementById('sugestoes').innerHTML = ''; [cite: 1]
+    document.getElementById('sugestoes').style.display = 'none'; [cite: 1]
 
-    atualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay(); [cite: 1]
 
     if (showAlert) {
-        alert("Campos limpos para um novo cadastro!");
+        alert("Campos limpos para um novo cadastro!"); [cite: 1]
     }
 }
 
+// Limpa o histórico de cadastros do localStorage, exigindo senha 
 function limparHistorico() {
-    const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
+    const senhaDigitada = prompt("Para limpar o histórico, digite a senha:"); [cite: 1]
     if (senhaDigitada === null) {
-        return;
+        return; [cite: 1]
     }
     if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
-        localStorage.removeItem('cadastros');
-        alert('Histórico apagado com sucesso!');
-        document.getElementById('historico').innerHTML = "";
+        localStorage.removeItem('cadastros'); [cite: 1]
+        alert('Histórico apagado com sucesso!'); [cite: 1]
+        document.getElementById('historico').innerHTML = ""; [cite: 1]
     } else {
-        alert('Senha incorreta. Histórico não foi limpo.');
+        alert('Senha incorreta. Histórico não foi limpo.'); [cite: 1]
     }
 }
 
-// MODIFICADO: Imprimir Tela agora gera PDF com conteúdo específico e rodapé
-function imprimirTela() {
-    const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
-    const dataNasc = document.getElementById('data_nasc').value;
-    const sexo = document.getElementById('sexo').value;
-    const endereco = document.getElementById('endereco').value.trim();
-    const contato = document.getElementById('contato').value.trim();
-    const observacoes = document.getElementById('observacoes').value.trim();
-    const exames = Array.from(document.querySelectorAll('#exames .exame:checked')).map(e => e.value);
-    const examesNaoListados = document.getElementById('examesNaoListados').value.trim();
-
-    if (!nome) { alert("Preencha o nome para imprimir."); return; }
-    if (exames.length === 0 && !examesNaoListados) { alert("Selecione ou adicione exames para imprimir."); return; }
-
-    const doc = new jsPDF();
-    const [ano, mes, dia] = dataNasc.split('-');
-    const dataNascFormatada = `${dia}/${mes}/${ano}`;
-
-    let currentY = 15;
-    const lineHeight = 7;
-    const marginX = 20;
-    const pageHeightLimit = 270; // Altura limite antes de adicionar nova página (para A4 com margens)
-
-    // Helper para adicionar rodapé e nova página
-    const addPageAndFooter = () => {
-        doc.addPage();
-        currentY = 20; // Nova posição Y no início da nova página
-        // Adiciona rodapé
-        const now = new Date();
-        const dateTimeString = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-        doc.setFontSize(8);
-        doc.text(`Documento gerado automaticamente pelo SISLAB - ${dateTimeString}`, 105, 290, null, null, "center");
-    };
-
-    // --- Título Principal ---
-    doc.setFontSize(20);
-    doc.text("SISLAB - Cadastro de Exames", 105, currentY, null, null, "center");
-    currentY += 15;
-    doc.setLineWidth(0.5);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Dados do Paciente ---
-    doc.setFontSize(14);
-    doc.text("DADOS DO PACIENTE:", marginX, currentY);
-    currentY += 8;
-    doc.setFontSize(11);
-    
-    const col1X = marginX + 5;
-    const col2X = 110;
-
-    doc.text(`Nome: ${nome}`, col1X, currentY);
-    doc.text(`CPF: ${cpf}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Data de Nasc.: ${dataNascFormatada}`, col1X, currentY);
-    doc.text(`Idade: ${document.getElementById('idade').value}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Sexo: ${sexo}`, col1X, currentY);
-    doc.text(`Contato: ${contato}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Endereço: ${endereco}`, col1X, currentY);
-    currentY += lineHeight;
-    
-    currentY += 5; // Espaço antes do separador
-    if (currentY > pageHeightLimit) { addPageAndFooter(); }
-    doc.setLineWidth(0.2);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Exames Selecionados ---
-    doc.setFontSize(14);
-    doc.text("EXAMES SELECIONADOS:", marginX, currentY);
-    currentY += 8;
-    doc.setFontSize(11);
-
-    if (exames.length > 0) {
-        exames.forEach(exame => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooter(); } // Quebra de página antes de adicionar o item
-            doc.text(`- ${exame}`, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-    } else {
-        if (currentY + lineHeight > pageHeightLimit) { addPageAndFooter(); }
-        doc.text("Nenhum exame da lista selecionado.", marginX + 5, currentY);
-        currentY += lineHeight;
-    }
-    
-    currentY += 5; // Espaço antes do separador de exames não listados
-    if (currentY > pageHeightLimit) { addPageAndFooter(); }
-    doc.setLineWidth(0.2);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Exames Não Listados ---
-    if (examesNaoListados) {
-        doc.setFontSize(14);
-        doc.text("EXAMES ADICIONAIS (NÃO LISTADOS):", marginX, currentY);
-        currentY += 8;
-        doc.setFontSize(11);
-        const splitText = doc.splitTextToSize(examesNaoListados, 170); // Largura do texto
-        
-        splitText.forEach(line => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooter(); } // Quebra de página antes da linha
-            doc.text(line, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-        currentY += 5;
-        if (currentY > pageHeightLimit) { addPageAndFooter(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-    
-    // --- Seção: Observações ---
-    if (observacoes) {
-        doc.setFontSize(14);
-        doc.text("OBSERVAÇÕES:", marginX, currentY);
-        currentY += 8;
-        doc.setFontSize(11);
-        const splitText = doc.splitTextToSize(observacoes, 170);
-        
-        splitText.forEach(line => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooter(); } // Quebra de página antes da linha
-            doc.text(line, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-        currentY += 5;
-        if (currentY > pageHeightLimit) { addPageAndFooter(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-
-    // Adiciona o rodapé a todas as páginas geradas
-    const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        const now = new Date();
-        const dateTimeString = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-        doc.text(`Documento gerado automaticamente pelo SISLAB - ${dateTimeString}`, 105, 290, null, null, "center");
-    }
-
-    doc.output('dataurlnewwindow', { filename: `Impressao_Tela_${nome.replace(/\s+/g, "_")}.pdf` });
-}
-
+// Imprime o histórico de cadastros em uma nova janela 
 function imprimirHistorico() {
-    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || [];
+    const cadastros = JSON.parse(localStorage.getItem('cadastros')) || []; [cite: 1]
 
     if (cadastros.length === 0) {
-        alert("Não há histórico para imprimir.");
-        return;
+        alert("Não há histórico para imprimir."); [cite: 1]
+        return; [cite: 1]
     }
 
     let printContent = `
@@ -923,10 +810,10 @@ function imprimirHistorico() {
         <body>
             <h1>Histórico de Cadastros do Laboratório CETEP</h1>
             <ul>
-    `;
+    `; [cite: 1]
 
     cadastros.forEach((c, index) => {
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`; [cite: 1]
         printContent += `
             <li>
                 <b>${protocoloDisplay}</b><br>
@@ -938,148 +825,154 @@ function imprimirHistorico() {
                 <p><strong>Endereço:</strong> ${c.endereco}</p>
                 <p><strong>Contato:</strong> ${c.contato}</p>
                 <p><strong>Exames Selecionados:</strong> ${c.exames.join(", ")}</p>
-        `;
+        `; [cite: 1]
         if (c.examesNaoListados) {
-            printContent += `<p><strong>Exames Adicionais:</strong> ${c.examesNaoListados}</p>`;
+            printContent += `<p><strong>Exames Adicionais:</strong> ${c.examesNaoListados}</p>`; [cite: 1]
         }
         if (c.observacoes) {
-            printContent += `<p><strong>Observações:</strong> ${c.observacoes}</p>`;
+            printContent += `<p><strong>Observações:</strong> ${c.observacoes}</p>`; [cite: 1]
         }
-        printContent += `</li>`;
+        printContent += `</li>`; [cite: 1]
     });
 
     printContent += `
             </ul>
         </body>
         </html>
-    `;
+    `; [cite: 1]
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.focus();
+    const printWindow = window.open('', '_blank'); [cite: 1]
+    printWindow.document.open(); [cite: 1]
+    printWindow.document.write(printContent); [cite: 1]
+    printWindow.document.close(); [cite: 1]
+    printWindow.focus(); [cite: 1]
 
     printWindow.onload = function() {
-        printWindow.print();
+        printWindow.print(); [cite: 1]
     };
 }
 
+// Abre o editor da lista de exames se a senha estiver correta 
 function editarListaExamesComSenha() {
-    const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
+    const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:"); [cite: 1]
     if (senhaDigitada === null) {
-        return;
+        return; [cite: 1]
     }
     if (senhaDigitada === SENHA_EDITAR_LISTA) {
-        carregarListaExamesParaEdicao();
+        carregarListaExamesParaEdicao(); [cite: 1]
     } else {
-        alert('Senha incorreta. Edição não permitida.');
+        alert('Senha incorreta. Edição não permitida.'); [cite: 1]
     }
 }
 
+// Carrega o conteúdo atual da Gist para o editor 
 async function carregarListaExamesParaEdicao() {
-    const editorElement = document.getElementById('editorExames');
-    const textarea = document.getElementById('listaExamesEditor');
+    const editorElement = document.getElementById('editorExames'); [cite: 1]
+    const textarea = document.getElementById('listaExamesEditor'); [cite: 1]
 
     try {
-        const timestamp = new Date().getTime();
-        const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
-        const response = await fetch(gistRawUrl);
+        // Adiciona timestamp para evitar cache ao carregar para edição também 
+        const timestamp = new Date().getTime(); [cite: 1]
+        const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`; [cite: 1]
+        const response = await fetch(gistRawUrl); [cite: 1]
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao buscar lista de exames da Gist: ${response.status} - ${errorText}`);
+            const errorText = await response.text(); [cite: 1]
+            throw new Error(`Erro ao buscar lista de exames da Gist: ${response.status} - ${errorText}`); [cite: 1]
         }
 
-        const fileContent = await response.text();
-        textarea.value = fileContent;
-        editorElement.style.display = 'block';
-        alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.');
+        const fileContent = await response.text(); [cite: 1]
+        textarea.value = fileContent; [cite: 1]
+        editorElement.style.display = 'block'; [cite: 1]
+        alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.'); [cite: 1]
 
     } catch (error) {
-        console.error("Erro ao carregar lista de exames da Gist:", error);
-        alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID.");
+        console.error("Erro ao carregar lista de exames da Gist:", error); [cite: 1]
+        alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID."); [cite: 1]
     }
 }
 
+// Salva o conteúdo editado de volta na Gist via API 
 async function salvarListaExamesNoGitHub() {
-    const textarea = document.getElementById('listaExamesEditor');
-    const novoConteudo = textarea.value;
+    const textarea = document.getElementById('listaExamesEditor'); [cite: 1]
+    const novoConteudo = textarea.value; [cite: 1]
 
-    const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização.");
+    const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização."); [cite: 1]
     if (!confirmSave) {
-        return;
+        return; [cite: 1]
     }
 
     try {
-        const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
+        const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`; [cite: 1]
         
         const response = await fetch(gistApiUrl, {
-            method: 'PATCH',
+            method: 'PATCH', [cite: 1]
             headers: {
-                'Authorization': `token ${GITHUB_PAT_GIST}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
+                'Authorization': `token ${GITHUB_PAT_GIST}`, [cite: 1]
+                'Content-Type': 'application/json', [cite: 1]
+                'Accept': 'application/vnd.github.v3+json' [cite: 1]
             },
             body: JSON.stringify({
                 files: {
                     [GIST_FILENAME]: {
-                        content: novoConteudo
+                        content: novoConteudo [cite: 1]
                     }
                 }
             })
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao salvar na Gist: ${response.status} - ${errorText}`);
+            const errorText = await response.text(); [cite: 1]
+            throw new Error(`Erro ao salvar na Gist: ${response.status} - ${errorText}`); [cite: 1]
         }
 
-        alert('Lista de exames atualizada com sucesso na Gist!');
-        document.getElementById('editorExames').style.display = 'none';
-        carregarExames();
+        alert('Lista de exames atualizada com sucesso na Gist!'); [cite: 1]
+        document.getElementById('editorExames').style.display = 'none'; [cite: 1]
+        carregarExames(); [cite: 1]
     } catch (error) {
-        console.error("Erro ao salvar lista de exames na Gist:", error);
-        alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
+        console.error("Erro ao salvar lista de exames na Gist:", error); [cite: 1]
+        alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões."); [cite: 1]
     }
 }
 
+// Envia dados para uma planilha do Google Forms 
 async function enviarParaPlanilha(dados) {
-    if (GOOGLE_FORM_URL.includes('SEU_FORM_ID')) {
-        console.warn("URL do Google Form não configurada. Envio para planilha ignorado.");
-        return;
+    if (GOOGLE_FORM_URL.includes('SEU_FORM_ID')) { // Verifica se a URL ainda contém o placeholder 
+        console.warn("URL do Google Form não configurada. Envio para planilha ignorado."); [cite: 1]
+        return; [cite: 1]
     }
 
     try {
-        const formData = new FormData();
-        formData.append(GOOGLE_FORM_ENTRIES.nome, dados.nome); 
-        formData.append(GOOGLE_FORM_ENTRIES.cpf, dados.cpf);
-        formData.append(GOOGLE_FORM_ENTRIES.dataNasc, dados.dataNasc);
-        formData.append(GOOGLE_FORM_ENTRIES.idade, dados.idade);
-        formData.append(GOOGLE_FORM_ENTRIES.sexo, dados.sexo);
-        formData.append(GOOGLE_FORM_ENTRIES.endereco, dados.endereco);
-        formData.append(GOOGLE_FORM_ENTRIES.contato, dados.contato);
-        formData.append(GOOGLE_FORM_ENTRIES.exames, dados.exames.join(", "));
-        formData.append(GOOGLE_FORM_ENTRIES.observacoes, dados.observacoes);
-        formData.append(GOOGLE_FORM_ENTRIES.examesNaoListados, dados.examesNaoListados);
+        const formData = new FormData(); [cite: 1]
+        // Mapeie os dados para os 'entry.XXXXXXXXXX' do seu Google Form 
+        formData.append(GOOGLE_FORM_ENTRIES.nome, dados.nome); [cite: 1] 
+        formData.append(GOOGLE_FORM_ENTRIES.cpf, dados.cpf); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.dataNasc, dados.dataNasc); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.idade, dados.idade); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.sexo, dados.sexo); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.endereco, dados.endereco); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.contato, dados.contato); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.exames, dados.exames.join(", ")); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.observacoes, dados.observacoes); [cite: 1]
+        formData.append(GOOGLE_FORM_ENTRIES.examesNaoListados, dados.examesNaoListados); [cite: 1]
 
-        const controller = new AbortController();
-        const signal = controller.signal;
+        const controller = new AbortController(); [cite: 1]
+        const signal = controller.signal; [cite: 1]
 
         const requestPromise = fetch(GOOGLE_FORM_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: formData,
-            signal: signal
+            method: 'POST', [cite: 1]
+            mode: 'no-cors', [cite: 1]
+            body: formData, [cite: 1]
+            signal: signal [cite: 1]
         });
 
-        const timeoutId = setTimeout(() => controller.abort(), 10000); 
+        const timeoutId = setTimeout(() => controller.abort(), 10000); [cite: 1] 
 
-        await requestPromise;
-        clearTimeout(timeoutId);
+        await requestPromise; [cite: 1]
+        clearTimeout(timeoutId); [cite: 1]
 
-        console.log('Dados enviados para a planilha (no-cors).');
+        console.log('Dados enviados para a planilha (no-cors).'); [cite: 1]
     } catch (error) {
-        console.error("Erro ao enviar dados para a planilha:", error);
+        console.error("Erro ao enviar dados para a planilha:", error); [cite: 1]
     }
 }
