@@ -230,6 +230,17 @@
             background-color: #0F1D33;
         }
 
+        /* Estilo para o botão de Salvar Protocolo de Atendimento (destaque) */
+        button.highlight-button {
+            background-color: #CC3333; /* Vermelho forte para destaque */
+            font-weight: bold;
+            padding: 12px 25px; /* Um pouco maior */
+        }
+
+        button.highlight-button:hover {
+            background-color: #A02222; /* Vermelho mais escuro no hover */
+        }
+
         /* Seção 9: Estilos para o Histórico de Cadastros */
         #historico {
             background-color: white;
@@ -368,9 +379,7 @@
     </div>
 
     <div class="action-buttons-container nao-imprimir">
-        <button onclick="gerarPDF()">Gerar PDF</button>
-        <button onclick="salvarLocal()">Salvar Local</button>
-        <button onclick="enviarParaPlanilha()">Enviar para Planilha</button>
+        <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button> <button onclick="enviarParaPlanilha()">Enviar para Planilha</button>
         <button onclick="mostrarHistorico()">Ver Histórico</button>
         <button onclick="imprimirHistorico()">Imprimir Histórico</button> <button onclick="window.print()">Imprimir Tela</button>
         <button onclick="limparCampos()">Limpar Campos</button>
