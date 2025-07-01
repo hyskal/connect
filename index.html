@@ -392,24 +392,46 @@
         @media print {
             .nao-imprimir { display: none; }
             body { background-color: white; }
-            .main-content-container, .column, .action-buttons-container, #historico {
-                box-shadow: none;
-                border: none;
-                width: auto;
-                max-width: none;
-                padding: 0;
-            }
             .main-content-container {
                 flex-direction: column; /* Impressão em coluna única */
                 gap: 0;
-            }
-            .column.center, .column.right-display { /* Esconde a coluna de exibição na impressão */
-                 display: none; /* Garante que ela não apareça na impressão */
-            }
-            /* Exibir apenas a coluna de paciente na impressão */
-            .column.left {
-                width: 100%;
+                width: auto;
                 max-width: none;
+            }
+            .column {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                width: auto;
+                max-width: none;
+                flex-basis: auto; /* Remove flex-basis para que a largura seja auto */
+                min-width: unset;
+            }
+            /* Exibir apenas o título, coluna 1 (dados paciente) e coluna 3 (exames selecionados) */
+            .column.left, .column.right-display {
+                display: block; /* Garante que estejam visíveis */
+            }
+            /* Ocultar a coluna 2 (pesquisa e exames disponíveis) */
+            .column.center {
+                display: none; 
+            }
+            /* Ocultar elementos específicos na impressão */
+            .action-buttons-container, #historico, .sugestoes-box, #pesquisaExame, .sislab-logo, h2, h3 { /* Oculta títulos menores, etc. */
+                display: none; 
+            }
+            /* Ajustar margens para o conteúdo impresso */
+            .main-header-container {
+                margin-bottom: 10px; /* Reduz margem do cabeçalho */
+            }
+            h1.main-title {
+                font-size: 1.8em; /* Reduz o tamanho do título para impressão */
+                border-bottom: none; /* Remove a borda do título na impressão */
+            }
+            /* Forçar examesSelecionadosDisplay a imprimir seu conteúdo */
+            #examesSelecionadosDisplay {
+                height: auto; /* Permite que a altura se ajuste ao conteúdo */
+                max-height: unset; /* Remove max-height */
+                overflow-y: visible; /* Garante que todo o conteúdo seja visível */
             }
         }
 
