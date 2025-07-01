@@ -5,236 +5,119 @@
     <title>Protocolo de Exames</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Seção 1: Estilos Gerais do Corpo e Títulos */
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centraliza o conteúdo horizontalmente */
-            padding: 20px;
-            background-color: #f4f4f4; /* Um fundo suave para o corpo */
-            margin: 0;
-        }
+/* Seção 1: Estilos Gerais do Corpo e Títulos */
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        margin: 0;
+        /* NOVO: Plano de Fundo com Padrão */
+        background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
+        background-repeat: repeat;
+        background-size: 200px 200px; /* Tamanho do tile do padrão */
+    }
 
-        h2, h3 {
-            color: #333;
-            margin-bottom: 20px;
-        }
+    h2, h3 {
+        color: #1A2B4C; /* Azul Marinho mais escuro para títulos */
+        margin-bottom: 20px;
+    }
 
-        /* Seção 2: Estilos do Container Principal do Formulário */
-        .form-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 80%; /* Largura do formulário */
-            max-width: 900px; /* Largura máxima para telas maiores */
-            box-sizing: border-box; /* Inclui padding e borda na largura */
-            margin-bottom: 20px; /* Espaço após o container do formulário */
-        }
+    /* Seção 2: Estilos do Container Principal do Formulário */
+    .form-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* Sombra um pouco mais pronunciada */
+        width: 80%;
+        max-width: 900px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
 
-        /* Seção 3: Estilos das Linhas do Formulário (Flexbox) */
-        .form-row {
-            display: flex;
-            flex-wrap: wrap; /* Permite que os itens quebrem a linha se não houver espaço */
-            justify-content: flex-start; /* Alinha itens à esquerda dentro da linha */
-            gap: 20px; /* Espaço entre os elementos da mesma linha */
-            margin-bottom: 15px; /* Espaço entre as linhas */
-        }
+    /* Seção 4: Estilos dos Campos Individuais do Formulário */
+    .form-field label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #334466; /* Azul Marinho para rótulos */
+    }
 
-        /* Seção 4: Estilos dos Campos Individuais do Formulário */
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1; /* Permite que os campos cresçam para preencher o espaço */
-            flex-basis: 0; /* Permite que os itens sejam dimensionados com base no conteúdo */
-            min-width: 150px; /* Largura mínima para campos flex-grow */
-        }
+    .form-field input[type="text"],
+    .form-field input[type="date"],
+    .form-field select,
+    .form-field textarea {
+        padding: 10px;
+        border: 1px solid #AABBDD; /* Borda mais suave */
+        border-radius: 4px;
+        font-size: 1em;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-        .form-field.full-width {
-            flex-basis: 100%; /* Ocupa a largura total da linha */
-        }
+    /* Estilo para campos com erro */
+    .form-field input.error,
+    .form-field select.error,
+    .form-field textarea.error {
+        border-color: #CC3333; /* Vermelho mais vibrante para erro */
+        box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3); /* Sombra para destacar */
+    }
 
-        .form-field label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
+    /* Estilo para mensagens de erro */
+    .error-message {
+        color: #CC3333; /* Vermelho para mensagens de erro */
+        font-size: 0.85em;
+        margin-top: 5px;
+    }
 
-        .form-field input[type="text"],
-        .form-field input[type="date"],
-        .form-field select,
-        .form-field textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-            width: 100%; /* Garante que input/textarea preencha o .form-field */
-            box-sizing: border-box; /* Inclui padding na largura */
-        }
+    /* Seção 8: Estilos dos Botões de Ação */
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: #1A2B4C; /* Azul Marinho para botões */
+        color: white;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s ease;
+    }
 
-        /* Seção 5: Larguras Específicas dos Campos */
-        #nome {
-            min-width: 400px; /* Nome sozinho na linha 1 */
-        }
+    button:hover {
+        background-color: #0F1D33; /* Azul Marinho mais escuro no hover */
+    }
 
-        #data_nasc {
-             min-width: 150px;
-        }
+    /* Seção 9: Estilos para o Histórico de Cadastros */
+    #historico {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 900px;
+        margin-top: 20px;
+        box-sizing: border-box;
+    }
 
-        #idade {
-            min-width: 80px;
-        }
+    #historico h3 {
+        margin-top: 0;
+        color: #1A2B4C; /* Azul Marinho para título do histórico */
+    }
 
-        #cpf {
-            min-width: 180px;
-        }
+    #historico li {
+        background-color: #F8F9FA; /* Um branco muito suave para itens da lista */
+        margin-bottom: 8px;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #E0E6EE; /* Borda suave */
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
 
-        #sexo {
-            min-width: 150px;
-        }
-
-        #observacoes {
-            min-height: 80px; /* Altura mínima para o textarea */
-            resize: vertical; /* Permite redimensionar verticalmente */
-        }
-
-        /* Estilo para campos com erro */
-        .form-field input.error,
-        .form-field select.error,
-        .form-field textarea.error {
-            border-color: #ff4d4d; /* Cor da borda para erro */
-            box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.2); /* Sombra para destacar */
-        }
-
-        /* Estilo para mensagens de erro */
-        .error-message {
-            color: #ff4d4d;
-            font-size: 0.85em;
-            margin-top: 5px;
-        }
-
-        /* Seção 6: Estilos para a Caixa de Sugestões (Exames) */
-        .sugestoes-box {
-            border: 1px solid #ccc;
-            max-height: 150px;
-            overflow-y: auto;
-            display: none;
-            background: white;
-            position: absolute; /* Posição absoluta para sobrepor outros elementos */
-            z-index: 100;
-            width: calc(80% - 60px); /* Largura da caixa de sugestões (considerando padding do container) */
-            max-width: 840px; /* Max-width ajustado para o container */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-            top: auto; /* Resetar top */
-            left: 50%; /* Centraliza a caixa de sugestões */
-            transform: translateX(-50%); /* Ajuste para centralização real */
-        }
-
-        .sugestoes-box div {
-            padding: 8px 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-
-        .sugestoes-box div:last-child {
-            border-bottom: none;
-        }
-
-        .sugestoes-box div:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* Seção 7: Estilos para a Lista de Exames Selecionados */
-        #exames {
-            border: 1px solid #eee;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #fdfdfd;
-            max-height: 250px;
-            overflow-y: auto;
-            margin-top: 15px;
-            margin-bottom: 20px;
-        }
-
-        #exames label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-
-        #exames input[type="checkbox"] {
-            margin-right: 8px;
-            transform: scale(1.2); /* Aumenta um pouco o checkbox */
-        }
-
-        /* Seção 8: Estilos dos Botões de Ação */
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Seção 9: Estilos para o Histórico de Cadastros */
-        #historico {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 900px;
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
-
-        #historico h3 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        #historico ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #historico li {
-            background-color: #f9f9f9;
-            margin-bottom: 8px;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #eee;
-            cursor: pointer; /* Indica que é clicável */
-            transition: background-color 0.2s ease;
-        }
-
-        #historico li:hover {
-            background-color: #e9e9e9;
-        }
-
-        /* Seção 10: Estilos para Impressão */
-        @media print {
-            .nao-imprimir { display: none; }
-            body { background-color: white; } /* Fundo branco para impressão */
-            .form-container, #historico {
-                box-shadow: none;
-                border: none;
-                width: auto;
-                max-width: none;
-                padding: 0;
-            }
-        }
+    #historico li:hover {
+        background-color: #DDE5EE; /* Azul claro no hover */
+    }
     </style>
 </head>
 <body>
