@@ -593,7 +593,7 @@
 
     <div class="action-buttons-container nao-imprimir">
         <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
-        <button onclick="gerarPacienteAleatorio()">Gerar Paciente Aleatório</button> <button onclick="mostrarHistorico()">Ver Histórico</button>
+        <button onclick="mostrarHistorico()">Ver Histórico</button>
         <button onclick="imprimirHistorico()">Imprimir Histórico</button>
         <button onclick="limparCampos()">Limpar Campos</button>
         <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
@@ -623,7 +623,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
             authDomain: "sislab-cetep.firebaseapp.com",
-            projectId: "sislab-cetab",
+            projectId: "sislab-cetep", // <<< VERIFIQUE ESTE PROJECT ID. O log anterior mostrou "sislab-cetab"
             storageBucket: "sislab-cetep.firebasestorage.app",
             messagingSenderId: "958611861664",
             appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
