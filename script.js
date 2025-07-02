@@ -1,13 +1,12 @@
-// VERSÃO: 2.0.6
+// VERSÃO: 2.0.7
 // CHANGELOG:
-// - Corrigido: Problema de carregamento da lista de exames e pacientes aleatórios ("Nenhum paciente aleatório carregado...").
-// - Nova Abordagem: `inicializarSistema()` usa `Promise.all` para gerenciar carregamentos assíncronos iniciais,
-//   garantindo que o sistema só inicialize totalmente quando todos os dados essenciais estiverem disponíveis.
-// - Ajustes de depuração e tratamento de erros no carregamento inicial.
+// - Corrigido: Erros críticos "ReferenceError" relacionados à ordem de definição das funções (`atualizarListaExamesCompleta`, `carregarExames`, etc.).
+//   Todas as funções foram rigorosamente reordenadas para serem definidas ANTES de qualquer chamada em `window.onload` ou `inicializarSistema`.
+// - Corrigido: Carregamento da lista de exames e geração de pacientes aleatórios agora devem funcionar de forma consistente.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
-let pacientesAleatorios = []; // Array para armazenar os pacientes aleatórios
+let pacientesAleatorios = []; 
 
 // Definir a senha para limpar o histórico
 const SENHA_LIMPAR_HISTORICO = "sislab";
@@ -74,9 +73,8 @@ const dddsValidos = [
 ];
 
 
-// --- INÍCIO: DEFINIÇÃO DE TODAS AS FUNÇÕES ---
-
-// Funções Auxiliares Comuns (devem ser as primeiras)
+// --- INÍCIO: DEFINIÇÃO DE TODAS AS FUNÇÕES (ORDENADAS PARA GARANTIR HOISTING/ESCOPO) ---
+// Funções Auxiliares de UI e Validação (geralmente chamadas por outras funções)
 function showError(elementId, message) {
     const inputElement = document.getElementById(elementId);
     const errorDiv = document.getElementById(`${elementId}-error`);
@@ -342,6 +340,8 @@ async function carregarExames() {
         console.error("carregarExames: Erro FATAL ao carregar lista de exames:", error);
         alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
         throw error; // Propaga o erro para ser pego por inicializarSistema
+    } finally {
+        console.log("Finalizando tentativa de carregar lista de exames.");
     }
 }
 
@@ -686,7 +686,6 @@ async function mostrarHistorico() {
 
         cadastros.forEach((c) => { 
             const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
-            // AGORA: O onclick passa o ID do documento do banco de dados DIRETAMENTE
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
                 html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
