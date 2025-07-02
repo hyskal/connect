@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>SISLAB - Administração</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .admin-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        h1 {
+            color: #1A2B4C;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #CC3333; /* Vermelho para ação perigosa */
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #A02222;
+        }
+        p.warning {
+            color: #CC3333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h1>Área Administrativa SISLAB</h1>
+        <p class="warning">Cuidado: As ações nesta página são irreversíveis!</p>
+        <button onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
+        <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, limit, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        // Não precisamos de analytics aqui, a menos que você queira rastrear acessos admin
+        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+            measurementId: "G-3TL54MWJFS" // Opcional, se não usar analytics aqui
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app); 
+        // const analytics = getAnalytics(app); // Descomente se for usar Analytics aqui
+
+        // Torna as instâncias e funções do Firebase acessíveis globalmente para o JavaScript desta página
+        window.firestoreDb = db;
+        window.firebaseFirestoreCollection = collection;
+        window.firebaseFirestoreGetDocs = getDocs;
+        window.firebaseFirestoreQuery = query;
+        window.firebaseFirestoreLimit = limit;
+        window.firebaseFirestoreWriteBatch = writeBatch;
+    </script>
+
+    <script>
+        // Definir a senha para limpar o histórico (a mesma do script.js principal)
+        const SENHA_LIMPAR_HISTORICO = "sislab";
+
+        // A função de limpar histórico, agora na página admin
+        async function limparHistoricoAdmin() {
+            const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
+            if (senhaDigitada === null) {
+                return;
+            }
+            if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
+                if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
+                    alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
+                    return;
+                }
+                const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do Firebase? Esta ação é irreversível e apagará todos os dados de pacientes!");
+                if (!confirmDeleteAll) {
+                    return;
+                }
+
+                try {
+                    const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
+                    const batchSize = 100; // Apaga em lotes de 100
+                    
+                    const deleteQueryBatch = async (dbInstance, queryToDelete) => {
+                        const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
+                        if (snapshot.empty) {
+                            return 0;
+                        }
+                        const batch = window.firebaseFirestoreWriteBatch(dbInstance);
+                        snapshot.docs.forEach(d => { // Usar 'd' ou 'doc' para evitar conflito com window.doc
+                            batch.delete(d.ref);
+                        });
+                        await batch.commit();
+                        return snapshot.size;
+                    };
+
+                    let totalDeleted = 0;
+                    let deletedCount;
+                    do {
+                        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize));
+                        deletedCount = await deleteQueryBatch(window.firestoreDb, q);
+                        totalDeleted += deletedCount;
+                        console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
+                        await new Promise(resolve => setTimeout(resolve, 50)); 
+                    } while (deletedCount === batchSize); // Continua apagando se o lote estiver completo
+
+                    alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
+                    // Não há histórico para mostrar nesta página, apenas um alerta de sucesso.
+                } catch (error) {
+                    console.error("Erro ao limpar histórico do Firebase:", error);
+                    alert("Erro ao limpar histórico do Firebase. Verifique o console e regras do Firestore.");
+                }
+
+            } else {
+                alert('Senha incorreta. Histórico não foi limpo.');
+            }
+        }
+    </script>
+
+</body>
+</html>
