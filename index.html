@@ -634,3 +634,23 @@
         const analytics = getAnalytics(app); // Inicializa o Analytics
 
         // Torna as instâncias do Firebase acessíveis globalmente para o script.js clássico
+        window.firebaseApp = app;
+        window.firestoreDb = db;
+        window.firebaseAnalytics = analytics;
+
+        // Opcional: Torna as funções do Firestore acessíveis globalmente se o script.js não for type="module"
+        window.firebaseFirestoreCollection = collection;
+        window.firebaseFirestoreAddDoc = addDoc;
+        window.firebaseFirestoreGetDocs = getDocs;
+        window.firebaseFirestoreQuery = query;
+        window.firebaseFirestoreOrderBy = orderBy;
+        window.firebaseFirestoreLimit = limit;
+        window.firebaseFirestoreDeleteDoc = deleteDoc;
+        window.firebaseFirestoreDoc = doc;
+        window.firebaseFirestoreWriteBatch = writeBatch;
+
+    </script>
+    <script src="script.js"></script>
+
+</body>
+</html>
