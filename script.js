@@ -7,13 +7,9 @@ const SENHA_LIMPAR_HISTORICO = "sislab";
 const SENHA_EDITAR_LISTA = "sislab2025";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
-// Substitua SEU_USUARIO_GITHUB e SEU_GIST_ID pelos seus dados reais.
-// O GIST_FILENAME deve corresponder ao nome do arquivo dentro da sua Gist.
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; // Nome do arquivo dentro da sua Gist
-// ATENÇÃO: Este PAT será visível no frontend. Embora mais seguro que um PAT de repositório,
-// ainda é uma consideração de segurança. Para produção, o ideal é usar um backend.
+const GIST_FILENAME = 'exames.txt'; 
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -25,10 +21,7 @@ const GITHUB_PAT_GIST = (function() {
 })();
 
 // --- CONFIGURAÇÃO DA PLANILHA (Google Forms) ---
-// Substitua 'SEU_FORM_ID' pelo ID real do seu Google Form
-// Se esta URL não for configurada corretamente, o envio para a planilha será ignorado.
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
-// Mapeamento dos campos do formulário HTML para os 'entry.XXXXXXXXXX' do Google Forms
 const GOOGLE_FORM_ENTRIES = {
     nome: 'entry.1111111111',
     cpf: 'entry.2222222222',
@@ -94,6 +87,7 @@ function carregarExames() {
 
     fetch(gistRawUrl)
         .then(response => {
+            console.log("Conteúdo Gist/Local - Status da resposta:", response.status); // Log de depuração
             if (!response.ok) {
                 console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
                 return fetch(`lista-de-exames.txt?t=${timestamp}`); 
@@ -101,17 +95,24 @@ function carregarExames() {
             return response.text();
         })
         .then(text => {
+            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); // Log de depuração
             listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+            console.log("listaExames após processamento:", listaExames); // Log de depuração
+            
+            if (listaExames.length === 0) {
+                console.warn("A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
+            }
+
             atualizarListaExamesCompleta();
             configurarPesquisa();
         })
         .catch(error => {
-            console.error("Erro ao carregar lista de exames:", error);
+            console.error("Erro FATAL ao carregar lista de exames:", error);
             alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
         });
 }
 
-function atualizarListaExamesCompleta() {
+function actualizarListaExamesCompleta() {
     const container = document.getElementById('exames');
     container.innerHTML = "";
 
@@ -121,7 +122,7 @@ function atualizarListaExamesCompleta() {
         container.appendChild(label);
         container.appendChild(document.createElement('br'));
     });
-    atualizarExamesSelecionadosDisplay();
+    actualizarExamesSelecionadosDisplay();
 }
 
 function configurarPesquisa() {
@@ -181,10 +182,10 @@ function marcarExame(exameNome) {
         examesContainer.appendChild(document.createElement('br'));
         label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    atualizarExamesSelecionadosDisplay();
+    actualizarExamesSelecionadosDisplay();
 }
 
-function atualizarExamesSelecionadosDisplay() {
+function actualizarExamesSelecionadosDisplay() {
     const displayContainer = document.getElementById('examesSelecionadosDisplay');
     const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
     
@@ -219,7 +220,7 @@ function removerExameDisplay(exameNome) {
     if (checkbox) {
         checkbox.checked = false;
     }
-    atualizarExamesSelecionadosDisplay();
+    actualizarExamesSelecionadosDisplay();
 }
 
 function showError(elementId, message) {
@@ -265,7 +266,7 @@ function validarDataNascimento(dataString) {
     return !isNaN(nascimento.getTime()) && nascimento <= hoje;
 }
 
-function atualizarIdade() {
+function actualizarIdade() {
     validateAge();
 }
 
@@ -353,8 +354,9 @@ function validarCPF(cpf) {
 
 // NOVO: checkCpfInHistory busca no Firebase
 async function checkCpfInHistory(cpf) {
-    if (!window.firestoreDb) {
-        console.warn("Firestore não inicializado. Verificação de CPF no histórico desabilitada.");
+    // Verifique se window.firestoreDb está disponível ANTES de usá-lo
+    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
+        console.warn("Firestore não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
         return;
     }
     
@@ -505,7 +507,7 @@ function coletarDados() {
 
 // MODIFICADO: Salvar Protocolo de Atendimento - Salva no Firebase e gera protocolo sequencial
 async function salvarProtocoloAtendimento() {
-    if (!window.firestoreDb) {
+    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Firestore não inicializado. Verifique a configuração do Firebase.");
         return;
     }
@@ -514,9 +516,14 @@ async function salvarProtocoloAtendimento() {
         const dados = coletarDados(); // Coleta dados e validações
 
         // --- Geração do número de protocolo sequencial buscando do Firebase ---
+        // Acessa collection e orderBy etc. através de window.firestoreDb ou window.firebaseFirestoreCollection etc.
         const historicoRef = window.firestoreDb.collection('historico');
-        const q = historicoRef.orderBy('protocolo', 'desc').limit(1); // Busca o último protocolo
-        const querySnapshot = await q.get();
+        const q = window.firebaseFirestoreQuery(
+            historicoRef,
+            window.firebaseFirestoreOrderBy('protocolo', 'desc'),
+            window.firebaseFirestoreLimit(1)
+        );
+        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         let lastProtocolNumber = 0;
         if (!querySnapshot.empty) {
@@ -540,7 +547,7 @@ async function salvarProtocoloAtendimento() {
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
 
         // Salva o cadastro no Firestore
-        await historicoRef.add(dados);
+        await window.firebaseFirestoreAddDoc(historicoRef, dados);
         console.log("Documento salvo no Firestore com protocolo: ", dados.protocolo);
         
         // --- Geração do PDF ---
@@ -655,8 +662,7 @@ async function salvarProtocoloAtendimento() {
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
-        // Tenta enviar para a planilha se a URL estiver configurada
-        enviarParaPlanilha(dados);
+        // Removida chamada para enviarParaPlanilha(dados);
 
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do Firebase
@@ -671,7 +677,7 @@ async function mostrarHistorico() {
     const historicoDiv = document.getElementById('historico');
     historicoDiv.innerHTML = "<p>Carregando histórico do Firebase...</p>"; // Feedback de carregamento
 
-    if (!window.firestoreDb) {
+    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         historicoDiv.innerHTML = "<p>Firestore não inicializado. Verifique a configuração do Firebase.</p>";
         console.warn("Firestore não inicializado. Não foi possível carregar o histórico.");
         return;
@@ -680,8 +686,11 @@ async function mostrarHistorico() {
     try {
         const historicoRef = window.firestoreDb.collection('historico');
         // Consulta todos os documentos, ordenados pelo protocolo (decrescente para pegar o mais recente primeiro)
-        const q = historicoRef.orderBy('protocolo', 'desc'); 
-        const querySnapshot = await q.get();
+        const q = window.firebaseFirestoreQuery(
+            historicoRef,
+            window.firebaseFirestoreOrderBy('protocolo', 'desc')
+        ); 
+        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         if (querySnapshot.empty) {
             historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado no Firebase.</p>";
@@ -715,7 +724,7 @@ async function mostrarHistorico() {
 
 // MODIFICADO: carregarCadastroFirebase agora lê um documento específico do Firebase pelo seu ID
 async function carregarCadastroFirebase(docId) {
-    if (!window.firestoreDb) {
+    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         console.warn("Firestore não inicializado. Carregamento de cadastro desabilitado.");
         return;
     }
@@ -774,7 +783,7 @@ async function carregarCadastroFirebase(docId) {
                 }
             });
         }
-        atualizarExamesSelecionadosDisplay();
+        actualizarExamesSelecionadosDisplay();
 
         alert(`Cadastro de ${cadastro.nome} carregado com sucesso do Firebase!`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -785,13 +794,11 @@ async function carregarCadastroFirebase(docId) {
     }
 }
 
-// carregarCadastro (original por índice) é mantido para compatibilidade, mas chama carregarCadastroFirebase
-// Essa função é menos eficiente e o ideal é refatorar o HTML para chamar carregarCadastroFirebase diretamente com o doc.id.
-// Por exemplo: <li onclick="carregarCadastroFirebase('ID_DO_DOCUMENTO')">
+// carregarCadastro (original por índice) é mantido para compatibilidade, mas agora chama carregarCadastroFirebase
 function carregarCadastro(index) {
-    // Esta função é uma ponte para manter a compatibilidade com os 'onclick' existentes no HTML
-    // que foram gerados antes da integração com o Firebase ID de documento.
-    // O ideal é que o HTML seja atualizado para chamar carregarCadastroFirebase(doc.id) diretamente.
+    // Para manter a compatibilidade do onclick no HTML que passa o índice,
+    // vamos buscar o documento com base no índice.
+    // O ideal seria que mostrarHistorico passasse o doc.id diretamente no onclick.
     mostrarHistorico().then(() => { // Recarrega o histórico para ter os IDs no HTML
         const historicoDiv = document.getElementById('historico');
         const listItems = historicoDiv.querySelectorAll('li');
@@ -802,7 +809,7 @@ function carregarCadastro(index) {
             if (docIdMatch && docIdMatch[1]) {
                 carregarCadastroFirebase(docIdMatch[1]);
             } else {
-                console.error("Não foi possível extrair o ID do documento do histórico.");
+                console.error("Não foi possível extrair o ID do documento do histórico. HTML precisa ser atualizado para passar o ID diretamente.");
                 alert("Erro ao carregar cadastro. ID do documento não encontrado.");
             }
         } else {
@@ -837,7 +844,7 @@ function limparCampos(showAlert = true) {
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
 
-    atualizarExamesSelecionadosDisplay();
+    actualizarExamesSelecionadosDisplay();
 
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
@@ -851,7 +858,7 @@ async function limparHistorico() {
         return;
     }
     if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
-        if (!window.firestoreDb) {
+        if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
             alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
             return;
         }
@@ -866,11 +873,11 @@ async function limparHistorico() {
             
             // Função para apagar documentos em lote
             const deleteQueryBatch = async (dbInstance, queryToDelete) => {
-                const snapshot = await queryToDelete.get();
+                const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
                 if (snapshot.empty) { // Verifica se não há mais documentos
                     return 0;
                 }
-                const batch = dbInstance.batch(); // Cria um novo lote
+                const batch = window.firebaseFirestoreWriteBatch(dbInstance); // Cria um novo lote
                 snapshot.docs.forEach(doc => {
                     batch.delete(doc.ref); // Adiciona a exclusão ao lote
                 });
@@ -881,7 +888,7 @@ async function limparHistorico() {
             let totalDeleted = 0;
             let deletedCount;
             do {
-                const q = historicoRef.limit(batchSize); // Cria uma nova query com limite em cada iteração
+                const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize)); // Cria uma nova query com limite em cada iteração
                 deletedCount = await deleteQueryBatch(window.firestoreDb, q);
                 totalDeleted += deletedCount;
                 console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
@@ -903,7 +910,7 @@ async function limparHistorico() {
 
 // MODIFICADO: Imprimir Histórico (agora lê do Firebase)
 async function imprimirHistorico() {
-    if (!window.firestoreDb) {
+    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Firestore não inicializado. Não é possível imprimir o histórico.");
         return;
     }
@@ -911,8 +918,8 @@ async function imprimirHistorico() {
     let cadastros = [];
     try {
         const historicoRef = window.firestoreDb.collection('historico');
-        const q = historicoRef.orderBy('protocolo', 'desc'); 
-        const querySnapshot = await q.get();
+        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'desc')); 
+        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
         cadastros = querySnapshot.docs.map(doc => doc.data());
     } catch (error) {
         console.error("Erro ao carregar histórico para impressão:", error);
@@ -990,8 +997,7 @@ async function imprimirHistorico() {
     };
 }
 
-// REMOVIDO: Imprimir Tela HTML/CSS não é mais necessário
-// A função imprimirTela foi removida conforme sua solicitação.
+// Removido: A função imprimirTela foi removida conforme sua solicitação.
 
 function editarListaExamesComSenha() {
     const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
