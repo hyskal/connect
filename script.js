@@ -1,8 +1,6 @@
-// VERSÃO: 2.0.1
+// VERSÃO: 2.0.2
 // CHANGELOG:
-// - Corrigido: Mensagem de alerta enganosa ao informar CPF novo (não encontrado no histórico).
-//   Agora, o sistema não alerta erro se o CPF é válido mas não está no histórico,
-//   apenas permite seguir com o cadastro.
+// - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -13,13 +11,9 @@ const SENHA_LIMPAR_HISTORICO = "sislab";
 const SENHA_EDITAR_LISTA = "sislab2025";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
-// Substitua SEU_USUARIO_GITHUB e SEU_GIST_ID pelos seus dados reais.
-// O GIST_FILENAME deve corresponder ao nome do arquivo dentro da sua Gist.
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; // Nome do arquivo dentro da sua Gist
-// ATENÇÃO: Este PAT será visível no frontend. Embora mais seguro que um PAT de repositório,
-// ainda é uma consideração de segurança. Para produção, o ideal é usar um backend.
+const GIST_FILENAME = 'exames.txt'; 
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -345,7 +339,7 @@ function validateCpfAndCheckHistory() {
     }
     
     clearError('cpf'); 
-    checkCpfInHistory(cpf); // Esta função agora busca no Firebase
+    checkCpfInHistory(cpf);
     return true;
 }
 
@@ -364,11 +358,10 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// checkCpfInHistory agora busca no Firebase e usa as funções globalizadas corretamente
+// checkCpfInHistory agora busca no banco de dados
 async function checkCpfInHistory(cpf) {
-    // Verifique se window.firestoreDb está disponível ANTES de usá-lo
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.warn("Firestore não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
+        console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
         return;
     }
     
@@ -402,15 +395,15 @@ async function checkCpfInHistory(cpf) {
                 carregarDadosBasicos(ultimoCadastro);
             }
         } else {
-            console.log("CPF não encontrado no histórico. Prossiga com o cadastro.");
+            console.log("CPF não encontrado no banco de dados. Prossiga com o cadastro.");
         }
     } catch (error) {
-        console.error("Erro ao verificar CPF no Firebase:", error);
-        alert("Erro ao buscar histórico de CPF. Verifique sua conexão e regras do Firestore.");
+        console.error("Erro ao verificar CPF no banco de dados:", error);
+        alert("Erro ao buscar histórico de CPF. Verifique sua conexão e regras do banco de dados.");
     }
 }
 
-// Função auxiliar para padronizar CPF para busca no Firebase (sem máscara)
+// Função auxiliar para padronizar CPF para busca no banco de dados (sem máscara)
 function formatarCPFParaBusca(cpfComMascara) {
     return cpfComMascara.replace(/\D/g, ''); // Remove todos os caracteres não-dígitos
 }
@@ -522,18 +515,17 @@ function coletarDados() {
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
-// Salvar Protocolo de Atendimento - Salva no Firebase e gera protocolo sequencial
+// Salvar Protocolo de Atendimento - Salva no banco de dados e gera protocolo sequencial
 async function salvarProtocoloAtendimento() {
-    // Verifique novamente a disponibilidade de firestoreDb
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Firestore não inicializado. Verifique a configuração do Firebase.");
+        alert("Banco de dados não inicializado. Verifique a configuração.");
         return;
     }
     
     try {
         const dados = coletarDados(); // Coleta dados e validações
 
-        // --- Geração do número de protocolo sequencial buscando do Firebase ---
+        // --- Geração do número de protocolo sequencial buscando do banco de dados ---
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         const q = window.firebaseFirestoreQuery(
             historicoRef,
@@ -565,9 +557,9 @@ async function salvarProtocoloAtendimento() {
         dados.timestampServidor = window.firebaseFirestoreServerTimestamp(); // Adiciona timestamp do servidor para ordenação
 
 
-        // Salva o cadastro no Firestore
+        // Salva o cadastro no banco de dados
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
-        console.log("Documento salvo no Firestore com protocolo: ", dados.protocolo);
+        console.log("Documento salvo no banco de dados com protocolo: ", dados.protocolo);
         
         // --- Geração do PDF ---
         const doc = new jsPDF();
@@ -682,21 +674,21 @@ async function salvarProtocoloAtendimento() {
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
         limparCampos(); // Limpa os campos após salvar e gerar PDF
-        mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do Firebase
+        mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do banco de dados
     } catch (error) {
-        console.error("Erro ao salvar protocolo no Firebase:", error);
-        alert("Erro ao salvar protocolo. Verifique o console para detalhes (regras do Firestore, conexão, etc.).");
+        console.error("Erro ao salvar protocolo no banco de dados:", error);
+        alert("Erro ao salvar protocolo. Verifique o console para detalhes (regras do banco de dados, conexão, etc.).");
     }
 }
 
-// MODIFICADO: mostrarHistorico agora lê do Firebase
+// MODIFICADO: mostrarHistorico agora lê do banco de dados
 async function mostrarHistorico() {
     const historicoDiv = document.getElementById('historico');
-    historicoDiv.innerHTML = "<p>Carregando histórico do Firebase...</p>"; // Feedback de carregamento
+    historicoDiv.innerHTML = "<p>Carregando histórico do banco de dados...</p>"; // Feedback de carregamento
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        historicoDiv.innerHTML = "<p>Firestore não inicializado. Verifique a configuração do Firebase.</p>";
-        console.warn("Firestore não inicializado. Não foi possível carregar o histórico.");
+        historicoDiv.innerHTML = "<p>Banco de dados não inicializado. Verifique a configuração.</p>";
+        console.warn("Banco de dados não inicializado. Não foi possível carregar o histórico.");
         return;
     }
 
@@ -710,17 +702,17 @@ async function mostrarHistorico() {
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         if (querySnapshot.empty) {
-            historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado no Firebase.</p>";
+            historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado no banco de dados.</p>";
             return;
         }
 
         let html = "<h3>Histórico de Cadastros</h3><ul>";
-        // Mapeia os documentos para um array de dados, incluindo o ID do documento do Firestore
+        // Mapeia os documentos para um array de dados, incluindo o ID do documento do banco de dados
         const cadastros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         cadastros.forEach((c) => { 
             const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
-            // AGORA: O onclick passa o ID do documento do Firestore DIRETAMENTE
+            // AGORA: O onclick passa o ID do documento do banco de dados DIRETAMENTE
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
                 html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
@@ -734,26 +726,26 @@ async function mostrarHistorico() {
         historicoDiv.innerHTML = html;
 
     } catch (error) {
-        console.error("Erro ao carregar histórico do Firebase:", error);
-        historicoDiv.innerHTML = "<p>Erro ao carregar histórico. Verifique sua conexão e regras do Firestore.</p>";
-        alert("Erro ao carregar histórico do Firebase. Consulte o console.");
+        console.error("Erro ao carregar histórico do banco de dados:", error);
+        historicoDiv.innerHTML = "<p>Erro ao carregar histórico. Verifique sua conexão e regras do banco de dados.</p>";
+        alert("Erro ao carregar histórico do banco de dados. Consulte o console.");
     }
 }
 
-// carregarCadastroFirebase agora lê um documento específico do Firebase pelo seu ID
+// carregarCadastroFirebase agora lê um documento específico do banco de dados pelo seu ID
 async function carregarCadastroFirebase(docId) {
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.warn("Firestore não inicializado. Carregamento de cadastro desabilitado.");
+        console.warn("Banco de dados não inicializado. Carregamento de cadastro desabilitado.");
         return;
     }
 
     try {
-        // Usa getFirestore, collection e doc diretamente do window.firestoreDb
+        // Usa as funções globalizadas para doc e getDoc
         const docRef = window.firebaseFirestoreDoc(window.firestoreDb, 'historico', docId);
         const docSnap = await window.firebaseFirestoreGetDoc(docRef);
 
         if (!docSnap.exists) {
-            alert("Cadastro não encontrado no Firebase.");
+            alert("Cadastro não encontrado no banco de dados.");
             return;
         }
 
@@ -771,7 +763,7 @@ async function carregarCadastroFirebase(docId) {
 
         limparCampos(false);
 
-        // Preenche os campos do formulário com os dados do Firebase
+        // Preenche os campos do formulário com os dados do banco de dados
         document.getElementById('nome').value = cadastro.nome || '';
         document.getElementById('cpf').value = cadastro.cpf || '';
         document.getElementById('data_nasc').value = cadastro.dataNasc || '';
@@ -787,7 +779,7 @@ async function carregarCadastroFirebase(docId) {
             document.getElementById('data_nasc').dispatchEvent(new Event('change'));
         }
 
-        // Desmarca todos os checkboxes e marca os do cadastro do Firebase
+        // Desmarca todos os checkboxes e marca os do cadastro do banco de dados
         const allCheckboxes = document.querySelectorAll('.exame');
         allCheckboxes.forEach(cb => cb.checked = false);
 
@@ -801,19 +793,19 @@ async function carregarCadastroFirebase(docId) {
                 }
             });
         }
-        atualizarExamesSelecionadosDisplay();
+        actualizarExamesSelecionadosDisplay();
 
-        alert(`Cadastro de ${cadastro.nome} carregado com sucesso do Firebase!`);
+        alert(`Cadastro de ${cadastro.nome} carregado com sucesso do banco de dados!`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-        console.error("Erro ao carregar cadastro do Firebase:", error);
-        alert("Erro ao carregar cadastro do Firebase. Verifique o console.");
+        console.error("Erro ao carregar cadastro do banco de dados:", error);
+        alert("Erro ao carregar cadastro do banco de dados. Verifique o console.");
     }
 }
 
 // REMOVIDO: A função carregarCadastro(index) original (que usava índice para buscar) foi removida.
-// Agora o HTML deve chamar carregarCadastroFirebase(doc.id) diretamente.
+// O HTML agora deve chamar carregarCadastroFirebase(doc.id) diretamente.
 
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
@@ -837,14 +829,14 @@ function limparCampos(showAlert = true) {
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
 
-    atualizarExamesSelecionadosDisplay();
+    actualizarExamesSelecionadosDisplay();
 
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
     }
 }
 
-// MODIFICADO: limparHistorico agora interage com Firebase
+// MODIFICADO: limparHistorico agora interage com o banco de dados
 async function limparHistorico() {
     const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
     if (senhaDigitada === null) {
@@ -852,10 +844,10 @@ async function limparHistorico() {
     }
     if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
         if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-            alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
+            alert("Banco de dados não inicializado. Limpeza de histórico desabilitada.");
             return;
         }
-        const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do Firebase? Esta ação é irreversível.");
+        const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do banco de dados? Esta ação é irreversível e apagará todos os dados de pacientes!");
         if (!confirmDeleteAll) {
             return;
         }
@@ -889,11 +881,11 @@ async function limparHistorico() {
                 await new Promise(resolve => setTimeout(resolve, 50)); 
             } while (deletedCount > 0); // Continua apagando enquanto houver documentos
 
-            alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
+            alert(`Histórico apagado com sucesso do banco de dados! Total de ${totalDeleted} registros.`);
             mostrarHistorico(); // Atualiza a exibição após a exclusão
         } catch (error) {
-            console.error("Erro ao limpar histórico do Firebase:", error);
-            alert("Erro ao limpar histórico do Firebase. Verifique o console e regras do Firestore.");
+            console.error("Erro ao limpar histórico do banco de dados:", error);
+            alert("Erro ao limpar histórico do banco de dados. Verifique o console e regras do Firestore.");
         }
 
     } else {
@@ -901,10 +893,10 @@ async function limparHistorico() {
     }
 }
 
-// MODIFICADO: Imprimir Histórico (agora lê do Firebase)
+// MODIFICADO: Imprimir Histórico (agora lê do banco de dados)
 async function imprimirHistorico() {
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Firestore não inicializado. Não é possível imprimir o histórico.");
+        alert("Banco de dados não inicializado. Não é possível imprimir o histórico.");
         return;
     }
 
@@ -916,7 +908,7 @@ async function imprimirHistorico() {
         cadastros = querySnapshot.docs.map(doc => doc.data());
     } catch (error) {
         console.error("Erro ao carregar histórico para impressão:", error);
-        alert("Erro ao carregar histórico para impressão. Verifique sua conexão e regras do Firestore.");
+        alert("Erro ao carregar histórico para impressão. Verifique sua conexão e regras do banco de dados.");
         return;
     }
 
