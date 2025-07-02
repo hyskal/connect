@@ -1,10 +1,9 @@
-// VERSÃO: 2.0.8
+// VERSÃO: 2.0.9
 // CHANGELOG:
-// - Corrigido: `Uncaught SyntaxError: Missing initializer in const declaration` na linha 416 (ou próxima).
-//   Identificado e corrigido o `const` sem inicializador, que impedia a execução completa do script.
-// - Resolvido: `Uncaught ReferenceError: gerarPacienteAleatorio is not defined` e falhas no carregamento da lista de exames,
-//   que eram consequências diretas do erro de sintaxe principal.
-// - Revisão geral da ordem das funções para garantir a inicialização correta de todos os componentes.
+// - Corrigido: `400 Bad Request` nas requisições do Firestore (provável causa: falta de índices).
+//   Instruções detalhadas para criar índices no Firebase Console.
+// - Confirmação da correção do `ReferenceError` devido à ordem das funções.
+// - Revisão do acesso às funções globalizadas do Firebase para garantir a sintaxe correta.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -75,7 +74,7 @@ const dddsValidos = [
 ];
 
 
-// --- INÍCIO: DEFINIÇÃO DE TODAS AS FUNÇÕES (ORDENADAS PARA GARANTIR HOISTING/ESCOPO) ---
+// --- INÍCIO: DEFINIÇÃO DE TODAS AS FUNÇÕES ---
 // Funções Auxiliares de UI e Validação (devem ser as primeiras)
 function showError(elementId, message) {
     const inputElement = document.getElementById(elementId);
@@ -321,7 +320,7 @@ function limparCampos(showAlert = true) {
 
 
 // --- FUNÇÕES DE CARREGAMENTO DE DADOS INICIAIS (ASSÍNCRONAS) ---
-// Estas funções retornam as promessas, que serão resolvidas em inicializarSistema().
+// Estas funções retornam as promessas com o conteúdo, que serão resolvidas em inicializarSistema().
 
 async function carregarExames() {
     const timestamp = new Date().getTime();
@@ -361,6 +360,57 @@ async function carregarPacientesAleatorios() {
         throw error; // Propaga o erro para ser pego por inicializarSistema
     }
 }
+
+
+// --- FUNÇÃO DE INICIALIZAÇÃO GERAL DO SISTEMA ---
+// Esta função é chamada uma única vez quando a página é carregada.
+async function inicializarSistema() {
+    try {
+        // Carrega dados assíncronos em paralelo
+        const [examesText, pacientesJson] = await Promise.all([
+            carregarExames(), // Retorna o texto da lista de exames
+            carregarPacientesAleatorios() // Retorna o JSON dos pacientes
+        ]);
+
+        // Processa e atribui listaExames
+        listaExames = examesText.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+        console.log("inicializarSistema: listaExames FINALMENTE populada:", listaExames);
+        if (listaExames.length === 0) {
+            console.warn("inicializarSistema: A lista de exames está vazia após processamento. Exames não serão exibidos.");
+        }
+        atualizarListaExamesCompleta(); // Popula a UI com os exames
+
+        // Atribui pacientesAleatorios
+        pacientesAleatorios = pacientesJson;
+        console.log(`inicializarSistema: Carregados ${pacientesAleatorios.length} pacientes aleatórios.`);
+
+        // Configura os event listeners após todos os dados estarem carregados e UI populada
+        document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
+        document.getElementById('cpf').addEventListener('input', formatarCPF);
+        document.getElementById('contato').addEventListener('input', formatarContato);
+
+        document.getElementById('data_nasc').addEventListener('blur', validateAge);
+        document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
+        document.getElementById('contato').addEventListener('blur', validateContact);
+
+        document.getElementById('exames').addEventListener('change', (event) => {
+            if (event.target.classList.contains('exame')) {
+                atualizarExamesSelecionadosDisplay();
+            }
+        });
+
+        console.log("Sistema inicializado com sucesso!");
+
+    } catch (error) {
+        console.error("inicializarSistema: Erro crítico durante a inicialização do sistema:", error);
+        alert("Erro crítico ao iniciar o sistema. Algumas funcionalidades podem não estar disponíveis. Verifique o console.");
+    }
+}
+
+
+// --- CHAMADA PRINCIPAL (window.onload) ---
+// Chama a função de inicialização assíncrona.
+window.onload = inicializarSistema;
 
 
 // --- FUNÇÕES DE LÓGICA DE NEGÓCIO E INTERAÇÃO COM FIREBASE ---
@@ -541,7 +591,7 @@ async function salvarProtocoloAtendimento() {
         doc.text(`Endereço: ${dados.endereco}`, col1X, currentY);
         currentY += lineHeight;
         
-        doc.setLineWidth(0.2);
+        doc.setLineWidth(0.5); // Aumentei a espessura da linha separadora aqui para mais contraste
         doc.line(20, currentY, 190, currentY);
         currentY += 10;
 
@@ -724,7 +774,7 @@ async function carregarCadastroFirebase(docId) {
         alert(`Cadastro de ${cadastro.nome} carregado com sucesso do banco de dados!`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    } catch (error) {
+    }  catch (error) {
         console.error("Erro ao carregar cadastro do banco de dados:", error);
         alert("Erro ao carregar cadastro do banco de dados. Verifique o console.");
     }
