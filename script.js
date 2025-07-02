@@ -64,22 +64,7 @@ const dddsValidos = [
     98, 99
 ];
 
-window.onload = () => {
-    carregarExames();
-    document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
-    document.getElementById('cpf').addEventListener('input', formatarCPF);
-    document.getElementById('contato').addEventListener('input', formatarContato);
-
-    document.getElementById('data_nasc').addEventListener('blur', validateAge);
-    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
-    document.getElementById('contato').addEventListener('blur', validateContact);
-
-    document.getElementById('exames').addEventListener('change', (event) => {
-        if (event.target.classList.contains('exame')) {
-            atualizarExamesSelecionadosDisplay();
-        }
-    });
-};
+// --- Todas as funções são definidas AQUI, antes de window.onload ---
 
 function carregarExames() {
     const timestamp = new Date().getTime();
@@ -87,7 +72,7 @@ function carregarExames() {
 
     fetch(gistRawUrl)
         .then(response => {
-            console.log("Conteúdo Gist/Local - Status da resposta:", response.status); // Log de depuração
+            console.log("Conteúdo Gist/Local - Status da resposta:", response.status); 
             if (!response.ok) {
                 console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
                 return fetch(`lista-de-exames.txt?t=${timestamp}`); 
@@ -95,9 +80,9 @@ function carregarExames() {
             return response.text();
         })
         .then(text => {
-            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); // Log de depuração
+            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); 
             listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-            console.log("listaExames após processamento:", listaExames); // Log de depuração
+            console.log("listaExames após processamento:", listaExames); 
             
             if (listaExames.length === 0) {
                 console.warn("A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
@@ -112,7 +97,7 @@ function carregarExames() {
         });
 }
 
-function actualizarListaExamesCompleta() {
+function atualizarListaExamesCompleta() {
     const container = document.getElementById('exames');
     container.innerHTML = "";
 
@@ -122,7 +107,7 @@ function actualizarListaExamesCompleta() {
         container.appendChild(label);
         container.appendChild(document.createElement('br'));
     });
-    actualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay();
 }
 
 function configurarPesquisa() {
@@ -182,10 +167,10 @@ function marcarExame(exameNome) {
         examesContainer.appendChild(document.createElement('br'));
         label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    actualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay();
 }
 
-function actualizarExamesSelecionadosDisplay() {
+function atualizarExamesSelecionadosDisplay() {
     const displayContainer = document.getElementById('examesSelecionadosDisplay');
     const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
     
@@ -220,7 +205,7 @@ function removerExameDisplay(exameNome) {
     if (checkbox) {
         checkbox.checked = false;
     }
-    actualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay();
 }
 
 function showError(elementId, message) {
@@ -266,7 +251,7 @@ function validarDataNascimento(dataString) {
     return !isNaN(nascimento.getTime()) && nascimento <= hoje;
 }
 
-function actualizarIdade() {
+function atualizarIdade() {
     validateAge();
 }
 
@@ -363,11 +348,12 @@ async function checkCpfInHistory(cpf) {
     try {
         const historicoRef = window.firestoreDb.collection('historico');
         // Consulta para encontrar documentos com o CPF, ordenados pelo protocolo (descendente)
-        const q = historicoRef.where('cpf', '==', formatarCPFParaBusca(cpf))
-                               .orderBy('protocolo', 'desc') // Ordena para pegar o mais recente
-                               .limit(1); // Pega apenas o mais recente
+        const q = window.firebaseFirestoreQuery(historicoRef,
+                               window.firebaseFirestoreWhere('cpf', '==', formatarCPFParaBusca(cpf)), // Use where para filtrar por CPF
+                               window.firebaseFirestoreOrderBy('protocolo', 'desc'),
+                               window.firebaseFirestoreLimit(1)); 
 
-        const querySnapshot = await q.get();
+        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         if (!querySnapshot.empty) {
             const ultimoCadastroDoc = querySnapshot.docs[0];
@@ -507,6 +493,7 @@ function coletarDados() {
 
 // MODIFICADO: Salvar Protocolo de Atendimento - Salva no Firebase e gera protocolo sequencial
 async function salvarProtocoloAtendimento() {
+    // Verifique novamente a disponibilidade de firestoreDb
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Firestore não inicializado. Verifique a configuração do Firebase.");
         return;
@@ -516,7 +503,6 @@ async function salvarProtocoloAtendimento() {
         const dados = coletarDados(); // Coleta dados e validações
 
         // --- Geração do número de protocolo sequencial buscando do Firebase ---
-        // Acessa collection e orderBy etc. através de window.firestoreDb ou window.firebaseFirestoreCollection etc.
         const historicoRef = window.firestoreDb.collection('historico');
         const q = window.firebaseFirestoreQuery(
             historicoRef,
@@ -545,6 +531,8 @@ async function salvarProtocoloAtendimento() {
         const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
         
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
+        dados.timestamp = window.firebaseFirestoreFieldValue.serverTimestamp(); // Adiciona timestamp do servidor
+
 
         // Salva o cadastro no Firestore
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
@@ -662,7 +650,9 @@ async function salvarProtocoloAtendimento() {
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
-        // Removida chamada para enviarParaPlanilha(dados);
+        // NOTA: A função enviarParaPlanilha foi desativada, pois a persistência é agora via Firestore.
+        // Se ainda precisar de integração com Forms/Sheets, esta função precisaria ser reativada/revisada.
+        // enviarParaPlanilha(dados);
 
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do Firebase
@@ -701,8 +691,9 @@ async function mostrarHistorico() {
         // Mapeia os documentos para um array de dados, incluindo o ID do documento do Firestore
         const cadastros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        cadastros.forEach((c) => { // Removido o index do forEach pois usaremos o c.id
-            const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; // Usa o ID do doc se protocolo não existir
+        cadastros.forEach((c) => { 
+            const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
+            // Agora, o onclick passa o ID do documento do Firestore
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
                 html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
@@ -794,33 +785,10 @@ async function carregarCadastroFirebase(docId) {
     }
 }
 
-// carregarCadastro (original por índice) é mantido para compatibilidade, mas agora chama carregarCadastroFirebase
-function carregarCadastro(index) {
-    // Para manter a compatibilidade do onclick no HTML que passa o índice,
-    // vamos buscar o documento com base no índice.
-    // O ideal seria que mostrarHistorico passasse o doc.id diretamente no onclick.
-    mostrarHistorico().then(() => { // Recarrega o histórico para ter os IDs no HTML
-        const historicoDiv = document.getElementById('historico');
-        const listItems = historicoDiv.querySelectorAll('li');
-        if (listItems.length > index) {
-            // Extrai o ID do documento da string onclick
-            const onclickString = listItems[index].getAttribute('onclick');
-            const docIdMatch = onclickString.match(/'([^']+)'/);
-            if (docIdMatch && docIdMatch[1]) {
-                carregarCadastroFirebase(docIdMatch[1]);
-            } else {
-                console.error("Não foi possível extrair o ID do documento do histórico. HTML precisa ser atualizado para passar o ID diretamente.");
-                alert("Erro ao carregar cadastro. ID do documento não encontrado.");
-            }
-        } else {
-            alert("Erro: Item de histórico não encontrado para carregar.");
-        }
-    }).catch(error => {
-        console.error("Erro ao recarregar histórico para carregar por índice:", error);
-        alert("Erro ao carregar histórico. Tente recarregar a página.");
-    });
-}
-
+// carregarCadastro (original por índice) foi removido.
+// O HTML agora deve chamar carregarCadastroFirebase(doc.id) diretamente
+// no onclick dos itens da lista de histórico. Isso requer uma pequena mudança no HTML
+// na função mostrarHistorico onde o <li> é criado.
 
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
@@ -957,7 +925,7 @@ async function imprimirHistorico() {
             <ul>
     `;
 
-    cadastros.forEach((c) => { // Removido o index pois não é usado dentro do loop
+    cadastros.forEach((c) => { 
         const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
         printContent += `
             <li>
@@ -997,7 +965,7 @@ async function imprimirHistorico() {
     };
 }
 
-// Removido: A função imprimirTela foi removida conforme sua solicitação.
+// Removido: A função imprimirTela (para imprimir o layout HTML) foi removida conforme sua solicitação.
 
 function editarListaExamesComSenha() {
     const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
@@ -1078,42 +1046,4 @@ async function salvarListaExamesNoGitHub() {
     }
 }
 
-async function enviarParaPlanilha(dados) {
-    if (GOOGLE_FORM_URL.includes('SEU_FORM_ID')) {
-        console.warn("URL do Google Form não configurada. Envio para planilha ignorado.");
-        return;
-    }
-
-    try {
-        const formData = new FormData();
-        formData.append(GOOGLE_FORM_ENTRIES.nome, dados.nome); 
-        formData.append(GOOGLE_FORM_ENTRIES.cpf, dados.cpf);
-        formData.append(GOOGLE_FORM_ENTRIES.dataNasc, dados.dataNasc);
-        formData.append(GOOGLE_FORM_ENTRIES.idade, dados.idade);
-        formData.append(GOOGLE_FORM_ENTRIES.sexo, dados.sexo);
-        formData.append(GOOGLE_FORM_ENTRIES.endereco, dados.endereco);
-        formData.append(GOOGLE_FORM_ENTRIES.contato, dados.contato);
-        formData.append(GOOGLE_FORM_ENTRIES.exames, dados.exames.join(", "));
-        formData.append(GOOGLE_FORM_ENTRIES.observacoes, dados.observacoes);
-        formData.append(GOOGLE_FORM_ENTRIES.examesNaoListados, dados.examesNaoListados);
-
-        const controller = new AbortController();
-        const signal = controller.signal;
-
-        const requestPromise = fetch(GOOGLE_FORM_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: formData,
-            signal: signal
-        });
-
-        const timeoutId = setTimeout(() => controller.abort(), 10000); 
-
-        await requestPromise;
-        clearTimeout(timeoutId);
-
-        console.log('Dados enviados para a planilha (no-cors).');
-    } catch (error) {
-        console.error("Erro ao enviar dados para a planilha:", error);
-    }
-}
+// Removida a função enviarParaPlanilha, pois a integração com Google Forms foi descontinuada para o histórico.
