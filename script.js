@@ -20,7 +20,8 @@ const GITHUB_PAT_GIST = (function() {
     return p1 + p2 + p3 + p4 + p5 + p6;
 })();
 
-// --- CONFIGURAÇÃO DA PLANILHA (Google Forms) ---
+// --- CONFIGURAÇÃO DA PLANILHA (Google Forms - Descontinuada para Histórico) ---
+// Estas constantes não são mais usadas, mas mantidas por segurança caso precise de referência futura.
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
 const GOOGLE_FORM_ENTRIES = {
     nome: 'entry.1111111111',
@@ -34,6 +35,7 @@ const GOOGLE_FORM_ENTRIES = {
     observacoes: 'entry.9999999999',
     examesNaoListados: 'entry.0000000000'
 };
+
 
 // Lista de DDIs brasileiros válidos
 const dddsValidos = [
@@ -64,7 +66,22 @@ const dddsValidos = [
     98, 99
 ];
 
-// --- Todas as funções são definidas AQUI, antes de window.onload ---
+window.onload = () => {
+    carregarExames();
+    document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
+    document.getElementById('cpf').addEventListener('input', formatarCPF);
+    document.getElementById('contato').addEventListener('input', formatarContato);
+
+    document.getElementById('data_nasc').addEventListener('blur', validateAge);
+    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
+    document.getElementById('contato').addEventListener('blur', validateContact);
+
+    document.getElementById('exames').addEventListener('change', (event) => {
+        if (event.target.classList.contains('exame')) {
+            atualizarExamesSelecionadosDisplay();
+        }
+    });
+};
 
 function carregarExames() {
     const timestamp = new Date().getTime();
@@ -337,7 +354,7 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// NOVO: checkCpfInHistory busca no Firebase
+// checkCpfInHistory agora busca no Firebase e usa as funções globalizadas corretamente
 async function checkCpfInHistory(cpf) {
     // Verifique se window.firestoreDb está disponível ANTES de usá-lo
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
@@ -346,13 +363,15 @@ async function checkCpfInHistory(cpf) {
     }
     
     try {
-        const historicoRef = window.firestoreDb.collection('historico');
-        // Consulta para encontrar documentos com o CPF, ordenados pelo protocolo (descendente)
+        // Acessa a coleção usando a função globalizada
+        const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
+        // Constrói a query usando as funções globalizadas
         const q = window.firebaseFirestoreQuery(historicoRef,
-                               window.firebaseFirestoreWhere('cpf', '==', formatarCPFParaBusca(cpf)), // Use where para filtrar por CPF
+                               window.firebaseFirestoreWhere('cpf', '==', formatarCPFParaBusca(cpf)),
                                window.firebaseFirestoreOrderBy('protocolo', 'desc'),
                                window.firebaseFirestoreLimit(1)); 
 
+        // Executa a query usando a função globalizada
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         if (!querySnapshot.empty) {
@@ -493,7 +512,6 @@ function coletarDados() {
 
 // MODIFICADO: Salvar Protocolo de Atendimento - Salva no Firebase e gera protocolo sequencial
 async function salvarProtocoloAtendimento() {
-    // Verifique novamente a disponibilidade de firestoreDb
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Firestore não inicializado. Verifique a configuração do Firebase.");
         return;
@@ -503,7 +521,7 @@ async function salvarProtocoloAtendimento() {
         const dados = coletarDados(); // Coleta dados e validações
 
         // --- Geração do número de protocolo sequencial buscando do Firebase ---
-        const historicoRef = window.firestoreDb.collection('historico');
+        const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         const q = window.firebaseFirestoreQuery(
             historicoRef,
             window.firebaseFirestoreOrderBy('protocolo', 'desc'),
@@ -531,8 +549,7 @@ async function salvarProtocoloAtendimento() {
         const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
         
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
-        dados.timestamp = window.firebaseFirestoreFieldValue.serverTimestamp(); // Adiciona timestamp do servidor
-
+        dados.timestampServidor = window.firebaseFirestoreServerTimestamp(); // Adiciona timestamp do servidor para ordenação
 
         // Salva o cadastro no Firestore
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
@@ -650,9 +667,9 @@ async function salvarProtocoloAtendimento() {
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
-        // NOTA: A função enviarParaPlanilha foi desativada, pois a persistência é agora via Firestore.
-        // Se ainda precisar de integração com Forms/Sheets, esta função precisaria ser reativada/revisada.
-        // enviarParaPlanilha(dados);
+        // A função enviarParaPlanilha foi desativada, pois a persistência é agora via Firestore.
+        // Você pode remover essa chamada ou adaptá-la para outra finalidade se desejar.
+        // enviarParaPlanilha(dados); 
 
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do Firebase
@@ -674,7 +691,7 @@ async function mostrarHistorico() {
     }
 
     try {
-        const historicoRef = window.firestoreDb.collection('historico');
+        const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         // Consulta todos os documentos, ordenados pelo protocolo (decrescente para pegar o mais recente primeiro)
         const q = window.firebaseFirestoreQuery(
             historicoRef,
@@ -693,7 +710,7 @@ async function mostrarHistorico() {
 
         cadastros.forEach((c) => { 
             const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
-            // Agora, o onclick passa o ID do documento do Firestore
+            // Agora, o onclick passa o ID do documento do Firestore.
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
                 html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
@@ -722,8 +739,8 @@ async function carregarCadastroFirebase(docId) {
 
     try {
         // Usa getFirestore, collection e doc diretamente do window.firestoreDb
-        const docRef = window.firestoreDb.collection('historico').doc(docId);
-        const docSnap = await docRef.get();
+        const docRef = window.firebaseFirestoreDoc(window.firestoreDb, 'historico', docId);
+        const docSnap = await window.firebaseFirestoreGetDoc(docRef);
 
         if (!docSnap.exists) {
             alert("Cadastro não encontrado no Firebase.");
@@ -774,7 +791,7 @@ async function carregarCadastroFirebase(docId) {
                 }
             });
         }
-        actualizarExamesSelecionadosDisplay();
+        atualizarExamesSelecionadosDisplay();
 
         alert(`Cadastro de ${cadastro.nome} carregado com sucesso do Firebase!`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -812,7 +829,7 @@ function limparCampos(showAlert = true) {
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
 
-    actualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay();
 
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
@@ -836,7 +853,7 @@ async function limparHistorico() {
         }
 
         try {
-            const historicoRef = window.firestoreDb.collection('historico');
+            const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
             const batchSize = 100; // Apaga em lotes de 100
             
             // Função para apagar documentos em lote
@@ -885,7 +902,7 @@ async function imprimirHistorico() {
 
     let cadastros = [];
     try {
-        const historicoRef = window.firestoreDb.collection('historico');
+        const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'desc')); 
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
         cadastros = querySnapshot.docs.map(doc => doc.data());
