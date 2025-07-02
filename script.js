@@ -1,6 +1,8 @@
-// VERSÃO: 2.0.2
+// VERSÃO: 2.0.1
 // CHANGELOG:
-// - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
+// - Corrigido: Mensagem de alerta enganosa ao informar CPF novo (não encontrado no histórico).
+//   Agora, o sistema não alerta erro se o CPF é válido mas não está no histórico,
+//   apenas permite seguir com o cadastro.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -11,9 +13,13 @@ const SENHA_LIMPAR_HISTORICO = "sislab";
 const SENHA_EDITAR_LISTA = "sislab2025";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
+// Substitua SEU_USUARIO_GITHUB e SEU_GIST_ID pelos seus dados reais.
+// O GIST_FILENAME deve corresponder ao nome do arquivo dentro da sua Gist.
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; 
+const GIST_FILENAME = 'exames.txt'; // Nome do arquivo dentro da sua Gist
+// ATENÇÃO: Este PAT será visível no frontend. Embora mais seguro que um PAT de repositório,
+// ainda é uma consideração de segurança. Para produção, o ideal é usar um backend.
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -308,7 +314,7 @@ function limparCampos(showAlert = true) {
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
 
-    atualizarExamesSelecionadosDisplay(); // Garante que a coluna de exibição é limpa
+    atualizarExamesSelecionadosDisplay();
 
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
@@ -344,6 +350,10 @@ async function carregarExames() {
     }
 }
 
+// NÃO CONFERE COM OS LOGS, POIS OS LOGS APONTAM QUE ESTA FUNÇÃO FOI DEFINIDA, MAS O ERRO É DE 'is not defined'.
+// ESTA FUNÇÃO DEVE SER REMOVIDA DAQUI, POIS NA V2.0.2 ELA AINDA NÃO EXISTIA.
+// NO CONTEXTO ATUAL, ESTE CÓDIGO DA V2.0.2 NÃO TINHA GERADOR DE PACIENTES.
+/*
 async function carregarPacientesAleatorios() {
     try {
         const response = await fetch('pacientes_aleatorios.json'); // Assumindo que o arquivo está na raiz
@@ -357,11 +367,13 @@ async function carregarPacientesAleatorios() {
         throw error; // Propaga o erro para ser pego por inicializarSistema
     }
 }
+*/
 
 
 // --- FUNÇÕES DE LÓGICA DE NEGÓCIO E INTERAÇÃO COM FIREBASE ---
 
-// Geração de Paciente Aleatório e Preenchimento do Formulário
+// REMOVIDO: A função gerarPacienteAleatorio não existia na V2.0.2.
+/*
 function gerarPacienteAleatorio() { 
     if (pacientesAleatorios.length === 0) {
         alert("Nenhum paciente aleatório carregado. Verifique o arquivo 'pacientes_aleatorios.json'.");
@@ -369,41 +381,38 @@ function gerarPacienteAleatorio() {
     }
 
     const randomIndex = Math.floor(Math.random() * pacientesAleatorios.length);
-    const paciente = pacientesAleatorios[randomIndex]; // CORRIGIDO: 'paciente' agora é inicializado aqui.
+    const paciente = pacientesAleatorios[randomIndex]; 
 
-    limparCampos(false); // Limpa o formulário antes de preencher
+    limparCampos(false); 
 
-    // Preenche os dados do paciente
     document.getElementById('nome').value = paciente.nome;
     document.getElementById('data_nasc').value = paciente.dataNasc;
-    document.getElementById('data_nasc').dispatchEvent(new Event('change')); // Aciona o evento para calcular idade
+    document.getElementById('data_nasc').dispatchEvent(new Event('change')); 
     document.getElementById('sexo').value = paciente.sexo || (Math.random() < 0.5 ? 'Masculino' : 'Feminino');
     document.getElementById('cpf').value = paciente.cpf;
     document.getElementById('contato').value = paciente.contato;
     document.getElementById('endereco').value = paciente.endereco;
     document.getElementById('observacoes').value = paciente.observacoes;
 
-    // Marca os exames selecionados para este paciente
     const allCheckboxes = document.querySelectorAll('#exames .exame');
-    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos primeiro
+    allCheckboxes.forEach(cb => cb.checked = false); 
 
     if (paciente.examesSelecionados && Array.isArray(paciente.examesSelecionados)) {
         paciente.examesSelecionados.forEach(exameNome => {
             const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
             if (checkbox) {
                 checkbox.checked = true;
-                // Opcional: rolar até o exame, mas pode ser demais para múltiplos
-                // checkbox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
                 console.warn(`Exame "${exameNome}" do paciente aleatório não encontrado na lista principal de exames.`);
             }
         });
     }
-    atualizarExamesSelecionadosDisplay(); // Atualiza a terceira coluna
+    atualizarExamesSelecionadosDisplay(); 
 
     alert(`Paciente "${paciente.nome}" gerado e preenchido!`);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
 }
+*/
 
 
 function coletarDados() {
@@ -616,7 +625,7 @@ async function mostrarHistorico() {
 
     try {
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-        // Consulta todos os documentos, ordenados pelo protocolo (descendente para pegar o mais recente primeiro)
+        // Consulta todos os documentos, ordenados pelo protocolo (decrescente para pegar o mais recente primeiro)
         const q = window.firebaseFirestoreQuery(
             historicoRef,
             window.firebaseFirestoreOrderBy('protocolo', 'desc')
