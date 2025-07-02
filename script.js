@@ -7,9 +7,13 @@ const SENHA_LIMPAR_HISTORICO = "sislab";
 const SENHA_EDITAR_LISTA = "sislab2025";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
+// Substitua SEU_USUARIO_GITHUB e SEU_GIST_ID pelos seus dados reais.
+// O GIST_FILENAME deve corresponder ao nome do arquivo dentro da sua Gist.
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; 
+const GIST_FILENAME = 'exames.txt'; // Nome do arquivo dentro da sua Gist
+// ATENÇÃO: Este PAT será visível no frontend. Embora mais seguro que um PAT de repositório,
+// ainda é uma consideração de segurança. Para produção, o ideal é usar um backend.
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -21,7 +25,10 @@ const GITHUB_PAT_GIST = (function() {
 })();
 
 // --- CONFIGURAÇÃO DA PLANILHA (Google Forms) ---
+// Substitua 'SEU_FORM_ID' pelo ID real do seu Google Form
+// Se esta URL não for configurada corretamente, o envio para a planilha será ignorado.
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
+// Mapeamento dos campos do formulário HTML para os 'entry.XXXXXXXXXX' do Google Forms
 const GOOGLE_FORM_ENTRIES = {
     nome: 'entry.1111111111',
     cpf: 'entry.2222222222',
@@ -35,72 +42,7 @@ const GOOGLE_FORM_ENTRIES = {
     examesNaoListados: 'entry.0000000000'
 };
 
-// --- CONFIGURAÇÃO DO FIREBASE (adicione aqui seu firebaseConfig) ---
-// Você deve obter este objeto no console do Firebase, em "Configurações do Projeto" -> "Seus aplicativos" (selecione seu app web)
-const firebaseConfig = {
-    apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
-    authDomain: "sislab-cetep.firebaseapp.com",
-    projectId: "sislab-cetep",
-    storageBucket: "sislab-cetep.firebasestorage.app",
-    messagingSenderId: "958611861664",
-    appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
-    measurementId: "G-3TL54MWJFS" // Necessário para Analytics, se habilitado
-};
-
-// --- IMPORTAÇÕES E INICIALIZAÇÃO DO FIREBASE ---
-// As importações abaixo são para uso com type="module" no HTML.
-// Se você está incluindo o Firebase via CDN globalmente (sem type="module" no script.js),
-// estas linhas 'import' devem ser removidas e 'firebase.firestore()' usado diretamente.
-// Assumindo que você está usando a abordagem de tornar o 'app' e 'analytics' globais como discutido:
-// window.app = firebase.initializeApp(firebaseConfig);
-// window.analytics = firebase.analytics(); // Se Analytics estiver habilitado
-
-// Para que o Firestore funcione, você precisa ter a CDN do Firestore no seu HTML também:
-// <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-// Ou a versão modular se você estiver importando (como o bloco que você me deu do Firebase):
-// import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-// import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-// import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
-
-// Inicializa o app Firebase (se não for feito globalmente no HTML)
-// Se você está usando o bloco <script type="module"> do Firebase no HTML,
-// então 'app' e 'analytics' já estarão definidos no 'window' ou no escopo do módulo.
-// Vou redefinir para garantir que este script JS veja a instância do Firebase
-// Se você está usando o bloco 'type="module"' no HTML e tornando-o global:
-const app = window.firebaseApp; // Ou window.app se você usou 'window.app = initializeApp(firebaseConfig);'
-const db = window.firestoreDb; // Ou window.db se você usou 'window.db = getFirestore(app);'
-const analytics = window.firebaseAnalytics; // Ou window.analytics
-
-
-// Se você usar o bloco type="module" do Firebase no HTML e quer que esse script.js veja as variáveis,
-// o ideal seria que o script.js também fosse um módulo (com type="module" na tag script).
-// Mas para manter a compatibilidade com seu setup anterior, vou assumir que você tornou
-// 'app' e 'analytics' globais (ex: window.app = app; window.analytics = analytics; no bloco do Firebase)
-// E que você também fez o mesmo para o Firestore:
-// const db = getFirestore(app);
-// window.db = db; // Torna o db global
-
-// Exemplo de como você tornaria global no seu HTML, dentro do seu <script type="module">
-/*
-  // ... seu firebaseConfig ...
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app); // Inicializa o Firestore
-  const analytics = getAnalytics(app); // Inicializa o Analytics
-
-  // Torna acessível a outros scripts se eles não forem módulos
-  window.firebaseApp = app;
-  window.firestoreDb = db;
-  window.firebaseAnalytics = analytics;
-*/
-// FIM: Assunção de globalização das variáveis Firebase
-
-// Agora, este script JS usará window.firestoreDb para interagir com o Firestore.
-
-
+// Lista de DDIs brasileiros válidos
 const dddsValidos = [
     11, 12, 13, 14, 15, 16, 17, 18, 19,
     21, 22, 24,
@@ -417,7 +359,7 @@ async function checkCpfInHistory(cpf) {
     }
     
     try {
-        const historicoRef = firebase.firestore().collection('historico');
+        const historicoRef = window.firestoreDb.collection('historico');
         // Consulta para encontrar documentos com o CPF, ordenados pelo protocolo (descendente)
         const q = historicoRef.where('cpf', '==', formatarCPFParaBusca(cpf))
                                .orderBy('protocolo', 'desc') // Ordena para pegar o mais recente
@@ -440,8 +382,6 @@ async function checkCpfInHistory(cpf) {
             );
 
             if (confirmLoad) {
-                // Ao carregar do Firebase, passamos o objeto completo.
-                // carregarDadosBasicos espera o objeto.
                 carregarDadosBasicos(ultimoCadastro);
             }
         }
@@ -574,7 +514,7 @@ async function salvarProtocoloAtendimento() {
         const dados = coletarDados(); // Coleta dados e validações
 
         // --- Geração do número de protocolo sequencial buscando do Firebase ---
-        const historicoRef = firebase.firestore().collection('historico');
+        const historicoRef = window.firestoreDb.collection('historico');
         const q = historicoRef.orderBy('protocolo', 'desc').limit(1); // Busca o último protocolo
         const querySnapshot = await q.get();
 
@@ -600,8 +540,8 @@ async function salvarProtocoloAtendimento() {
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
 
         // Salva o cadastro no Firestore
-        await firebase.firestore().collection('historico').add(dados);
-        console.log("Documento salvo no Firestore com ID: ", dados.protocolo);
+        await historicoRef.add(dados);
+        console.log("Documento salvo no Firestore com protocolo: ", dados.protocolo);
         
         // --- Geração do PDF ---
         const doc = new jsPDF();
@@ -729,7 +669,7 @@ async function salvarProtocoloAtendimento() {
 // MODIFICADO: mostrarHistorico agora lê do Firebase
 async function mostrarHistorico() {
     const historicoDiv = document.getElementById('historico');
-    historicoDiv.innerHTML = "<p>Carregando histórico...</p>"; // Feedback de carregamento
+    historicoDiv.innerHTML = "<p>Carregando histórico do Firebase...</p>"; // Feedback de carregamento
 
     if (!window.firestoreDb) {
         historicoDiv.innerHTML = "<p>Firestore não inicializado. Verifique a configuração do Firebase.</p>";
@@ -738,8 +678,8 @@ async function mostrarHistorico() {
     }
 
     try {
-        const historicoRef = firebase.firestore().collection('historico');
-        // Ordena pelo protocolo (decrescente para pegar o mais recente primeiro)
+        const historicoRef = window.firestoreDb.collection('historico');
+        // Consulta todos os documentos, ordenados pelo protocolo (decrescente para pegar o mais recente primeiro)
         const q = historicoRef.orderBy('protocolo', 'desc'); 
         const querySnapshot = await q.get();
 
@@ -749,10 +689,10 @@ async function mostrarHistorico() {
         }
 
         let html = "<h3>Histórico de Cadastros</h3><ul>";
-        // Mapeia os documentos para um array de dados
+        // Mapeia os documentos para um array de dados, incluindo o ID do documento do Firestore
         const cadastros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        cadastros.forEach((c, index) => {
+        cadastros.forEach((c) => { // Removido o index do forEach pois usaremos o c.id
             const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; // Usa o ID do doc se protocolo não existir
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
@@ -773,7 +713,7 @@ async function mostrarHistorico() {
     }
 }
 
-// NOVO: carregarCadastroFirebase agora lê um documento específico do Firebase
+// MODIFICADO: carregarCadastroFirebase agora lê um documento específico do Firebase pelo seu ID
 async function carregarCadastroFirebase(docId) {
     if (!window.firestoreDb) {
         console.warn("Firestore não inicializado. Carregamento de cadastro desabilitado.");
@@ -781,7 +721,8 @@ async function carregarCadastroFirebase(docId) {
     }
 
     try {
-        const docRef = firebase.firestore().collection('historico').doc(docId);
+        // Usa getFirestore, collection e doc diretamente do window.firestoreDb
+        const docRef = window.firestoreDb.collection('historico').doc(docId);
         const docSnap = await docRef.get();
 
         if (!docSnap.exists) {
@@ -829,7 +770,6 @@ async function carregarCadastroFirebase(docId) {
                 if (checkbox) {
                     checkbox.checked = true;
                 } else {
-                    // Se o exame do histórico não está na lista atual de exames, adiciona dinamicamente
                     marcarExame(exameNome); 
                 }
             });
@@ -845,29 +785,32 @@ async function carregarCadastroFirebase(docId) {
     }
 }
 
-// carregarCadastro original é agora uma função de wrapper
-// para manter compatibilidade com onclick no HTML que passa index.
-// Ela vai chamar carregarCadastroFirebase
+// carregarCadastro (original por índice) é mantido para compatibilidade, mas chama carregarCadastroFirebase
+// Essa função é menos eficiente e o ideal é refatorar o HTML para chamar carregarCadastroFirebase diretamente com o doc.id.
+// Por exemplo: <li onclick="carregarCadastroFirebase('ID_DO_DOCUMENTO')">
 function carregarCadastro(index) {
-    // Para manter a compatibilidade do onclick no HTML que passa o índice,
-    // vamos buscar o documento com base no índice (o que é ineficiente para Firestore).
-    // O ideal seria que mostrarHistorico passasse o doc.id diretamente.
-    // Mas para evitar mudar o HTML agora, faremos uma busca por índice.
-    // ATENÇÃO: Esta parte é menos eficiente. Se for um histórico grande,
-    // considere passar o doc.id diretamente no onclick de mostrarHistorico.
-
-    // A maneira mais performática é refatorar mostrarHistorico para:
-    // html += `<li onclick="carregarCadastroFirebase('${c.id}')">...</li>`
-    // E remover esta função de wrapper.
-    mostrarHistorico().then(() => { // Recarrega o histórico para ter os IDs
+    // Esta função é uma ponte para manter a compatibilidade com os 'onclick' existentes no HTML
+    // que foram gerados antes da integração com o Firebase ID de documento.
+    // O ideal é que o HTML seja atualizado para chamar carregarCadastroFirebase(doc.id) diretamente.
+    mostrarHistorico().then(() => { // Recarrega o histórico para ter os IDs no HTML
         const historicoDiv = document.getElementById('historico');
         const listItems = historicoDiv.querySelectorAll('li');
         if (listItems.length > index) {
-            const docId = listItems[index].getAttribute('onclick').match(/'([^']+)'/)[1]; // Extrai o ID do onclick
-            carregarCadastroFirebase(docId);
+            // Extrai o ID do documento da string onclick
+            const onclickString = listItems[index].getAttribute('onclick');
+            const docIdMatch = onclickString.match(/'([^']+)'/);
+            if (docIdMatch && docIdMatch[1]) {
+                carregarCadastroFirebase(docIdMatch[1]);
+            } else {
+                console.error("Não foi possível extrair o ID do documento do histórico.");
+                alert("Erro ao carregar cadastro. ID do documento não encontrado.");
+            }
         } else {
             alert("Erro: Item de histórico não encontrado para carregar.");
         }
+    }).catch(error => {
+        console.error("Erro ao recarregar histórico para carregar por índice:", error);
+        alert("Erro ao carregar histórico. Tente recarregar a página.");
     });
 }
 
@@ -918,31 +861,33 @@ async function limparHistorico() {
         }
 
         try {
-            const historicoRef = firebase.firestore().collection('historico');
+            const historicoRef = window.firestoreDb.collection('historico');
             const batchSize = 100; // Apaga em lotes de 100
-            let query = historicoRef.limit(batchSize);
-
+            
             // Função para apagar documentos em lote
             const deleteQueryBatch = async (dbInstance, queryToDelete) => {
                 const snapshot = await queryToDelete.get();
-                if (snapshot.size === 0) {
+                if (snapshot.empty) { // Verifica se não há mais documentos
                     return 0;
                 }
-                const batch = dbInstance.batch();
+                const batch = dbInstance.batch(); // Cria um novo lote
                 snapshot.docs.forEach(doc => {
-                    batch.delete(doc.ref);
+                    batch.delete(doc.ref); // Adiciona a exclusão ao lote
                 });
-                await batch.commit();
-                return snapshot.size;
+                await batch.commit(); // Executa o lote
+                return snapshot.size; // Retorna quantos documentos foram apagados
             };
 
-            let deletedCount = 0;
             let totalDeleted = 0;
+            let deletedCount;
             do {
-                deletedCount = await deleteQueryBatch(firebase.firestore(), query);
+                const q = historicoRef.limit(batchSize); // Cria uma nova query com limite em cada iteração
+                deletedCount = await deleteQueryBatch(window.firestoreDb, q);
                 totalDeleted += deletedCount;
                 console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
-            } while (deletedCount === batchSize); // Continua apagando se ainda houver documentos
+                // Adicione um pequeno atraso para evitar hitting rate limits do Firestore em deletes muito rápidos
+                await new Promise(resolve => setTimeout(resolve, 50)); 
+            } while (deletedCount > 0); // Continua apagando enquanto houver documentos
 
             alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
             mostrarHistorico(); // Atualiza a exibição após a exclusão
@@ -956,7 +901,7 @@ async function limparHistorico() {
     }
 }
 
-// Imprimir Histórico (agora lê do Firebase)
+// MODIFICADO: Imprimir Histórico (agora lê do Firebase)
 async function imprimirHistorico() {
     if (!window.firestoreDb) {
         alert("Firestore não inicializado. Não é possível imprimir o histórico.");
@@ -965,7 +910,7 @@ async function imprimirHistorico() {
 
     let cadastros = [];
     try {
-        const historicoRef = firebase.firestore().collection('historico');
+        const historicoRef = window.firestoreDb.collection('historico');
         const q = historicoRef.orderBy('protocolo', 'desc'); 
         const querySnapshot = await q.get();
         cadastros = querySnapshot.docs.map(doc => doc.data());
@@ -1005,8 +950,8 @@ async function imprimirHistorico() {
             <ul>
     `;
 
-    cadastros.forEach((c, index) => {
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
+    cadastros.forEach((c) => { // Removido o index pois não é usado dentro do loop
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
         printContent += `
             <li>
                 <b>${protocoloDisplay}</b><br>
@@ -1045,290 +990,8 @@ async function imprimirHistorico() {
     };
 }
 
-// Imprimir Tela agora gera PDF com conteúdo específico e rodapé
-function imprimirTela() {
-    // 1. Coleta todos os dados necessários do formulário
-    const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
-    const dataNasc = document.getElementById('data_nasc').value;
-    const sexo = document.getElementById('sexo').value;
-    const endereco = document.getElementById('endereco').value.trim();
-    const contato = document.getElementById('contato').value.trim();
-    const observacoes = document.getElementById('observacoes').value.trim(); // Pega as observações
-    const exames = Array.from(document.querySelectorAll('#exames .exame:checked')).map(e => e.value); // Pega os exames selecionados
-    const examesNaoListados = document.getElementById('examesNaoListados').value.trim(); // Pega exames não listados
-
-    // 2. Validações básicas antes de gerar o PDF
-    if (!nome) { alert("Preencha o nome para imprimir."); return; }
-    // Ajustado para permitir impressão se houver exames ou observações
-    if (exames.length === 0 && !examesNaoListados && !observacoes) { alert("Selecione ou adicione exames, ou preencha observações para imprimir."); return; } 
-
-    const doc = new jsPDF();
-    const [ano, mes, dia] = dataNasc.split('-');
-    const dataNascFormatada = `${dia}/${mes}/${ano}`;
-
-    let currentY = 15; // Posição Y inicial
-    const lineHeight = 7; // Altura de cada linha de texto
-    const marginX = 20; // Margem lateral padrão
-    const pageHeightLimit = 270; // Altura limite antes de adicionar nova página (para A4 com margens de 20mm)
-
-    // Helper para adicionar rodapé e nova página com título da seção
-    const addPageAndFooterWithTitle = (sectionTitle = null) => {
-        // Adiciona rodapé na página atual antes de adicionar uma nova
-        const now = new Date();
-        const dateTimeString = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-        doc.setFontSize(8);
-        doc.text(`Documento gerado automaticamente pelo SISLAB - ${dateTimeString}`, 105, 290, null, null, "center");
-
-        doc.addPage(); // Adiciona nova página
-        currentY = 20; // Nova posição Y no início da nova página (margem superior)
-
-        // Reimprime o cabeçalho principal do documento em cada nova página
-        doc.setFontSize(18);
-        doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, 15, null, null, "center"); // Título atualizado
-        doc.setFontSize(10);
-        doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 105, 23, null, null, "center");
-        doc.setFontSize(8);
-        doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, 27, null, null, "center");
-        doc.text("Site: https://www.ceteplnab.com.br/", 105, 31, null, null, "center");
-        doc.setLineWidth(0.5);
-        doc.line(marginX, 36, 190, 36); // Linha após o cabeçalho
-        currentY = 45; // Ajusta currentY após o cabeçalho da nova página
-
-        // Se houver um título de seção, reimprime-o
-        if (sectionTitle) {
-            doc.setFontSize(14);
-            doc.text(sectionTitle, marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-    };
-
-    // --- Título Principal do Documento (apenas na primeira página, logo abaixo do cabeçalho do lab) ---
-    doc.setFontSize(20);
-    doc.text("SISLAB - Cadastro de Exames", 105, currentY, null, null, "center");
-    currentY += 15;
-    doc.setLineWidth(0.5);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Dados do Paciente ---
-    // Estima espaço necessário para a seção inteira (título + 6 linhas de dados + separador)
-    if (currentY + (lineHeight * 6) + 20 > pageHeightLimit) { 
-        addPageAndFooterWithTitle("DADOS DO PACIENTE:");
-    } else {
-        doc.setFontSize(14);
-        doc.text("DADOS DO PACIENTE:", marginX, currentY);
-        currentY += 8;
-        doc.setFontSize(11);
-    }
-    
-    const col1X = marginX + 5;
-    const col2X = 110;
-
-    doc.text(`Nome: ${nome}`, col1X, currentY);
-    doc.text(`CPF: ${cpf}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Data de Nasc.: ${dataNascFormatada}`, col1X, currentY);
-    doc.text(`Idade: ${document.getElementById('idade').value}`, col2X, currentY); 
-    currentY += lineHeight;
-    doc.text(`Sexo: ${sexo}`, col1X, currentY);
-    doc.text(`Contato: ${contato}`, col2X, currentY);
-    currentY += lineHeight;
-    doc.text(`Endereço: ${endereco}`, col1X, currentY);
-    currentY += lineHeight;
-    
-    currentY += 5; 
-    if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); } // Quebra se a linha separadora não couber
-    doc.setLineWidth(0.2);
-    doc.line(marginX, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Seção: Exames Selecionados ---
-    // Só adiciona a seção se tiver exames selecionados ou adicionais
-    if (exames.length > 0 || examesNaoListados) { 
-        // Estima espaço necessário para a lista de exames selecionados
-        if (currentY + (exames.length * lineHeight) + (lineHeight * 2) + 10 > pageHeightLimit && exames.length > 0) {
-            addPageAndFooterWithTitle("EXAMES SELECIONADOS:");
-        } else {
-            doc.setFontSize(14);
-            doc.text("EXAMES SELECIONADOS:", marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-
-        if (exames.length > 0) {
-            exames.forEach(exame => {
-                if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("EXAMES SELECIONADOS (Cont.):"); }
-                doc.text(`- ${exame}`, marginX + 5, currentY);
-                currentY += lineHeight;
-            });
-        } else {
-            // Caso não haja exames da lista, mas há exames não listados, still print this section title
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("EXAMES SELECIONADOS (Cont.):"); }
-            doc.text("Nenhum exame da lista selecionado.", marginX + 5, currentY);
-            currentY += lineHeight;
-        }
-        
-        currentY += 5; // Espaço antes do separador de exames não listados
-        if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-
-
-    // --- Seção: Exames Não Listados ---
-    if (examesNaoListados) {
-        if (currentY + (lineHeight * 2) > pageHeightLimit) { 
-            addPageAndFooterWithTitle("EXAMES ADICIONAIS (NÃO LISTADOS):");
-        } else {
-            doc.setFontSize(14);
-            doc.text("EXAMES ADICIONAIS (NÃO LISTADOS):", marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-        
-        const splitText = doc.splitTextToSize(examesNaoListados, 170); // Largura do texto
-        
-        splitText.forEach(line => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("EXAMES ADICIONAIS (NÃO LISTADOS) (Cont.):"); }
-            doc.text(line, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-        currentY += 5;
-        if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-    
-    // --- Seção: Observações ---
-    if (observacoes) {
-        if (currentY + (lineHeight * 2) > pageHeightLimit) { 
-            addPageAndFooterWithTitle("OBSERVAÇÕES:");
-        } else {
-            doc.setFontSize(14);
-            doc.text("OBSERVAÇÕES:", marginX, currentY);
-            currentY += 8;
-            doc.setFontSize(11);
-        }
-        
-        const splitText = doc.splitTextToSize(observacoes, 170);
-        
-        splitText.forEach(line => {
-            if (currentY + lineHeight > pageHeightLimit) { addPageAndFooterWithTitle("OBSERVAÇÕES (Cont.):"); }
-            doc.text(line, marginX + 5, currentY);
-            currentY += lineHeight;
-        });
-        currentY += 5;
-        if (currentY + 10 > pageHeightLimit) { addPageAndFooterWithTitle(); }
-        doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY);
-        currentY += 10;
-    }
-
-    // Adiciona o rodapé a todas as páginas geradas
-    const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        const now = new Date(); // Garante que a data/hora seja a da impressão
-        const dateTimeString = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-        doc.text(`Documento gerado automaticamente pelo SISLAB - ${dateTimeString}`, 105, 290, null, null, "center");
-    }
-
-    doc.output('dataurlnewwindow', { filename: `Impressao_Tela_${nome.replace(/\s+/g, "_")}.pdf` });
-}
-
-function imprimirHistorico() {
-    // MODIFICADO: imprimirHistorico agora lê do Firebase
-    if (!window.firestoreDb) {
-        alert("Firestore não inicializado. Não é possível imprimir o histórico.");
-        return;
-    }
-
-    let cadastros = [];
-    try {
-        const historicoRef = firebase.firestore().collection('historico');
-        const q = historicoRef.orderBy('protocolo', 'desc'); 
-        const querySnapshot = await q.get();
-        cadastros = querySnapshot.docs.map(doc => doc.data());
-    } catch (error) {
-        console.error("Erro ao carregar histórico para impressão:", error);
-        alert("Erro ao carregar histórico para impressão. Verifique sua conexão e regras do Firestore.");
-        return;
-    }
-
-    if (cadastros.length === 0) {
-        alert("Não há histórico para imprimir.");
-        return;
-    }
-
-    let printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Histórico de Cadastros - Impressão</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                h1 { text-align: center; color: #1A2B4C; }
-                ul { list-style-type: none; padding: 0; }
-                li {
-                    border: 1px solid #ddd;
-                    padding: 10px;
-                    margin-bottom: 10px;
-                    border-radius: 5px;
-                    background-color: #f9f9f9;
-                }
-                li b { color: #333; }
-                li p { margin: 5px 0; }
-            </style>
-        </head>
-        <body>
-            <h1>Histórico de Cadastros do Laboratório CETEP</h1>
-            <ul>
-    `;
-
-    cadastros.forEach((c, index) => {
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `Registro #${index + 1}`;
-        printContent += `
-            <li>
-                <b>${protocoloDisplay}</b><br>
-                <p><strong>Nome:</strong> ${c.nome}</p>
-                <p><strong>CPF:</strong> ${c.cpf}</p>
-                <p><strong>Data de Nasc.:</strong> ${c.dataNasc}</p>
-                <p><strong>Idade:</strong> ${c.idade}</p>
-                <p><strong>Sexo:</strong> ${c.sexo}</p>
-                <p><strong>Endereço:</strong> ${c.endereco}</p>
-                <p><strong>Contato:</strong> ${c.contato}</p>
-                <p><strong>Exames Selecionados:</strong> ${c.exames.join(", ")}</p>
-        `;
-        if (c.examesNaoListados) {
-            printContent += `<p><strong>Exames Adicionais:</strong> ${c.examesNaoListados}</p>`;
-        }
-        if (c.observacoes) {
-            printContent += `<p><strong>Observações:</strong> ${c.observacoes}</p>`;
-        }
-        printContent += `</li>`;
-    });
-
-    printContent += `
-            </ul>
-        </body>
-        </html>
-    `;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.focus();
-
-    printWindow.onload = function() {
-        printWindow.print();
-    };
-}
+// REMOVIDO: Imprimir Tela HTML/CSS não é mais necessário
+// A função imprimirTela foi removida conforme sua solicitação.
 
 function editarListaExamesComSenha() {
     const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
