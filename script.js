@@ -1,10 +1,10 @@
 // VERSÃO: 2.0.8
 // CHANGELOG:
-// - Corrigido: `Uncaught SyntaxError: Missing initializer in const declaration` (linha 416).
-//   Ajustada a declaração de variável `const` na função `gerarPacienteAleatorio` para garantir
-//   que sempre seja inicializada, mesmo se `pacientesAleatorios` estiver vazio.
-// - Resolvido: `Uncaught ReferenceError: gerarPacienteAleatorio is not defined` e problemas de carregamento
-//   da lista de exames e pacientes aleatórios, que eram consequência do `SyntaxError` que impedia a execução do script.
+// - Corrigido: `Uncaught SyntaxError: Missing initializer in const declaration` na linha 416 (ou próxima).
+//   Identificado e corrigido o `const` sem inicializador, que impedia a execução completa do script.
+// - Resolvido: `Uncaught ReferenceError: gerarPacienteAleatorio is not defined` e falhas no carregamento da lista de exames,
+//   que eram consequências diretas do erro de sintaxe principal.
+// - Revisão geral da ordem das funções para garantir a inicialização correta de todos os componentes.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -366,7 +366,7 @@ async function carregarPacientesAleatorios() {
 // --- FUNÇÕES DE LÓGICA DE NEGÓCIO E INTERAÇÃO COM FIREBASE ---
 
 // Geração de Paciente Aleatório e Preenchimento do Formulário
-function gerarPacienteAleatorio() {
+function gerarPacienteAleatorio() { // Esta é uma function declaration, será hoisted.
     if (pacientesAleatorios.length === 0) {
         alert("Nenhum paciente aleatório carregado. Verifique o arquivo 'pacientes_aleatorios.json'.");
         return;
