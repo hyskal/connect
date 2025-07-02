@@ -595,9 +595,9 @@
         <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
         <button onclick="mostrarHistorico()">Ver Histórico</button>
         <button onclick="imprimirHistorico()">Imprimir Histórico</button>
-        <button onclick="window.print()">Imprimir Tela</button> <button onclick="limparCampos()">Limpar Campos</button>
-        <button onclick="limparHistorico()">Limpar Histórico</button>
+        <button onclick="limparCampos()">Limpar Campos</button>
         <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
+        <button onclick="window.location.href='admin.html'">Acessar Admin</button> 
     </div>
 
     <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -615,8 +615,9 @@
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         // Importar TODOS os módulos do Firestore que serão usados
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        // Não é necessário importar Analytics se você não o usa neste script específico
+        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -626,19 +627,19 @@
             storageBucket: "sislab-cetep.firebasestorage.app",
             messagingSenderId: "958611861664",
             appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
-            measurementId: "G-3TL54MWJFS"
+            // measurementId: "G-3TL54MWJFS" // Descomente se for usar Analytics globalmente
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app); // Inicializa o Firestore
-        const analytics = getAnalytics(app); // Inicializa o Analytics
+        // const analytics = getAnalytics(app); // Inicializa o Analytics se measurementId estiver configurado
 
         // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
         // Isso permite que o script.js (que é um script 'clássico') as use
         window.firebaseApp = app;
         window.firestoreDb = db;
-        window.firebaseAnalytics = analytics;
+        // window.firebaseAnalytics = analytics; // Torna Analytics global se for usar
 
         // Funções do Firestore para usar no script.js
         window.firebaseFirestoreCollection = collection;
@@ -650,9 +651,11 @@
         window.firebaseFirestoreDeleteDoc = deleteDoc;
         window.firebaseFirestoreDoc = doc;
         window.firebaseFirestoreWriteBatch = writeBatch;
-        window.firebaseFirestoreWhere = where; // Adicionado 'where'
-        window.firebaseFirestoreServerTimestamp = serverTimestamp; // Adicionado 'serverTimestamp'
-        window.firebaseFirestoreGetDoc = getDoc; // Adicionado 'getDoc'
+        window.firebaseFirestoreWhere = where; 
+        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreGetDoc = getDoc;
+        // Se precisar de FieldValue (para timestamp), importe também
+        window.firebaseFirestoreFieldValue = FieldValue; 
 
     </script>
     <script src="script.js"></script>
