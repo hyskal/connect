@@ -1,9 +1,12 @@
-// VERSÃO: 2.0.2
+// VERSÃO: 2.0.3
 // CHANGELOG:
-// - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
+// - Implementado: Geração de Pacientes Aleatórios para teste.
+//   - Um novo arquivo 'pacientes_aleatorios.json' será lido na inicialização.
+//   - Novo botão "Gerar Paciente Aleatório" preenche o formulário e marca exames.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
+let pacientesAleatorios = []; // NOVO: Array para armazenar os pacientes aleatórios
 
 // Definir a senha para limpar o histórico
 const SENHA_LIMPAR_HISTORICO = "sislab";
@@ -25,7 +28,6 @@ const GITHUB_PAT_GIST = (function() {
 })();
 
 // --- CONFIGURAÇÃO DA PLANILHA (Google Forms - Descontinuada para Histórico) ---
-// Estas constantes não são mais usadas, mas mantidas por segurança caso precise de referência futura.
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
 const GOOGLE_FORM_ENTRIES = {
     nome: 'entry.1111111111',
@@ -70,8 +72,10 @@ const dddsValidos = [
     98, 99
 ];
 
-window.onload = () => {
-    carregarExames();
+window.onload = async () => { // Adicionado 'async' para poder usar await aqui
+    await carregarExames(); // Carrega e exibe a lista de exames
+    await carregarPacientesAleatorios(); // NOVO: Carrega os pacientes aleatórios ao iniciar
+
     document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
     document.getElementById('cpf').addEventListener('input', formatarCPF);
     document.getElementById('contato').addEventListener('input', formatarContato);
@@ -86,6 +90,68 @@ window.onload = () => {
         }
     });
 };
+
+// NOVO: Função para carregar os pacientes aleatórios do arquivo JSON
+async function carregarPacientesAleatorios() {
+    try {
+        const response = await fetch('pacientes_aleatorios.json'); // Assumindo que o arquivo está na raiz
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar pacientes_aleatorios.json: ${response.status}`);
+        }
+        pacientesAleatorios = await response.json();
+        console.log(`Carregados ${pacientesAleatorios.length} pacientes aleatórios.`);
+    } catch (error) {
+        console.error("Erro ao carregar pacientes aleatórios:", error);
+        alert("Não foi possível carregar a lista de pacientes aleatórios para teste.");
+    }
+}
+
+// NOVO: Função para gerar um paciente aleatório e preencher o formulário
+function gerarPacienteAleatorio() {
+    if (pacientesAleatorios.length === 0) {
+        alert("Nenhum paciente aleatório carregado. Verifique o arquivo 'pacientes_aleatorios.json'.");
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * pacientesAleatorios.length);
+    const paciente = pacientesAleatorios[randomIndex];
+
+    // Limpa o formulário antes de preencher
+    limparCampos(false); 
+
+    // Preenche os dados do paciente
+    document.getElementById('nome').value = paciente.nome;
+    document.getElementById('data_nasc').value = paciente.dataNasc;
+    // Aciona o evento change para o campo data_nasc para que a idade seja calculada
+    document.getElementById('data_nasc').dispatchEvent(new Event('change')); 
+    document.getElementById('sexo').value = paciente.sexo || (Math.random() < 0.5 ? 'Masculino' : 'Feminino'); // Sexo aleatório se não definido no JSON
+    document.getElementById('cpf').value = paciente.cpf;
+    document.getElementById('contato').value = paciente.contato;
+    document.getElementById('endereco').value = paciente.endereco;
+    document.getElementById('observacoes').value = paciente.observacoes;
+
+    // Marca os exames selecionados para este paciente
+    const allCheckboxes = document.querySelectorAll('#exames .exame');
+    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos primeiro
+
+    if (paciente.examesSelecionados && Array.isArray(paciente.examesSelecionados)) {
+        paciente.examesSelecionados.forEach(exameNome => {
+            const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                // Opcional: rolar até o exame, mas pode ser demais para múltiplos
+                // checkbox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                console.warn(`Exame "${exameNome}" do paciente aleatório não encontrado na lista principal de exames.`);
+            }
+        });
+    }
+    atualizarExamesSelecionadosDisplay(); // Atualiza a terceira coluna
+
+    alert(`Paciente "${paciente.nome}" gerado e preenchido!`);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
+}
+
 
 function carregarExames() {
     const timestamp = new Date().getTime();
@@ -339,7 +405,7 @@ function validateCpfAndCheckHistory() {
     }
     
     clearError('cpf'); 
-    checkCpfInHistory(cpf);
+    checkCpfInHistory(cpf); // Esta função agora busca no banco de dados
     return true;
 }
 
@@ -358,7 +424,7 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// checkCpfInHistory agora busca no banco de dados
+// checkCpfInHistory agora busca no banco de dados e usa as funções globalizadas corretamente
 async function checkCpfInHistory(cpf) {
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
@@ -673,6 +739,10 @@ async function salvarProtocoloAtendimento() {
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
+        // A função enviarParaPlanilha foi desativada, pois a persistência é agora via Firestore.
+        // Você pode remover essa chamada ou adaptá-la para outra finalidade se desejar.
+        // enviarParaPlanilha(dados); 
+
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do banco de dados
     } catch (error) {
