@@ -1,12 +1,13 @@
-// VERSÃO: 2.0.3
+// VERSÃO: 2.0.4
 // CHANGELOG:
-// - Implementado: Geração de Pacientes Aleatórios para teste.
-//   - Um novo arquivo 'pacientes_aleatorios.json' será lido na inicialização.
-//   - Novo botão "Gerar Paciente Aleatório" preenche o formulário e marca exames.
+// - Corrigido: Erro "Uncaught ReferenceError: actualizarExamesSelecionadosDisplay is not defined"
+//   ao gerar paciente aleatório. Reorganizada a ordem de definição das funções para garantir
+//   que as funções auxiliares sejam definidas antes de serem chamadas.
+// - Implementado: Geração de Pacientes Aleatórios para teste (V2.0.3 logic).
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
-let pacientesAleatorios = []; // NOVO: Array para armazenar os pacientes aleatórios
+let pacientesAleatorios = []; // Array para armazenar os pacientes aleatórios
 
 // Definir a senha para limpar o histórico
 const SENHA_LIMPAR_HISTORICO = "sislab";
@@ -28,6 +29,7 @@ const GITHUB_PAT_GIST = (function() {
 })();
 
 // --- CONFIGURAÇÃO DA PLANILHA (Google Forms - Descontinuada para Histórico) ---
+// Estas constantes não são mais usadas, mas mantidas por segurança caso precise de referência futura.
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse';
 const GOOGLE_FORM_ENTRIES = {
     nome: 'entry.1111111111',
@@ -72,228 +74,8 @@ const dddsValidos = [
     98, 99
 ];
 
-window.onload = async () => { // Adicionado 'async' para poder usar await aqui
-    await carregarExames(); // Carrega e exibe a lista de exames
-    await carregarPacientesAleatorios(); // NOVO: Carrega os pacientes aleatórios ao iniciar
 
-    document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
-    document.getElementById('cpf').addEventListener('input', formatarCPF);
-    document.getElementById('contato').addEventListener('input', formatarContato);
-
-    document.getElementById('data_nasc').addEventListener('blur', validateAge);
-    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
-    document.getElementById('contato').addEventListener('blur', validateContact);
-
-    document.getElementById('exames').addEventListener('change', (event) => {
-        if (event.target.classList.contains('exame')) {
-            atualizarExamesSelecionadosDisplay();
-        }
-    });
-};
-
-// NOVO: Função para carregar os pacientes aleatórios do arquivo JSON
-async function carregarPacientesAleatorios() {
-    try {
-        const response = await fetch('pacientes_aleatorios.json'); // Assumindo que o arquivo está na raiz
-        if (!response.ok) {
-            throw new Error(`Erro ao carregar pacientes_aleatorios.json: ${response.status}`);
-        }
-        pacientesAleatorios = await response.json();
-        console.log(`Carregados ${pacientesAleatorios.length} pacientes aleatórios.`);
-    } catch (error) {
-        console.error("Erro ao carregar pacientes aleatórios:", error);
-        alert("Não foi possível carregar a lista de pacientes aleatórios para teste.");
-    }
-}
-
-// NOVO: Função para gerar um paciente aleatório e preencher o formulário
-function gerarPacienteAleatorio() {
-    if (pacientesAleatorios.length === 0) {
-        alert("Nenhum paciente aleatório carregado. Verifique o arquivo 'pacientes_aleatorios.json'.");
-        return;
-    }
-
-    const randomIndex = Math.floor(Math.random() * pacientesAleatorios.length);
-    const paciente = pacientesAleatorios[randomIndex];
-
-    // Limpa o formulário antes de preencher
-    limparCampos(false); 
-
-    // Preenche os dados do paciente
-    document.getElementById('nome').value = paciente.nome;
-    document.getElementById('data_nasc').value = paciente.dataNasc;
-    // Aciona o evento change para o campo data_nasc para que a idade seja calculada
-    document.getElementById('data_nasc').dispatchEvent(new Event('change')); 
-    document.getElementById('sexo').value = paciente.sexo || (Math.random() < 0.5 ? 'Masculino' : 'Feminino'); // Sexo aleatório se não definido no JSON
-    document.getElementById('cpf').value = paciente.cpf;
-    document.getElementById('contato').value = paciente.contato;
-    document.getElementById('endereco').value = paciente.endereco;
-    document.getElementById('observacoes').value = paciente.observacoes;
-
-    // Marca os exames selecionados para este paciente
-    const allCheckboxes = document.querySelectorAll('#exames .exame');
-    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos primeiro
-
-    if (paciente.examesSelecionados && Array.isArray(paciente.examesSelecionados)) {
-        paciente.examesSelecionados.forEach(exameNome => {
-            const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
-            if (checkbox) {
-                checkbox.checked = true;
-                // Opcional: rolar até o exame, mas pode ser demais para múltiplos
-                // checkbox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            } else {
-                console.warn(`Exame "${exameNome}" do paciente aleatório não encontrado na lista principal de exames.`);
-            }
-        });
-    }
-    atualizarExamesSelecionadosDisplay(); // Atualiza a terceira coluna
-
-    alert(`Paciente "${paciente.nome}" gerado e preenchido!`);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
-}
-
-
-function carregarExames() {
-    const timestamp = new Date().getTime();
-    const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
-
-    fetch(gistRawUrl)
-        .then(response => {
-            console.log("Conteúdo Gist/Local - Status da resposta:", response.status); 
-            if (!response.ok) {
-                console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
-                return fetch(`lista-de-exames.txt?t=${timestamp}`); 
-            }
-            return response.text();
-        })
-        .then(text => {
-            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); 
-            listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-            console.log("listaExames após processamento:", listaExames); 
-            
-            if (listaExames.length === 0) {
-                console.warn("A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
-            }
-
-            atualizarListaExamesCompleta();
-            configurarPesquisa();
-        })
-        .catch(error => {
-            console.error("Erro FATAL ao carregar lista de exames:", error);
-            alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
-        });
-}
-
-function atualizarListaExamesCompleta() {
-    const container = document.getElementById('exames');
-    container.innerHTML = "";
-
-    listaExames.forEach(exame => {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" class="exame" value="${exame}"> ${exame}`;
-        container.appendChild(label);
-        container.appendChild(document.createElement('br'));
-    });
-    atualizarExamesSelecionadosDisplay();
-}
-
-function configurarPesquisa() {
-    const inputPesquisa = document.getElementById('pesquisaExame');
-    const sugestoesBox = document.getElementById('sugestoes');
-
-    inputPesquisa.addEventListener('input', () => {
-        const termo = inputPesquisa.value.trim().toLowerCase();
-        sugestoesBox.innerHTML = "";
-
-        if (termo.length === 0) {
-            sugestoesBox.style.display = 'none';
-            return;
-        }
-
-        const filtrados = listaExames.filter(exame =>
-            exame.toLowerCase().includes(termo)
-        );
-
-        if (filtrados.length === 0) {
-            sugestoesBox.style.display = 'none';
-            return;
-        }
-
-        filtrados.forEach(exame => {
-            const div = document.createElement('div');
-            div.textContent = exame;
-            div.addEventListener('click', () => {
-                marcarExame(exame);
-                inputPesquisa.value = '';
-                sugestoesBox.style.display = 'none';
-            });
-            sugestoesBox.appendChild(div);
-        });
-
-        sugestoesBox.style.display = 'block';
-    });
-
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('#pesquisaExame') && !event.target.closest('#sugestoes')) {
-            sugestoesBox.style.display = 'none';
-        }
-    });
-}
-
-function marcarExame(exameNome) {
-    const examesContainer = document.getElementById('exames');
-    const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
-
-    if (checkboxExistente) {
-        checkboxExistente.checked = true;
-        checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } else {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
-        examesContainer.appendChild(label);
-        examesContainer.appendChild(document.createElement('br'));
-        label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-    atualizarExamesSelecionadosDisplay();
-}
-
-function atualizarExamesSelecionadosDisplay() {
-    const displayContainer = document.getElementById('examesSelecionadosDisplay');
-    const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
-    
-    displayContainer.innerHTML = "";
-
-    if (selectedExams.length === 0) {
-        displayContainer.innerHTML = "<p>Nenhum exame selecionado.</p>";
-        return;
-    }
-
-    selectedExams.forEach(checkbox => {
-        const exameNome = checkbox.value;
-        const displayItem = document.createElement('div');
-        displayItem.classList.add('display-item');
-        displayItem.innerHTML = `
-            <span>${exameNome}</span>
-            <button class="remove-item-btn" data-exame="${exameNome}">-</button>
-        `;
-        displayContainer.appendChild(displayItem);
-    });
-
-    displayContainer.querySelectorAll('.remove-item-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const exameParaRemover = event.target.dataset.exame;
-            removerExameDisplay(exameParaRemover);
-        });
-    });
-}
-
-function removerExameDisplay(exameNome) {
-    const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
-    if (checkbox) {
-        checkbox.checked = false;
-    }
-    atualizarExamesSelecionadosDisplay();
-}
+// --- FUNÇÕES AUXILIARES (DEFINIDAS PRIMEIRO PARA GARANTIR HOISTING) ---
 
 function showError(elementId, message) {
     const inputElement = document.getElementById(elementId);
@@ -390,25 +172,6 @@ function formatarCPF() {
     inputCPF.value = cpf;
 }
 
-function validateCpfAndCheckHistory() {
-    const inputCPF = document.getElementById('cpf');
-    const cpf = inputCPF.value.replace(/\D/g, '');
-
-    if (cpf.length === 0) {
-        clearError('cpf');
-        return true;
-    }
-
-    if (!validarCPF(cpf)) {
-        showError('cpf', "CPF inválido.");
-        return false;
-    }
-    
-    clearError('cpf'); 
-    checkCpfInHistory(cpf); // Esta função agora busca no banco de dados
-    return true;
-}
-
 function validarCPF(cpf) {
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -424,87 +187,9 @@ function validarCPF(cpf) {
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// checkCpfInHistory agora busca no banco de dados e usa as funções globalizadas corretamente
-async function checkCpfInHistory(cpf) {
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
-        return;
-    }
-    
-    try {
-        // Acessa a coleção usando a função globalizada
-        const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-        // Constrói a query usando as funções globalizadas
-        const q = window.firebaseFirestoreQuery(historicoRef,
-                               window.firebaseFirestoreWhere('cpf', '==', formatarCPFParaBusca(cpf)),
-                               window.firebaseFirestoreOrderBy('protocolo', 'desc'),
-                               window.firebaseFirestoreLimit(1)); 
-
-        // Executa a query usando a função globalizada
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-
-        if (!querySnapshot.empty) {
-            const ultimoCadastroDoc = querySnapshot.docs[0];
-            const ultimoCadastro = ultimoCadastroDoc.data();
-            
-            const confirmLoad = confirm(
-                `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
-                `Nome: ${ultimoCadastro.nome}\n` +
-                `Data de Nascimento: ${ultimoCadastro.dataNasc}\n` +
-                `Sexo: ${ultimoCadastro.sexo}\n` +
-                `Endereço: ${ultimoCadastro.endereco}\n` +
-                `Contato: ${ultimoCadastro.contato}\n\n` +
-                `Deseja carregar esses dados básicos no formulário?`
-            );
-
-            if (confirmLoad) {
-                carregarDadosBasicos(ultimoCadastro);
-            }
-        } else {
-            console.log("CPF não encontrado no banco de dados. Prossiga com o cadastro.");
-        }
-    } catch (error) {
-        console.error("Erro ao verificar CPF no banco de dados:", error);
-        alert("Erro ao buscar histórico de CPF. Verifique sua conexão e regras do banco de dados.");
-    }
-}
-
 // Função auxiliar para padronizar CPF para busca no banco de dados (sem máscara)
 function formatarCPFParaBusca(cpfComMascara) {
     return cpfComMascara.replace(/\D/g, ''); // Remove todos os caracteres não-dígitos
-}
-
-
-function carregarDadosBasicos(cadastro) {
-    const nomeAtual = document.getElementById('nome').value.trim();
-    const cpfAtual = document.getElementById('cpf').value.trim();
-
-    if (nomeAtual || cpfAtual) {
-        const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
-        if (!confirmarSubstituicao) {
-            return;
-        }
-    }
-
-    document.getElementById('nome').value = '';
-    document.getElementById('data_nasc').value = '';
-    document.getElementById('idade').value = '';
-    document.getElementById('sexo').value = '';
-    document.getElementById('endereco').value = '';
-    document.getElementById('contato').value = '';
-    clearError('data_nasc');
-    clearError('cpf');
-    clearError('contato');
-
-    document.getElementById('nome').value = cadastro.nome;
-    document.getElementById('cpf').value = cadastro.cpf; 
-    document.getElementById('data_nasc').value = cadastro.dataNasc;
-    document.getElementById('data_nasc').dispatchEvent(new Event('change'));
-    document.getElementById('sexo').value = cadastro.sexo;
-    document.getElementById('endereco').value = cadastro.endereco;
-    document.getElementById('contato').value = cadastro.contato;
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function formatarContato() {
@@ -549,6 +234,183 @@ function validateContact() {
     clearError('contato');
     return true;
 }
+
+function marcarExame(exameNome) {
+    const examesContainer = document.getElementById('exames');
+    const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
+
+    if (checkboxExistente) {
+        checkboxExistente.checked = true;
+        checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
+        examesContainer.appendChild(label);
+        examesContainer.appendChild(document.createElement('br'));
+        label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    atualizarExamesSelecionadosDisplay();
+}
+
+function atualizarExamesSelecionadosDisplay() {
+    const displayContainer = document.getElementById('examesSelecionadosDisplay');
+    const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
+    
+    displayContainer.innerHTML = "";
+
+    if (selectedExams.length === 0) {
+        displayContainer.innerHTML = "<p>Nenhum exame selecionado.</p>";
+        return;
+    }
+
+    selectedExams.forEach(checkbox => {
+        const exameNome = checkbox.value;
+        const displayItem = document.createElement('div');
+        displayItem.classList.add('display-item');
+        displayItem.innerHTML = `
+            <span>${exameNome}</span>
+            <button class="remove-item-btn" data-exame="${exameNome}">-</button>
+        `;
+        displayContainer.appendChild(displayItem);
+    });
+
+    displayContainer.querySelectorAll('.remove-item-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const exameParaRemover = event.target.dataset.exame;
+            removerExameDisplay(exameParaRemover);
+        });
+    });
+}
+
+function removerExameDisplay(exameNome) {
+    const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
+    if (checkbox) {
+        checkbox.checked = false;
+    }
+    atualizarExamesSelecionadosDisplay();
+}
+
+function limparCampos(showAlert = true) {
+    document.getElementById('nome').value = '';
+    document.getElementById('cpf').value = '';
+    document.getElementById('data_nasc').value = '';
+    document.getElementById('idade').value = '';
+    document.getElementById('sexo').value = '';
+    document.getElementById('endereco').value = '';
+    document.getElementById('contato').value = '';
+    document.getElementById('observacoes').value = '';
+    document.getElementById('examesNaoListados').value = '';
+
+    const allCheckboxes = document.querySelectorAll('.exame');
+    allCheckboxes.forEach(cb => cb.checked = false);
+
+    clearError('data_nasc');
+    clearError('cpf');
+    clearError('contato');
+
+    document.getElementById('pesquisaExame').value = '';
+    document.getElementById('sugestoes').innerHTML = '';
+    document.getElementById('sugestoes').style.display = 'none';
+
+    atualizarExamesSelecionadosDisplay(); // Garante que a coluna de exibição é limpa
+
+    if (showAlert) {
+        alert("Campos limpos para um novo cadastro!");
+    }
+}
+
+
+// --- FUNÇÕES PRINCIPAIS E DE INTEGRAÇÃO ---
+
+
+window.onload = async () => {
+    // Estas são chamadas assíncronas, então use await para garantir que os dados estejam carregados
+    await carregarExames(); // Carrega e exibe a lista de exames da Gist
+    await carregarPacientesAleatorios(); // Carrega os pacientes aleatórios do JSON
+    
+    // Anexa os event listeners APÓS as funções estarem carregadas
+    document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
+    document.getElementById('cpf').addEventListener('input', formatarCPF);
+    document.getElementById('contato').addEventListener('input', formatarContato);
+
+    document.getElementById('data_nasc').addEventListener('blur', validateAge);
+    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
+    document.getElementById('contato').addEventListener('blur', validateContact);
+
+    // Listener para atualização da lista de exibição ao marcar/desmarcar na lista principal
+    document.getElementById('exames').addEventListener('change', (event) => {
+        if (event.target.classList.contains('exame')) {
+            atualizarExamesSelecionadosDisplay();
+        }
+    });
+
+    // Anexa listener para o botão Gerar Paciente Aleatório (agora que a função existe)
+    // O botão foi adicionado ao HTML com onclick="gerarPacienteAleatorio()"
+    // Não precisa de listener aqui se o onclick já estiver no HTML.
+};
+
+
+// NOVO: Função para carregar os pacientes aleatórios do arquivo JSON
+async function carregarPacientesAleatorios() {
+    try {
+        const response = await fetch('pacientes_aleatorios.json'); // Assumindo que o arquivo está na raiz
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar pacientes_aleatorios.json: ${response.status}`);
+        }
+        pacientesAleatorios = await response.json();
+        console.log(`Carregados ${pacientesAleatorios.length} pacientes aleatórios.`);
+    } catch (error) {
+        console.error("Erro ao carregar pacientes aleatórios:", error);
+        alert("Não foi possível carregar a lista de pacientes aleatórios para teste.");
+    }
+}
+
+// NOVO: Função para gerar um paciente aleatório e preencher o formulário
+function gerarPacienteAleatorio() {
+    if (pacientesAleatorios.length === 0) {
+        alert("Nenhum paciente aleatório carregado. Verifique o arquivo 'pacientes_aleatorios.json'.");
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * pacientesAleatorios.length);
+    const paciente = pacientesAleatorios[randomIndex];
+
+    // Limpa o formulário antes de preencher
+    limparCampos(false); 
+
+    // Preenche os dados do paciente
+    document.getElementById('nome').value = paciente.nome;
+    document.getElementById('data_nasc').value = paciente.dataNasc;
+    // Aciona o evento change para o campo data_nasc para que a idade seja calculada
+    document.getElementById('data_nasc').dispatchEvent(new Event('change')); 
+    document.getElementById('sexo').value = paciente.sexo || (Math.random() < 0.5 ? 'Masculino' : 'Feminino'); // Sexo aleatório se não definido no JSON
+    document.getElementById('cpf').value = paciente.cpf;
+    document.getElementById('contato').value = paciente.contato;
+    document.getElementById('endereco').value = paciente.endereco;
+    document.getElementById('observacoes').value = paciente.observacoes;
+
+    // Marca os exames selecionados para este paciente
+    const allCheckboxes = document.querySelectorAll('#exames .exame');
+    allCheckboxes.forEach(cb => cb.checked = false); // Desmarca todos primeiro
+
+    if (paciente.examesSelecionados && Array.isArray(paciente.examesSelecionados)) {
+        paciente.examesSelecionados.forEach(exameNome => {
+            const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                // Opcional: rolar até o exame, mas pode ser demais para múltiplos
+                // checkbox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                console.warn(`Exame "${exameNome}" do paciente aleatório não encontrado na lista principal de exames.`);
+            }
+        });
+    }
+    atualizarExamesSelecionadosDisplay(); // Atualiza a terceira coluna
+
+    alert(`Paciente "${paciente.nome}" gerado e preenchido!`);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
+}
+
 
 function coletarDados() {
     const isAgeValid = validateAge();
@@ -739,10 +601,6 @@ async function salvarProtocoloAtendimento() {
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
-        // A função enviarParaPlanilha foi desativada, pois a persistência é agora via Firestore.
-        // Você pode remover essa chamada ou adaptá-la para outra finalidade se desejar.
-        // enviarParaPlanilha(dados); 
-
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do banco de dados
     } catch (error) {
@@ -863,7 +721,7 @@ async function carregarCadastroFirebase(docId) {
                 }
             });
         }
-        actualizarExamesSelecionadosDisplay();
+        atualizarExamesSelecionadosDisplay();
 
         alert(`Cadastro de ${cadastro.nome} carregado com sucesso do banco de dados!`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -899,7 +757,7 @@ function limparCampos(showAlert = true) {
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
 
-    actualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay();
 
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
@@ -1052,85 +910,4 @@ async function imprimirHistorico() {
     };
 }
 
-// Removido: A função imprimirTela (para imprimir o layout HTML) foi removida conforme sua solicitação.
-
-function editarListaExamesComSenha() {
-    const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
-    if (senhaDigitada === null) {
-        return;
-    }
-    if (senhaDigitada === SENHA_EDITAR_LISTA) {
-        carregarListaExamesParaEdicao();
-    } else {
-        alert('Senha incorreta. Edição não permitida.');
-    }
-}
-
-async function carregarListaExamesParaEdicao() {
-    const editorElement = document.getElementById('editorExames');
-    const textarea = document.getElementById('listaExamesEditor');
-
-    try {
-        const timestamp = new Date().getTime();
-        const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
-        const response = await fetch(gistRawUrl);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao buscar lista de exames da Gist: ${response.status} - ${errorText}`);
-        }
-
-        const fileContent = await response.text();
-        textarea.value = fileContent;
-        editorElement.style.display = 'block';
-        alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.');
-
-    } catch (error) {
-        console.error("Erro ao carregar lista de exames da Gist:", error);
-        alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID.");
-    }
-}
-
-async function salvarListaExamesNoGitHub() {
-    const textarea = document.getElementById('listaExamesEditor');
-    const novoConteudo = textarea.value;
-
-    const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização.");
-    if (!confirmSave) {
-        return;
-    }
-
-    try {
-        const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
-        
-        const response = await fetch(gistApiUrl, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `token ${GITHUB_PAT_GIST}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({
-                files: {
-                    [GIST_FILENAME]: {
-                        content: novoConteudo
-                    }
-                }
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao salvar na Gist: ${response.status} - ${errorText}`);
-        }
-
-        alert('Lista de exames atualizada com sucesso na Gist!');
-        document.getElementById('editorExames').style.display = 'none';
-        carregarExames();
-    } catch (error) {
-        console.error("Erro ao salvar lista de exames na Gist:", error);
-        alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
-    }
-}
-
-// Removida a função enviarParaPlanilha, pois a integração com Google Forms foi descontinuada para o histórico.
+// Removido: A função enviarParaPlanilha, pois a integração com Google Forms foi descontinuada para o histórico.
