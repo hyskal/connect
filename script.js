@@ -1,3 +1,9 @@
+// VERSÃO: 2.0.1
+// CHANGELOG:
+// - Corrigido: Mensagem de alerta enganosa ao informar CPF novo (não encontrado no histórico).
+//   Agora, o sistema não alerta erro se o CPF é válido mas não está no histórico,
+//   apenas permite seguir com o cadastro.
+
 const { jsPDF } = window.jspdf;
 let listaExames = [];
 
@@ -7,9 +13,13 @@ const SENHA_LIMPAR_HISTORICO = "sislab";
 const SENHA_EDITAR_LISTA = "sislab2025";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
+// Substitua SEU_USUARIO_GITHUB e SEU_GIST_ID pelos seus dados reais.
+// O GIST_FILENAME deve corresponder ao nome do arquivo dentro da sua Gist.
 const GITHUB_USERNAME = 'hyskal'; 
 const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; 
+const GIST_FILENAME = 'exames.txt'; // Nome do arquivo dentro da sua Gist
+// ATENÇÃO: Este PAT será visível no frontend. Embora mais seguro que um PAT de repositório,
+// ainda é uma consideração de segurança. Para produção, o ideal é usar um backend.
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -391,6 +401,8 @@ async function checkCpfInHistory(cpf) {
             if (confirmLoad) {
                 carregarDadosBasicos(ultimoCadastro);
             }
+        } else {
+            console.log("CPF não encontrado no histórico. Prossiga com o cadastro.");
         }
     } catch (error) {
         console.error("Erro ao verificar CPF no Firebase:", error);
@@ -510,8 +522,9 @@ function coletarDados() {
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
-// MODIFICADO: Salvar Protocolo de Atendimento - Salva no Firebase e gera protocolo sequencial
+// Salvar Protocolo de Atendimento - Salva no Firebase e gera protocolo sequencial
 async function salvarProtocoloAtendimento() {
+    // Verifique novamente a disponibilidade de firestoreDb
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Firestore não inicializado. Verifique a configuração do Firebase.");
         return;
@@ -550,6 +563,7 @@ async function salvarProtocoloAtendimento() {
         
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
         dados.timestampServidor = window.firebaseFirestoreServerTimestamp(); // Adiciona timestamp do servidor para ordenação
+
 
         // Salva o cadastro no Firestore
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
@@ -667,10 +681,6 @@ async function salvarProtocoloAtendimento() {
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
         
-        // A função enviarParaPlanilha foi desativada, pois a persistência é agora via Firestore.
-        // Você pode remover essa chamada ou adaptá-la para outra finalidade se desejar.
-        // enviarParaPlanilha(dados); 
-
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do Firebase
     } catch (error) {
@@ -710,7 +720,7 @@ async function mostrarHistorico() {
 
         cadastros.forEach((c) => { 
             const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
-            // Agora, o onclick passa o ID do documento do Firestore.
+            // AGORA: O onclick passa o ID do documento do Firestore DIRETAMENTE
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
                 html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
@@ -730,7 +740,7 @@ async function mostrarHistorico() {
     }
 }
 
-// MODIFICADO: carregarCadastroFirebase agora lê um documento específico do Firebase pelo seu ID
+// carregarCadastroFirebase agora lê um documento específico do Firebase pelo seu ID
 async function carregarCadastroFirebase(docId) {
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         console.warn("Firestore não inicializado. Carregamento de cadastro desabilitado.");
@@ -802,10 +812,8 @@ async function carregarCadastroFirebase(docId) {
     }
 }
 
-// carregarCadastro (original por índice) foi removido.
-// O HTML agora deve chamar carregarCadastroFirebase(doc.id) diretamente
-// no onclick dos itens da lista de histórico. Isso requer uma pequena mudança no HTML
-// na função mostrarHistorico onde o <li> é criado.
+// REMOVIDO: A função carregarCadastro(index) original (que usava índice para buscar) foi removida.
+// Agora o HTML deve chamar carregarCadastroFirebase(doc.id) diretamente.
 
 function limparCampos(showAlert = true) {
     document.getElementById('nome').value = '';
