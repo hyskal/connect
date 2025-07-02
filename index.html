@@ -614,43 +614,23 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"; [cite: 1]
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"; [cite: 1]
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA", [cite: 1]
-            authDomain: "sislab-cetep.firebaseapp.com", [cite: 1]
-            projectId: "sislab-cetep", [cite: 1]
-            storageBucket: "sislab-cetep.firebasestorage.app", [cite: 1]
-            messagingSenderId: "958611861664", [cite: 1]
-            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5", [cite: 1]
-            measurementId: "G-3TL54MWJFS" [cite: 1]
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+            measurementId: "G-3TL54MWJFS"
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig); [cite: 1]
+        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app); // Inicializa o Firestore
         const analytics = getAnalytics(app); // Inicializa o Analytics
 
         // Torna as instâncias do Firebase acessíveis globalmente para o script.js clássico
-        window.firebaseApp = app;
-        window.firestoreDb = db;
-        window.firebaseAnalytics = analytics;
-
-        // Opcional: Torna as funções do Firestore acessíveis globalmente se o script.js não for type="module"
-        window.firebaseFirestoreCollection = collection;
-        window.firebaseFirestoreAddDoc = addDoc;
-        window.firebaseFirestoreGetDocs = getDocs;
-        window.firebaseFirestoreQuery = query;
-        window.firebaseFirestoreOrderBy = orderBy;
-        window.firebaseFirestoreLimit = limit;
-        window.firebaseFirestoreDeleteDoc = deleteDoc;
-        window.firebaseFirestoreDoc = doc;
-        window.firebaseFirestoreWriteBatch = writeBatch;
-
-    </script>
-    <script src="script.js"></script>
-
-</body>
-</html>
