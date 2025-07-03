@@ -793,7 +793,7 @@ async function carregarCadastroFirebase(docId) {
                 }
             });
         }
-        actualizarExamesSelecionadosDisplay();
+        atualizarExamesSelecionadosDisplay();
 
         alert(`Cadastro de ${cadastro.nome} carregado com sucesso do banco de dados!`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -829,7 +829,7 @@ function limparCampos(showAlert = true) {
     document.getElementById('sugestoes').innerHTML = '';
     document.getElementById('sugestoes').style.display = 'none';
 
-    actualizarExamesSelecionadosDisplay();
+    atualizarExamesSelecionadosDisplay();
 
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
