@@ -1,7 +1,8 @@
-// VERSÃO: 2.0.3-debug
+// VERSÃO: 2.0.4
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
-// - Adicionado: Mensagens de console.log detalhadas na função checkCpfInHistory para depuração de problemas de busca de CPF no banco de dados.
+// - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
+// - Removido: Mensagens de console.log de depuração da função checkCpfInHistory (temporárias da v2.0.3-debug).
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -361,7 +362,8 @@ function validarCPF(cpf) {
 
 // checkCpfInHistory agora busca no banco de dados
 async function checkCpfInHistory(cpf) {
-    console.log("Iniciando verificação de CPF no histórico para:", cpf); // <--- LOG ADICIONADO
+    // LOGS DE DEPURACAO AQUI
+    console.log("Iniciando verificação de CPF no histórico para:", cpf); 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
         return;
@@ -371,8 +373,8 @@ async function checkCpfInHistory(cpf) {
         // Acessa a coleção usando a função globalizada
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         // Constrói a query usando as funções globalizadas
-        const cpfFormatado = formatarCPFParaBusca(cpf); // Garante que a função auxiliar é chamada
-        console.log("CPF formatado para busca:", cpfFormatado); // <--- LOG ADICIONADO
+        const cpfFormatado = formatarCPFParaBusca(cpf); 
+        console.log("CPF formatado para busca:", cpfFormatado); 
 
         const q = window.firebaseFirestoreQuery(historicoRef,
                                window.firebaseFirestoreWhere('cpf', '==', cpfFormatado),
@@ -381,12 +383,12 @@ async function checkCpfInHistory(cpf) {
 
         // Executa a query usando a função globalizada
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        console.log("Query Snapshot (docs.length):", querySnapshot.docs.length); // <--- LOG ADICIONADO
+        console.log("Query Snapshot (docs.length):", querySnapshot.docs.length); 
 
         if (!querySnapshot.empty) {
             const ultimoCadastroDoc = querySnapshot.docs[0];
             const ultimoCadastro = ultimoCadastroDoc.data();
-            console.log("CPF encontrado! Último cadastro:", ultimoCadastro); // <--- LOG ADICIONADO
+            console.log("CPF encontrado! Último cadastro:", ultimoCadastro); 
             
             const confirmLoad = confirm(
                 `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
@@ -506,7 +508,8 @@ function coletarDados() {
     }
 
     const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
+    // CORREÇÃO: Salvar CPF sem máscara no banco de dados
+    const cpf = document.getElementById('cpf').value.replace(/\D/g, ''); 
     const dataNasc = document.getElementById('data_nasc').value;
     const sexo = document.getElementById('sexo').value;
     const endereco = document.getElementById('endereco').value.trim();
@@ -772,7 +775,7 @@ async function carregarCadastroFirebase(docId) {
 
         // Preenche os campos do formulário com os dados do banco de dados
         document.getElementById('nome').value = cadastro.nome || '';
-        document.getElementById('cpf').value = cadastro.cpf || '';
+        document.getElementById('cpf').value = cadastro.cpf || ''; 
         document.getElementById('data_nasc').value = cadastro.dataNasc || '';
         document.getElementById('idade').value = cadastro.idade || '';
         document.getElementById('sexo').value = cadastro.sexo || '';
