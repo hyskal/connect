@@ -1,6 +1,7 @@
-// VERSÃO: 2.0.2
+// VERSÃO: 2.0.3-debug
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
+// - Adicionado: Mensagens de console.log detalhadas na função checkCpfInHistory para depuração de problemas de busca de CPF no banco de dados.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -360,6 +361,7 @@ function validarCPF(cpf) {
 
 // checkCpfInHistory agora busca no banco de dados
 async function checkCpfInHistory(cpf) {
+    console.log("Iniciando verificação de CPF no histórico para:", cpf); // <--- LOG ADICIONADO
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
         return;
@@ -369,17 +371,22 @@ async function checkCpfInHistory(cpf) {
         // Acessa a coleção usando a função globalizada
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         // Constrói a query usando as funções globalizadas
+        const cpfFormatado = formatarCPFParaBusca(cpf); // Garante que a função auxiliar é chamada
+        console.log("CPF formatado para busca:", cpfFormatado); // <--- LOG ADICIONADO
+
         const q = window.firebaseFirestoreQuery(historicoRef,
-                               window.firebaseFirestoreWhere('cpf', '==', formatarCPFParaBusca(cpf)),
+                               window.firebaseFirestoreWhere('cpf', '==', cpfFormatado),
                                window.firebaseFirestoreOrderBy('protocolo', 'desc'),
                                window.firebaseFirestoreLimit(1)); 
 
         // Executa a query usando a função globalizada
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
+        console.log("Query Snapshot (docs.length):", querySnapshot.docs.length); // <--- LOG ADICIONADO
 
         if (!querySnapshot.empty) {
             const ultimoCadastroDoc = querySnapshot.docs[0];
             const ultimoCadastro = ultimoCadastroDoc.data();
+            console.log("CPF encontrado! Último cadastro:", ultimoCadastro); // <--- LOG ADICIONADO
             
             const confirmLoad = confirm(
                 `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
