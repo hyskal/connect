@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
+    <meta charset="UTF-8">
+    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
@@ -296,7 +295,7 @@
             border: 1px solid #ddd;
             padding: 4px; /* Reduzido para 4px */
             text-align: left;
-            font-size: 0.7em; /* Reduzido para 0.7em para caber mais info */
+            font-size: 0.75em; /* Reduzido para 0.75em */
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -308,18 +307,18 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE PARA MELHOR EXIBIÇÃO) */
+        /* Larguras específicas das colunas da tabela de inventário */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 16%; } /* Descrição */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
         #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
         #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 10%; } /* Ações - Suficiente para 3 botões pequenos */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Suficiente para 3 elementos empilhados */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - ligeiramente maior */
 
 
         #inventoryList th {
@@ -338,12 +337,12 @@
         #inventoryList .action-buttons {
             display: flex;
             flex-direction: column; 
-            gap: 1px; /* Reduzido para 1px */
+            gap: 3px; 
             min-width: unset; 
         }
         #inventoryList .action-buttons button {
-            padding: 1px 3px; /* Mais reduzido */
-            font-size: 0.6em; /* Mais reduzido */
+            padding: 2px 4px; 
+            font-size: 0.65em; 
             margin: 0; 
             width: 100%; 
             box-sizing: border-box;
@@ -351,7 +350,7 @@
         button.edit-btn { background-color: #5cb85c; } 
         button.edit-btn:hover { background-color: #4cae4c; }
         button.delete-btn { background-color: #d9534f; } 
-        button.delete-item-btn:hover { background-color: #c9302c; } 
+        button.delete-btn:hover { background-color: #c9302c; }
         button.view-log-btn { background-color: #007bff; } 
         button.view-log-btn:hover { background-color: #0069d9; }
 
@@ -359,8 +358,8 @@
         /* Estilos para o campo de input de movimentação direta e botões (AJUSTADO PARA IMAGEM) */
         .direct-movement-controls {
             display: flex;
-            flex-direction: column; 
-            align-items: center;
+            flex-direction: column; /* Empilha input e botões */
+            align-items: center; /* Centraliza horizontalmente os elementos empilhados */
             justify-content: center; 
             gap: 2px; 
             min-width: unset; 
@@ -369,7 +368,7 @@
             width: 35px; 
             padding: 2px; 
             font-size: 0.75em; 
-            margin-bottom: 0; 
+            margin-bottom: 2px;
         }
         /* Estilos para os botões de + e - */
         .movement-button {
@@ -520,172 +519,177 @@
     </style>
 </head>
 <body>
-<div class="main-header-container">
-<div class="sislab-logo">
-<div class="tube tube-1">
-<div class="tube-cap"></div>
-</div>
-<div class="tube tube-2">
-<div class="tube-cap"></div>
-</div>
-<div class="tube tube-3">
-<div class="tube-cap"></div>
-</div>
-</div>
-<h1 class="main-title">SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
-</div>
-<div class="top-action-bar-container">
-<div class="form-field">
-<label for="operatorName">Nome do Operador (Obrigatório):</label>
-<input id="operatorName" placeholder="Seu nome completo" type="text"/>
-<div class="error-message" id="operatorName-error"></div>
-</div>
-<button class="highlight-button" id="showAddItemFormBtn">Cadastrar Novo Item</button> </div>
-<div class="main-content-area-container">
-<div class="column" id="itemFormSection">
-<h3>Cadastro / Edição de Item:</h3>
-<div class="form-row">
-<div class="form-field">
-<label for="itemCod">Código do Item:</label>
-<input id="itemCod" placeholder="Gerado Automaticamente" readonly="" type="text"/>
-</div>
-<div class="form-field full-width">
-<label for="itemDescription">Descrição do Item:</label>
-<textarea id="itemDescription" placeholder="Nome do item (obrigatório)" rows="2"></textarea>
-<div class="error-message" id="itemDescription-error"></div>
-</div>
-</div>
-<div class="form-row">
-<div class="form-field">
-<label for="itemQuantity">Quantidade:</label>
-<input id="itemQuantity" min="0" type="number" value="0"/>
-<div class="error-message" id="itemQuantity-error"></div>
-</div>
-<div class="form-field">
-<label for="itemUnit">Unidade de Medida:</label>
-<select id="itemUnit">
-<option value="Unidade">Unidade</option>
-<option value="Caixa">Caixa</option>
-<option value="Kit">Kit</option>
-</select>
-</div>
-</div>
-<div class="form-row">
-<div class="form-field">
-<label for="itemCategory">Categoria:</label>
-<select id="itemCategory">
-<option value="Geral">Geral</option>
-</select>
-</div>
-<div class="form-field">
-<label for="itemLocation">Localização no Armazém:</label>
-<input id="itemLocation" placeholder="Ex: Prateleira A3" type="text"/>
-</div>
-</div>
-<div class="form-row">
-<div class="form-field">
-<label for="itemDueDate">Data de Vencimento:</label>
-<input id="itemDueDate" type="date"/>
-</div>
-<div class="form-field">
-<label for="itemLastUpdate">Última Atualização:</label>
-<input id="itemLastUpdate" placeholder="Preenchido Automaticamente" readonly="" type="text"/>
-</div>
-</div>
-<div class="form-row">
-<div class="form-field full-width">
-<label for="itemObservations">Observações Gerais:</label>
-<textarea id="itemObservations" placeholder="Informações adicionais sobre o item" rows="2"></textarea>
-</div>
-</div>
-<div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
-<button class="highlight-button" id="saveItemBtn">Salvar Item</button>
-<button id="clearItemFormBtn">Limpar Formulário</button>
-<button class="delete-item-form-btn" id="deleteItemFormBtn" style="display:none;">Excluir Item</button> <input id="itemIdToEdit" type="hidden"/>
-</div>
-</div>
-<div class="column item-list">
-<h3>Itens Atuais em Estoque:</h3>
-<div class="inventory-filters">
-<div class="form-field" style="flex-grow: 1;">
-<label class="sr-only" for="searchInventory">Pesquisar por Cód. ou Descrição</label>
-<input id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição..." type="text"/>
-</div>
-<div class="form-field" style="flex-shrink: 0;">
-<label class="sr-only" for="filterCategory">Filtrar por Categoria</label>
-<select id="filterCategory">
-<option value="">Todas as Categorias</option>
-</select>
-</div>
-<div class="form-field" style="flex-shrink: 0; min-width: unset;">
-<label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
-<input id="criticalQuantityInput" min="0" style="margin-left: 5px;" type="number" value="3"/>
-</div>
-<div class="filter-buttons-group">
-<button class="active-filter" id="filterAllItemsBtn">Todos</button>
-<button id="filterCriticalItemsBtn">Críticos</button>
-<button id="filterInStockItemsBtn">Com Estoque</button>
-<button id="filterOutOfStockItemsBtn">Sem Estoque</button>
-</div>
-</div>
-<div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;">
-<table id="inventoryList">
-<thead>
-<tr>
-<th>Cód.</th>
-<th>Descrição</th>
-<th>Qtd.</th>
-<th>Unid.</th>
-<th>Categoria</th>
-<th>Localização</th>
-<th>Validade</th>
-<th>Últ. Atual.</th>
-<th>Últ. Operador</th>
-<th>Ações</th>
-<th>Mov. Rápida</th>
-</tr>
-</thead>
-<tbody>
-<tr><td colspan="11">Carregando itens...</td></tr>
-</tbody>
-</table>
-</div>
-<div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-<button onclick="imprimirTabelaExibida()">Imprimir Tabela Atual</button>
-</div>
-</div>
-</div>
-<div class="column" id="itemLogSection" style="display: none;">
-<h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
-<div class="item-log-scroll-container">
-<table id="itemLogTable" style="width:100%; border-collapse: collapse;">
-<thead>
-<tr>
-<th style="width: 15%;">Operação</th>
-<th style="width: 10%;">Qtd. Mov.</th>
-<th style="10%;">Qtd. Final</th>
-<th style="width: 20%;">Data e Hora</th>
-<th style="width: 15%;">Operador</th>
-<th style="width: 30%;">Observações</th>
-</tr>
-</thead>
-<tbody>
-<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>
-</tbody>
-</table>
-</div>
-<div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
-<button id="closeItemLogBtn">Fechar Histórico</button>
-</div>
-</div>
-<div class="action-buttons-container">
-<button id="printInventoryReportBtn">Imprimir Relatório de Estoque Atual</button>
-<button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
-<button id="generateConsumptionReportBtn">Gerar Relatório de Consumo</button>
-<button id="generateDueDateReportBtn">Gerar Relatório de Itens Próximos do Vencimento</button>
-<button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
-</div>
-<script type="module">
+
+    <div class="main-header-container">
+        <div class="sislab-logo">
+            <div class="tube tube-1">
+                <div class="tube-cap"></div>
+            </div>
+            <div class="tube tube-2">
+                <div class="tube-cap"></div>
+            </div>
+            <div class="tube tube-3">
+                <div class="tube-cap"></div>
+            </div>
+        </div>
+        <h1 class="main-title">SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
+    </div>
+
+    <div class="top-action-bar-container">
+        <div class="form-field">
+            <label for="operatorName">Nome do Operador (Obrigatório):</label>
+            <input type="text" id="operatorName" placeholder="Seu nome completo">
+            <div id="operatorName-error" class="error-message"></div>
+        </div>
+        <button id="showAddItemFormBtn">Cadastrar Novo Item</button> </div>
+
+    <div class="main-content-area-container">
+        <div id="itemFormSection" class="column">
+            <h3>Cadastro / Edição de Item:</h3>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemCod">Código do Item:</label>
+                    <input type="text" id="itemCod" readonly placeholder="Gerado Automaticamente">
+                </div>
+                <div class="form-field full-width">
+                    <label for="itemDescription">Descrição do Item:</label>
+                    <textarea id="itemDescription" rows="2" placeholder="Nome do item (obrigatório)"></textarea>
+                    <div id="itemDescription-error" class="error-message"></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemQuantity">Quantidade:</label>
+                    <input type="number" id="itemQuantity" value="0" min="0">
+                    <div id="itemQuantity-error" class="error-message"></div>
+                </div>
+                <div class="form-field">
+                    <label for="itemUnit">Unidade de Medida:</label>
+                    <select id="itemUnit">
+                        <option value="Unidade">Unidade</option>
+                        <option value="Caixa">Caixa</option>
+                        <option value="Kit">Kit</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemCategory">Categoria:</label>
+                    <select id="itemCategory">
+                        <option value="Geral">Geral</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="itemLocation">Localização no Armazém:</label>
+                    <input type="text" id="itemLocation" placeholder="Ex: Prateleira A3">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemDueDate">Data de Vencimento:</label>
+                    <input type="date" id="itemDueDate">
+                </div>
+                 <div class="form-field">
+                    <label for="itemLastUpdate">Última Atualização:</label>
+                    <input type="text" id="itemLastUpdate" readonly placeholder="Preenchido Automaticamente">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="itemObservations">Observações Gerais:</label>
+                    <textarea id="itemObservations" rows="2" placeholder="Informações adicionais sobre o item"></textarea>
+                </div>
+            </div>
+            <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
+                <button id="saveItemBtn" class="highlight-button">Salvar Item</button>
+                <button id="clearItemFormBtn">Limpar Formulário</button>
+                <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;">Excluir Item</button> <input type="hidden" id="itemIdToEdit"> 
+            </div>
+        </div>
+
+        <div class="column item-list"> 
+            <h3>Itens Atuais em Estoque:</h3>
+            <div class="inventory-filters">
+                <div class="form-field" style="flex-grow: 1;">
+                    <label for="searchInventory" class="sr-only">Pesquisar por Cód. ou Descrição</label>
+                    <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
+                </div>
+                <div class="form-field" style="flex-shrink: 0;">
+                    <label for="filterCategory" class="sr-only">Filtrar por Categoria</label>
+                    <select id="filterCategory">
+                        <option value="">Todas as Categorias</option>
+                        </select>
+                </div>
+                <div class="form-field" style="flex-shrink: 0; min-width: unset;">
+                    <label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
+                    <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
+                </div>
+                <div class="filter-buttons-group">
+                    <button id="filterAllItemsBtn" class="active-filter">Todos</button>
+                    <button id="filterCriticalItemsBtn">Críticos</button>
+                    <button id="filterInStockItemsBtn">Com Estoque</button>
+                    <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
+                </div>
+            </div>
+
+            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;"> 
+                <table id="inventoryList">
+                    <thead>
+                        <tr>
+                            <th>Cód.</th>
+                            <th>Descrição</th>
+                            <th>Qtd.</th>
+                            <th>Unid.</th> 
+                            <th>Categoria</th>
+                            <th>Localização</th> 
+                            <th>Validade</th> 
+                            <th>Últ. Atual.</th> 
+                            <th>Últ. Operador</th> 
+                            <th>Ações</th>
+                            <th>Mov. Rápida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="11">Carregando itens...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="itemLogSection" class="column" style="display: none;">
+        <h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
+        <div class="item-log-scroll-container">
+            <table id="itemLogTable" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Operação</th>
+                        <th style="width: 10%;">Qtd. Mov.</th>
+                        <th style="10%;">Qtd. Final</th>
+                        <th style="width: 20%;">Data e Hora</th>
+                        <th style="width: 15%;">Operador</th>
+                        <th style="width: 30%;">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
+            <button id="closeItemLogBtn">Fechar Histórico</button>
+        </div>
+    </div>
+
+    <div class="action-buttons-container">
+        <button id="printInventoryReportBtn">Imprimir Relatório de Estoque Atual</button>
+        <button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
+        <button id="generateConsumptionReportBtn">Gerar Relatório de Consumo</button>
+        <button id="generateDueDateReportBtn">Gerar Relatório de Itens Próximos do Vencimento</button>
+        <button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
+    </div>
+
+    <script type="module">
         // Importa as funções do SDK do Firebase (as mesmas do index.html)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
@@ -721,5 +725,5 @@
         window.firebaseFirestoreGetDoc = getDoc;
         window.firebaseFirestoreRunTransaction = runTransaction; 
     </script>
-<script src="inventario_scripts_com_impressao_final.js" type="module"></script> </body>
+    <script src="inventario_scripts.js" type="module"></script> </body>
 </html>
