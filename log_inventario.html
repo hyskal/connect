@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>SISLAB - Log Geral de Inventário (CETEP/LNAB)</title>
+    <style>
+        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            padding: 20px;
+            margin: 0;
+            /* Plano de Fundo com Padrão */
+            background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
+            background-repeat: repeat;
+            background-size: 200px 200px; /* Tamanho do tile do padrão */
+        }
+
+        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
+        .main-header-container {
+            display: flex;
+            align-items: center; /* Alinha verticalmente a logo e o texto */
+            justify-content: center; /* Centraliza horizontalmente */
+            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
+            gap: 15px; /* Espaço entre a logo e o título */
+            flex-wrap: wrap; /* Permite quebrar em telas menores */
+        }
+
+        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
+        .sislab-logo {
+            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
+            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
+            display: flex;
+            align-items: flex-end; /* Alinha os tubos na parte inferior */
+            justify-content: space-between; /* Espaço entre os tubos */
+        }
+
+        .tube {
+            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
+            width: 15px; /* Mais fino */
+            height: 40px; /* Mais compridos */
+            border-radius: 4px 4px 2px 2px; /* Base levemente mais arredondada */
+            position: relative; /* Para posicionar a tampa */
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidade */
+        }
+
+        .tube-cap {
+            width: 17px; /* Ligeiramente mais largo que o tubo para sobrepor */
+            height: 7px; /* Altura da tampa */
+            position: absolute;
+            top: -7px; /* Posiciona a tampa acima do tubo */
+            left: -1px; /* Ajusta a posição lateral para centralizar */
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para a tampa */
+        }
+
+        /* Cores das tampas (Reaproveitadas do index.html) */
+        .tube:nth-child(1) .tube-cap {
+            background-color: #800080; /* Roxo */
+        }
+
+        .tube:nth-child(2) .tube-cap {
+            background-color: #FFD700; /* Amarelo dourado (mais profissional) */
+        }
+
+        .tube:nth-child(3) .tube-cap {
+            background-color: #CC3333; /* Vermelho */
+        }
+
+        /* Estilo para o título principal (Reaproveitado do index.html) */
+        h1 {
+            color: #1A2B4C;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px 15px;
+            border-bottom: 3px solid #CC3333;
+            display: inline-block;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8em;
+                padding: 5px 10px;
+            }
+            .main-header-container {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        h2, h3 { /* Mantém o estilo para os demais títulos */
+            color: #1A2B4C;
+            margin-bottom: 20px;
+        }
+
+        /* Contêiner principal para o conteúdo da página (adaptado de .main-content-container) */
+        .page-content-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            width: 95%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos dos botões de ação (Reaproveitados do index.html) */
+        .action-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 95%;
+            max-width: 1200px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1A2B4C;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0F1D33;
+        }
+
+        /* Estilos para a Tabela de Log */
+        #inventoryLogTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        #inventoryLogTable th, #inventoryLogTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.9em; /* Um pouco menor para caber mais info */
+            vertical-align: top;
+        }
+
+        #inventoryLogTable th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        #inventoryLogTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #inventoryLogTable tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        /* Ajuste para rolagem da tabela se for muito longa */
+        .table-scroll-container {
+            max-height: 600px; /* Altura máxima antes de rolar */
+            overflow-y: auto;
+            border: 1px solid #eee; /* Borda leve para indicar área de rolagem */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-header-container">
+        <div class="sislab-logo">
+            <div class="tube tube-1">
+                <div class="tube-cap"></div>
+            </div>
+            <div class="tube tube-2">
+                <div class="tube-cap"></div>
+            </div>
+            <div class="tube tube-3">
+                <div class="tube-cap"></div>
+            </div>
+        </div>
+        <h1 class="main-title">SISLAB 2.0.4 - Log Geral de Inventário (CETEP/LNAB)</h1>
+    </div>
+
+    <div class="page-content-container">
+        <h3>Registro de Todas as Movimentações do Inventário:</h3>
+        
+        <div class="table-scroll-container">
+            <table id="inventoryLogTable">
+                <thead>
+                    <tr>
+                        <th>Cód. Item</th>
+                        <th>Descrição Item</th>
+                        <th>Operação</th>
+                        <th>Qtd. Mov.</th>
+                        <th>Qtd. Antes</th>
+                        <th>Qtd. Depois</th>
+                        <th>Operador</th>
+                        <th>Data e Hora</th>
+                        <th>Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="9">Carregando logs...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="action-buttons-container">
+        <button onclick="window.location.href='admin.html'">Voltar para Área Administrativa</button>
+    </div>
+
+    <script type="module">
+        // Importa as funções do SDK do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        
+        // Sua configuração do Firebase (a mesma do index.html e inventario.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+        };
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app); 
+
+        // Função principal para carregar e exibir o log
+        document.addEventListener('DOMContentLoaded', listarLogGeralInventario);
+
+        async function listarLogGeralInventario() {
+            const logTableBody = document.querySelector('#inventoryLogTable tbody');
+            logTableBody.innerHTML = '<tr><td colspan="9">Carregando logs...</td></tr>';
+
+            if (typeof db === 'undefined' || !db) {
+                logTableBody.innerHTML = '<tr><td colspan="9">Banco de dados não inicializado.</td></tr>';
+                return;
+            }
+
+            try {
+                const logRef = collection(db, 'inventario_log');
+                // Ordena por data e hora da movimentação (mais recente primeiro)
+                const q = query(logRef, orderBy('dataHoraMovimento', 'desc')); 
+                const querySnapshot = await getDocs(q);
+                const logs = querySnapshot.docs.map(doc => doc.data());
+
+                if (logs.length === 0) {
+                    logTableBody.innerHTML = '<tr><td colspan="9">Nenhum registro de movimentação encontrado.</td></tr>';
+                    return;
+                }
+
+                logTableBody.innerHTML = ''; // Limpa antes de preencher
+                logs.forEach(log => {
+                    const row = logTableBody.insertRow();
+                    const dataHoraFormatada = log.dataHoraMovimento ? new Date(log.dataHoraMovimento.toDate()).toLocaleString('pt-BR') : 'N/A';
+
+                    row.insertCell(0).textContent = log.itemCod || 'N/A';
+                    row.insertCell(1).textContent = log.itemNome || 'N/A';
+                    row.insertCell(2).textContent = log.tipoMovimento || 'N/A';
+                    row.insertCell(3).textContent = log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/A';
+                    row.insertCell(4).textContent = log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A';
+                    row.insertCell(5).textContent = log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A';
+                    row.insertCell(6).textContent = log.operador || 'Desconhecido';
+                    row.insertCell(7).textContent = dataHoraFormatada;
+                    row.insertCell(8).textContent = log.observacoesMovimento || '';
+                });
+
+            } catch (error) {
+                console.error("Erro ao carregar log geral de inventário:", error);
+                logTableBody.innerHTML = '<tr><td colspan="9">Erro ao carregar log. Verifique o console.</td></tr>';
+            }
+        }
+    </script>
+
+</body>
+</html>
