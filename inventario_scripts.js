@@ -1573,47 +1573,4 @@ async function gerarRelatorioVencimento() {
 
     alert(`Relatório de Itens Próximos do Vencimento gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
     console.log("Relatório de vencimento gerado."); // DEBUG
-        }
-
-
-
-function imprimirTabelaExibida() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'pt', 'a4');
-
-    const dataAtual = new Date().toLocaleString("pt-BR");
-    const operador = document.getElementById("operatorName").value || "Desconhecido";
-
-    // Cabeçalho
-    doc.setFontSize(14);
-    doc.text("Relatório de Inventário - Tabela Atual", 40, 40);
-    doc.setFontSize(10);
-    doc.text("Operador: " + operador, 40, 60);
-    doc.text("Data e Hora: " + dataAtual, 40, 75);
-    doc.setLineWidth(0.5);
-    doc.line(40, 85, 555, 85);
-
-    // Tabela HTML
-    const table = document.querySelector("#inventoryList");
-
-    if (!table) {
-        alert("Tabela não encontrada.");
-        return;
-    }
-
-    doc.autoTable({
-        html: "#inventoryList",
-        startY: 95,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [26, 43, 76] },
-        didDrawPage: function (data) {
-            // Rodapé
-            const pageHeight = doc.internal.pageSize.height;
-            doc.setFontSize(9);
-            doc.text("Sistema SISLAB 3.0.0 - CETEP/LNAB", 40, pageHeight - 30);
-            doc.text("Página " + doc.internal.getNumberOfPages(), 500, pageHeight - 30, { align: 'right' });
-        }
-    });
-
-    doc.save("Relatorio_Tabela_Atual.pdf");
-}
+                     }
