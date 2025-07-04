@@ -1,1622 +1,725 @@
-// VERSÃO: 3.0.5 (inventario_scripts.js)
-// CHANGELOG:
-// - Nova Versão: Marca o início oficial da Versão 3.0 do Sistema de Inventário.
-// - Adicionado: Geração automática de cod sequencial para novos itens via transação no Firebase (config_v3/contadores).
-// - Adicionado: categorias para itens, com carregamento dinâmico de categorias_inventario.txt (local) e usadas em formulário e filtro.
-// - Adicionado: Novos campos de item na inventario_v3: localizacao, dataVencimento, unidadeMedida.
-// - Adicionado: Campos dataUltimaModificacao e ultimoOperador no item (inventario_v3), atualizados automaticamente em cada modificação.
-// - Modificado: saveOrUpdateItem() para: lidar com todos os novos campos, salvando "Não definido" para campos opcionais não preenchidos; integrar solicitação do operador e alertas de estoque negativo; registrar logs detalhados (tipos "CADASTRO", "ENTRADA", "SAIDA", "AJUSTE"), incluindo todos os novos campos no log.
-// - Modificado: listarItensInventario() para: exibir todas as novas colunas; implementar filtros por cod/item e categoria; implementar Filtro Rápido por Status de Estoque; adicionar Notificação Visual para Estoque Crítico; incluir Contagem de "Dias em Estoque"; configurar os controles de Movimentação Direta.
-// - Adicionado: updateItemQuantityDirectly() para gerenciar as movimentações rápidas via botões +/-, com operador, alerta de estoque negativo e registro detalhado no log.
-// - Modificado: loadItemForEdit() para preencher todos os campos do formulário e exibir/ocultar o botão "Excluir Item".
-// - Modificado: deleteItem() e adicionado deleteItemFromForm() para integrar solicitação do operador, log detalhado "REMOCAO", e lidar com o botão "Excluir Item" do formulário.
-// - Modificado: showItemLog() e hideItemLog() para exibir log por item com todos os campos relevantes.
-// - Implementado: Funções de relatório PDF (imprimirRelatorioInventario, gerarRelatorioReposicao, gerarRelatorioConsumo, gerarRelatorioVencimento), acionadas pelos botões na inventario.html. Todos incluem operador no cabeçalho e detalhes dos novos campos nos relatórios.
-// - Incluído: console.log para depuração em funções críticas.
-// - Corrigido: Botão "Fechar Histórico" (id closeItemLogBtn) agora está corretamente vinculado no DOMContentLoaded.
-// - Corrigido: Formatação da data no título do "Relatório de Consumo" de AAAA-MM-DD para DDMMAAAA.
-// - Melhoria: Adição de mais console.log detalhados nas funções de relatório para auxiliar na depuração.
-// - Manutenção: Refatoração de funções de formatação de data para reutilização.
-// - Corrigido: listarItensInventario() aprimorada para depuração e correção do carregamento de itens na tabela, garantindo exibição de todos os campos e filtragem correta.
-// - Modificado: Função getOperadorName() substituída por getOperadorNameFromInput() para ler o nome do operador do novo campo operatorName (input HTML).
-// - Adicionado: Validação para o campo operatorName (obrigatório) nas funções saveOrUpdateItem, updateItemQuantityDirectly, deleteItem, e em todas as funções de relatório PDF.
-// - Implementado: Lógica de exibição/ocultamento do formulário de cadastro/edição (#itemFormSection) via JavaScript, acionada pelo botão "Cadastrar Novo Item" (#showAddItemFormBtn), pelo clique em "Editar", "Salvar Item", "Limpar Formulário" e "Excluir Item".
-// - Implementado: Persistência do Nome do Operador (#operatorName) no localStorage do navegador, mantendo o valor preenchido entre sessões (até a página ser recarregada).
+<!DOCTYPE html>
 
-
-// --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
-const LOCAL_FILENAME_CATEGORIES = 'categorias_inventario.txt'; 
-
-// Variáveis Globais de Estado
-let currentEditingItemId = null;
-let categoriasDisponiveis = []; // Armazena as categorias carregadas do arquivo local
-let currentFilterStatus = 'all'; // Estado atual do filtro de status (all, critical, inStock, outOfStock)
-const OPERATOR_NAME_STORAGE_KEY = 'sislab_inventario_operator_name'; // Chave para localStorage
-
-// --- Event Listeners Iniciais ---
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOM totalmente carregado. Iniciando setup..."); // DEBUG
-    
-    // Carregar categorias antes de listar os itens, pois a lista depende delas
-    await loadCategories(); 
-    listarItensInventario(); // Lista itens após carregar categorias
-
-    // Carregar nome do operador do localStorage, se existir
-    const savedOperatorName = localStorage.getItem(OPERATOR_NAME_STORAGE_KEY);
-    if (savedOperatorName) {
-        document.getElementById('operatorName').value = savedOperatorName;
-    }
-
-    // Event listeners para o formulário de cadastro/edição
-    document.getElementById('saveItemBtn').addEventListener('click', saveOrUpdateItem);
-    document.getElementById('clearItemFormBtn').addEventListener('click', clearItemForm);
-    document.getElementById('deleteItemFormBtn').addEventListener('click', deleteItemFromForm); 
-
-    // Event listener para o novo botão "Cadastrar Novo Item"
-    document.getElementById('showAddItemFormBtn').addEventListener('click', () => {
-        clearItemForm(); // Limpa o formulário antes de exibi-lo para novo cadastro
-        showItemForm(); // Exibe o formulário
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
-    });
-
-
-    // Event listeners para filtros e pesquisa
-    document.getElementById('searchInventory').addEventListener('input', listarItensInventario);
-    document.getElementById('filterCategory').addEventListener('change', listarItensInventario); 
-    document.getElementById('criticalQuantityInput').addEventListener('input', () => { 
-        if (currentFilterStatus === 'critical') { 
-            listarItensInventario();
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            padding: 20px;
+            margin: 0;
+            /* Plano de Fundo com Padrão */
+            background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
+            background-repeat: repeat;
+            background-size: 200px 200px; /* Tamanho do tile do padrão */
         }
-    });
 
-    // Event listeners para botões de filtro de status
-    document.getElementById('filterAllItemsBtn').addEventListener('click', () => { currentFilterStatus = 'all'; updateFilterButtons('filterAllItemsBtn'); listarItensInventario(); });
-    document.getElementById('filterCriticalItemsBtn').addEventListener('click', () => { currentFilterStatus = 'critical'; updateFilterButtons('filterCriticalItemsBtn'); listarItensInventario(); });
-    document.getElementById('filterInStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'inStock'; updateFilterButtons('filterInStockItemsBtn'); listarItensInventario(); });
-    document.getElementById('filterOutOfStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'outOfStock'; updateFilterButtons('filterOutOfStockItemsBtn'); listarItensInventario(); });
+        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
+        .main-header-container {
+            display: flex;
+            align-items: center; /* Alinha verticalmente a logo e o texto */
+            justify-content: center; /* Centraliza horizontalmente */
+            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
+            gap: 15px; /* Espaço entre a logo e o título */
+            flex-wrap: wrap; /* Permite quebrar em telas menores */
+        }
 
-    // Event listeners para os botões de relatório
-    document.getElementById('printInventoryReportBtn').addEventListener('click', imprimirRelatorioInventario);
-    document.getElementById('generateReplenishmentReportBtn').addEventListener('click', gerarRelatorioReposicao);
-    document.getElementById('generateConsumptionReportBtn').addEventListener('click', gerarRelatorioConsumo);
-    document.getElementById('generateDueDateReportBtn').addEventListener('click', gerarRelatorioVencimento);
-    
-    document.getElementById('closeItemLogBtn').addEventListener('click', hideItemLog); 
+        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
+        .sislab-logo {
+            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
+            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
+            display: flex;
+            align-items: flex-end; /* Alinha os tubos na parte inferior */
+            justify-content: space-between; /* Espaço entre os tubos */
+        }
 
-    console.log("Setup inicial concluído."); // DEBUG
-});
+        .tube {
+            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
+            width: 15px; /* Más fino */
+            height: 40px; /* Más compridos */
+            border-radius: 4px 4px 2px 2px; /* Base levemente más arredondada */
+            position: relative; /* Para posicionar la tapa */
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidad */
+        }
 
-// Funções para mostrar/ocultar o formulário de cadastro/edição
-function showItemForm() {
-    document.getElementById('itemFormSection').style.display = 'flex'; // Altera para flex para manter layout
-    console.log("Formulário de item exibido."); // DEBUG
-}
+        .tube-cap {
+            width: 17px; /* Ligeramente más ancho que el tubo para sobreponer */
+            height: 7px; /* Altura de la tapa */
+            position: absolute;
+            top: -7px; /* Posiciona la tapa encima del tubo */
+            left: -1px; /* Ajusta la posición lateral para centralizar */
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tapa */
+        }
 
-function hideItemForm() {
-    document.getElementById('itemFormSection').style.display = 'none';
-    console.log("Formulário de item ocultado."); // DEBUG
-}
+        /* Cores das tampas (Reaproveitadas do index.html) */
+        .tube:nth-child(1) .tube-cap {
+            background-color: #800080; /* Roxo */
+        }
 
+        .tube:nth-child(2) .tube-cap {
+            background-color: #FFD700; /* Amarelo dourado (más profissional) */
+        }
 
-// Função para atualizar o estado visual dos botões de filtro
-function updateFilterButtons(activeButtonId) {
-    const buttons = ['filterAllItemsBtn', 'filterCriticalItemsBtn', 'filterInStockItemsBtn', 'filterOutOfStockItemsBtn'];
-    buttons.forEach(id => {
-        const button = document.getElementById(id);
-        if (button) {
-            button.classList.remove('active-filter');
-            if (id === activeButtonId) {
-                button.classList.add('active-filter');
+        .tube:nth-child(3) .tube-cap {
+            background-color: #CC3333; /* Vermelho */
+        }
+
+        /* Estilo para o título principal (Reaproveitado do index.html) */
+        h1 {
+            color: #1A2B4C;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px 15px;
+            border-bottom: 3px solid #CC3333;
+            display: inline-block;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8em;
+                padding: 5px 10px;
+            }
+            .main-header-container {
+                flex-direction: column;
+                gap: 5px;
             }
         }
-    });
-}
 
-// --- Funções Auxiliares Comuns ---
-// Lê o nome do operador do input e valida
-function getOperadorNameFromInput() {
-    console.log("Lendo nome do operador do input..."); // DEBUG
-    const operatorNameInput = document.getElementById('operatorName');
-    const operador = operatorNameInput.value.trim();
-
-    if (!operador) {
-        showError('operatorName', 'Nome do operador é obrigatório.');
-        console.log("Validação: Nome do operador vazio."); // DEBUG
-        return null;
-    }
-    clearError('operatorName');
-    localStorage.setItem(OPERATOR_NAME_STORAGE_KEY, operador); // Salva no localStorage
-    console.log(`Nome do operador lido e salvo: ${operador}`); // DEBUG
-    return operador;
-}
-
-function showError(elementId, message) {
-    console.log(`Erro de validação para ${elementId}: ${message}`); // DEBUG
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
-    if (inputElement && errorDiv) {
-        inputElement.classList.add('error');
-        errorDiv.textContent = message;
-    }
-}
-
-function clearError(elementId) {
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
-    if (inputElement && errorDiv) {
-        inputElement.classList.remove('error');
-        errorDiv.textContent = '';
-    }
-}
-
-function formatarCod(num) {
-    return String(num).padStart(4, '0'); // Garante 4 dígitos com zeros à esquerda
-}
-
-function formatDateToInput(date) {
-    // Formata um objeto Date para string YYYY-MM-DD para input[type="date"]
-    if (!date) return '';
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function formatDateToDisplay(date) {
-    // Formata um objeto Date para DD/MM/AAAA
-    if (!date) return 'N/D';
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
-function formatDateTimeToDisplay(date) {
-    // Formata um objeto Date para DD/MM/AAAA HH:MM:SS
-    if (!date) return 'N/D';
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    const seconds = d.getSeconds().toString().padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-}
-
-// --- Funções de Carregamento Dinâmico ---
-async function loadCategories() {
-    console.log("Iniciando carregamento de categorias..."); // DEBUG
-    const itemCategorySelect = document.getElementById('itemCategory');
-    const filterCategorySelect = document.getElementById('filterCategory');
-    const timestamp = new Date().getTime(); 
-
-    const localFileUrl = `${LOCAL_FILENAME_CATEGORIES}?t=${timestamp}`; 
-
-    try {
-        const response = await fetch(localFileUrl);
-        if (!response.ok) {
-            console.warn(`Erro ao carregar categorias do arquivo local (${response.status}). Usando categorias padrão.`); // DEBUG
-            categoriasDisponiveis = ["Geral"]; 
-        } else {
-            const text = await response.text();
-            categoriasDisponiveis = text.trim().split('\n').map(c => c.trim()).filter(c => c !== '');
-            if (categoriasDisponiveis.length === 0) {
-                categoriasDisponiveis = ["Geral"]; 
-            }
-            console.log("Categorias carregadas:", categoriasDisponiveis); // DEBUG
+        h2, h3 { /* Mantém o estilo para os demais títulos */
+            color: #1A2B4C;
+            margin-bottom: 20px;
         }
-    } catch (error) {
-        console.error("Erro FATAL ao carregar categorias do arquivo local:", error); // DEBUG
-        categoriasDisponiveis = ["Geral"]; 
-    }
 
-    // Popular o select do formulário de cadastro/edição
-    itemCategorySelect.innerHTML = '';
-    categoriasDisponiveis.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        itemCategorySelect.appendChild(option);
-    });
-    itemCategorySelect.value = "Geral"; 
-    if (itemCategorySelect.selectedIndex === -1 && categoriasDisponiveis.length > 0) {
-        itemCategorySelect.selectedIndex = 0;
-    }
+        /* Contêiner da Barra de Ações do Topo (Nova) */
+        .top-action-bar-container {
+            display: flex;
+            justify-content: space-between; /* Alinha itens nas extremidades */
+            align-items: center; /* Alinha verticalmente */
+            width: 95%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .top-action-bar-container .form-field { /* Campo operador discreto */
+            margin-bottom: 0;
+            flex-basis: auto; /* Adapta-se ao conteúdo */
+            flex-grow: 0;
+            min-width: 250px; /* Largura mínima para o campo */
+        }
+        .top-action-bar-container .form-field label {
+            font-size: 0.9em; /* Fonte menor para discreto */
+            margin-bottom: 2px;
+        }
+        .top-action-bar-container .form-field input {
+            padding: 8px; /* Padding menor */
+            font-size: 0.9em; /* Fonte menor */
+        }
+        .top-action-bar-container button {
+            flex-shrink: 0; /* Impede que o botão encolha */
+            padding: 8px 15px; /* Ajusta padding */
+            font-size: 0.9em; /* Ajusta fonte */
+            margin: 0; /* Remove margens extras */
+        }
 
-    // Popular o select de filtro por categoria
-    filterCategorySelect.innerHTML = '<option value="">Todas as Categorias</option>';
-    categoriasDisponiveis.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        filterCategorySelect.appendChild(option);
-    });
-    console.log("Categorias carregadas nos selects."); // DEBUG
-}
+
+        /* Contêiner de Conteúdo Principal (que agora envolve o formulário e a lista de itens) */
+        .main-content-area-container {
+            width: 95%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+            display: flex; /* Permite organizar suas seções internas */
+            flex-direction: column; /* As seções internas serão empilhadas */
+            gap: 20px; /* Espaço entre as seções */
+        }
+
+        /* Estilos base para blocos de conteúdo */
+        .column {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Ocupa 100% da largura do seu container pai */
+        }
+        /* Formulário de cadastro - Inicialmente oculto por padrão */
+        #itemFormSection {
+            display: none; /* INICIALMENTE OCULTO */
+        }
+
+        /* Estilos dos campos de formulário (Reaproveitados do index.html) */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 20px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            flex-basis: 0;
+            min-width: 120px;
+        }
+
+        .form-field.full-width {
+            flex-basis: 100%;
+        }
+
+        .form-field label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #334466;
+        }
+        /* Estilo para esconder labels visualmente (para acessibilidade) */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
 
 
-// --- Funções de CRUD de Itens ---
+        .form-field input[type="text"],
+        .form-field input[type="number"],
+        .form-field input[type="date"],
+        .form-field textarea,
+        .form-field select {
+            padding: 10px;
+            border: 1px solid #AABBDD;
+            border-radius: 4px;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-async function listarItensInventario() {
-    console.log("Iniciando listagem de itens do inventário..."); // DEBUG
-    const inventoryListBody = document.querySelector('#inventoryList tbody');
-    inventoryListBody.innerHTML = '<tr><td colspan="11">Carregando itens...</td></tr>'; 
-    
-    const searchTerm = document.getElementById('searchInventory').value.toLowerCase();
-    const filterCategory = document.getElementById('filterCategory').value;
-    const criticalQuantity = parseInt(document.getElementById('criticalQuantityInput').value); 
-    let items = [];
+        /* Estilo para campos com erro (Reaproveitado do index.html) */
+        .form-field input.error,
+        .form-field textarea.error,
+        .form-field select.error {
+            border-color: #CC3333;
+            box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
+        }
 
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.error("Firestore DB não inicializado em listarItensInventario."); // DEBUG
-        inventoryListBody.innerHTML = '<tr><td colspan="11">Banco de dados não inicializado.</td></tr>';
-        return;
-    }
+        /* Estilo para mensagens de erro (Reaproveitado do index.html) */
+        .error-message {
+            color: #CC3333;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
 
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
-        let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
+        /* Estilos dos botões de ação (Reaproveitados do index.html) */
+        .action-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 95%;
+            max-width: 1200px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
 
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log(`Total de itens brutos carregados: ${items.length}`); // DEBUG
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1A2B4C;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
 
-        // Filtragem em memória
-        let filteredItems = items.filter(item => {
-            const matchesSearch = searchTerm === '' || 
-                                  (item.item && item.item.toLowerCase().includes(searchTerm)) || 
-                                  (item.cod && item.cod.toLowerCase().includes(searchTerm)); 
-            const matchesCategory = filterCategory === '' || (item.categoria && item.categoria === filterCategory);
+        button:hover {
+            background-color: #0F1D33;
+        }
+
+        /* Estilo para botão de destaque (Reaproveitado do index.html) */
+        button.highlight-button {
+            background-color: #CC3333;
+            font-weight: bold;
+            padding: 12px 25px;
+        }
+
+        button.highlight-button:hover {
+            background-color: #A02222;
+        }
+        
+        /* Estilo para botão de exclusão no formulário */
+        button.delete-item-form-btn {
+            background-color: #dc3545;
+        }
+        button.delete-item-form-btn:hover {
+            background-color: #c82333;
+        }
+
+
+        /* Estilos para a Tabela/Lista de Itens do Inventário */
+        #inventoryList {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            table-layout: fixed; 
+        }
+
+        #inventoryList th, #inventoryList td {
+            border: 1px solid #ddd;
+            padding: 4px; /* Reduzido para 4px */
+            text-align: left;
+            font-size: 0.7em; /* Reduzido para 0.7em para caber mais info */
+            vertical-align: top; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+        #inventoryList td:nth-child(2) { /* Descrição, permite quebra de linha */
+            white-space: normal;
+            word-break: break-word;
+        }
+
+
+        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE PARA MELHOR EXIBIÇÃO) */
+        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 16%; } /* Descrição */
+        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
+        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
+        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
+        #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
+        #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
+        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 10%; } /* Ações - Suficiente para 3 botões pequenos */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Suficiente para 3 elementos empilhados */
+
+
+        #inventoryList th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        #inventoryList tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #inventoryList tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #inventoryList .action-buttons {
+            display: flex;
+            flex-direction: column; 
+            gap: 1px; /* Reduzido para 1px */
+            min-width: unset; 
+        }
+        #inventoryList .action-buttons button {
+            padding: 1px 3px; /* Mais reduzido */
+            font-size: 0.6em; /* Mais reduzido */
+            margin: 0; 
+            width: 100%; 
+            box-sizing: border-box;
+        }
+        button.edit-btn { background-color: #5cb85c; } 
+        button.edit-btn:hover { background-color: #4cae4c; }
+        button.delete-btn { background-color: #d9534f; } 
+        button.delete-item-btn:hover { background-color: #c9302c; } 
+        button.view-log-btn { background-color: #007bff; } 
+        button.view-log-btn:hover { background-color: #0069d9; }
+
+
+        /* Estilos para o campo de input de movimentação direta e botões (AJUSTADO PARA IMAGEM) */
+        .direct-movement-controls {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            gap: 2px; 
+            min-width: unset; 
+        }
+        .movement-input {
+            width: 35px; 
+            padding: 2px; 
+            font-size: 0.75em; 
+            margin-bottom: 0; 
+        }
+        /* Estilos para os botões de + e - */
+        .movement-button {
+            width: 22px; 
+            height: 22px;
+            padding: 0;
+            font-size: 0.9em; 
+            line-height: 1;
+            border-radius: 50%;
+            display: inline-flex; 
+            justify-content: center;
+            align-items: center;
+            background-color: #1A2B4C;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0; 
+        }
+        .movement-button.plus { background-color: #28a745; } 
+        .movement-button.plus:hover { background-color: #218838; }
+        .movement-button.minus { background-color: #dc3545; } 
+        .movement-button.minus:hover { background-color: #c82333; }
+
+        /* Estilos para a seção de log de item */
+        #itemLogSection {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            width: 95%; 
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        #itemLogTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #itemLogTable th, #itemLogTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85em; 
+            vertical-align: top;
+        }
+        #itemLogTable th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        #itemLogTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #itemLogTable tr:hover {
+            background-color: #f1f1f1;
+        }
+        /* Container para rolagem do log */
+        .item-log-scroll-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+        }
+
+        /* Estilos para filtros de inventário */
+        .inventory-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .inventory-filters .form-field {
+            margin-bottom: 0; 
+            flex-grow: 1; 
+            min-width: 120px; 
+        }
+        .inventory-filters .form-field:last-child {
+            flex-grow: 0; 
+        }
+        .inventory-filters .filter-buttons-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap; 
+        }
+        .inventory-filters button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin: 0;
+            background-color: #6c757d; 
+            flex-shrink: 0; 
+        }
+        .inventory-filters button.active-filter {
+            background-color: #1A2B4C; 
+            font-weight: bold;
+        }
+        .inventory-filters input[type="number"]#criticalQuantityInput {
+            width: 60px; 
+            min-width: 60px;
+        }
+        .inventory-filters #filterCategory {
+            min-width: 150px;
+        }
+
+
+        /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
+        @media (max-width: 900px) {
+            /* Seções Superior e Inferior empilham */
+            .top-section-container, .bottom-section-container {
+                flex-direction: column;
+                width: 95%;
+            }
+            /* Colunas dentro da seção superior empilham */
+            .top-section-container .column.operator-info,
+            .top-section-container .column.item-form {
+                flex-basis: 100%; 
+                max-width: 100%; 
+                min-width: unset; 
+            }
+            /* Ajuste para as colunas da tabela em telas pequenas */
+            #inventoryList th, #inventoryList td {
+                font-size: 0.6em; /* Fonte ainda menor em mobile para tentar caber */
+                padding: 2px;
+                white-space: normal; 
+                word-break: break-word; 
+            }
+            /* Larguras específicas para mobile, adaptando-se a 100% da coluna */
+            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } 
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } 
+            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } 
+            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } 
+            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } 
+            #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } 
+            #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; } 
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } 
+            #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } 
+            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } 
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 10%; } 
             
-            // Lógica do filtro de status
-            let matchesStatus = true;
-            if (currentFilterStatus === 'critical') {
-                matchesStatus = item.quantidade <= criticalQuantity && item.quantidade > 0; // Críticos, mas não sem estoque
-            } else if (currentFilterStatus === 'inStock') {
-                matchesStatus = item.quantidade > 0;
-            } else if (currentFilterStatus === 'outOfStock') {
-                matchesStatus = item.quantidade === 0;
-            } else if (currentFilterStatus === 'all') {
-                matchesStatus = true; // Todos os itens
+            .inventory-filters .form-field {
+                flex-basis: 100%; 
             }
-            
-            return matchesSearch && matchesCategory && matchesStatus;
-        });
-        console.log(`Total de itens filtrados: ${filteredItems.length}`); // DEBUG
-
-        if (filteredItems.length === 0) {
-            inventoryListBody.innerHTML = '<tr><td colspan="11">Nenhum item encontrado com os filtros aplicados.</td></tr>'; 
-            return;
-        }
-
-        inventoryListBody.innerHTML = ''; 
-        filteredItems.forEach(item => {
-            const row = inventoryListBody.insertRow();
-            row.dataset.itemId = item.id; 
-            
-            // Formatação de datas
-            const dataVencimentoDate = item.dataVencimento ? item.dataVencimento.toDate() : null;
-            const dataUltimaModificacaoDate = item.dataUltimaModificacao ? item.dataUltimaModificacao.toDate() : null;
-
-            // Contagem de "Dias em Estoque" (Sugestão 5)
-            let diasEmEstoque = 'N/D'; 
-            if (item.dataCadastro) { 
-                const dataCadastroOriginal = item.dataCadastro.toDate();
-                const diffTime = Math.abs(new Date().getTime() - dataCadastroOriginal.getTime());
-                diasEmEstoque = `${Math.ceil(diffTime / (1000 * 60 * 60 * 24))} dias`;
+            .inventory-filters .filter-buttons-group {
+                width: 100%;
+                justify-content: space-around;
             }
-
-            // Destaque visual para estoque crítico/zerado
-            if (item.quantidade <= criticalQuantity && item.quantidade > 0 && currentFilterStatus !== 'outOfStock') { 
-                row.style.backgroundColor = '#fff3cd'; // Amarelo claro (aviso)
-            } else if (item.quantidade === 0) { 
-                row.style.backgroundColor = '#f8d7da'; // Vermelho claro (perigo)
-            }
-
-            // Colunas da tabela
-            row.insertCell(0).textContent = item.cod || 'N/D'; 
-            row.insertCell(1).textContent = item.item; 
-            row.insertCell(2).textContent = item.quantidade; 
-            row.insertCell(3).textContent = item.unidadeMedida || 'Não definida'; 
-            row.insertCell(4).textContent = item.categoria || 'Geral'; 
-            row.insertCell(5).textContent = item.localizacao || 'Não definida'; 
-            row.insertCell(6).textContent = formatDateToDisplay(dataVencimentoDate); 
-            row.insertCell(7).textContent = formatDateTimeToDisplay(dataUltimaModificacaoDate); 
-            row.insertCell(8).textContent = item.ultimoOperador || 'Não definido'; 
-
-            // Coluna Ações
-            const actionsCell = row.insertCell(9);
-            actionsCell.classList.add('action-buttons');
-            
-            const editButton = document.createElement('button');
-            editButton.textContent = 'Editar';
-            editButton.classList.add('edit-btn');
-            editButton.onclick = () => loadItemForEdit(item); 
-            actionsCell.appendChild(editButton);
-
-            const viewLogButton = document.createElement('button');
-            viewLogButton.textContent = 'Ver Log';
-            viewLogButton.classList.add('view-log-btn'); 
-            viewLogButton.onclick = () => showItemLog(item.id, item.item, item.cod); 
-            actionsCell.appendChild(viewLogButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Remover';
-            deleteButton.classList.add('delete-btn');
-            deleteButton.onclick = () => deleteItem(item.id, item.item, item.cod, item.quantidade); 
-            actionsCell.appendChild(deleteButton);
-
-            // Coluna Movimentação Direta
-            const directMoveCell = row.insertCell(10);
-            directMoveCell.classList.add('direct-movement-controls'); 
-            directMoveCell.style.whiteSpace = 'nowrap'; 
-
-            const moveInput = document.createElement('input');
-            moveInput.type = 'number';
-            moveInput.value = '1'; 
-            moveInput.min = '1';
-            moveInput.classList.add('movement-input');
-            directMoveCell.appendChild(moveInput);
-
-            const plusButton = document.createElement('button');
-            plusButton.textContent = '+';
-            plusButton.classList.add('movement-button', 'plus');
-            plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value), item.unidadeMedida || 'Unidade'); 
-            directMoveCell.appendChild(plusButton);
-
-            const minusButton = document.createElement('button');
-            minusButton.textContent = '-';
-            minusButton.classList.add('movement-button', 'minus');
-            minusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value), item.unidadeMedida || 'Unidade'); 
-            directMoveCell.appendChild(minusButton);
-        });
-        console.log("Listagem de itens concluída com sucesso."); // DEBUG
-
-    } catch (error) {
-        console.error("Erro ao listar itens do inventário:", error); // DEBUG
-        inventoryListBody.innerHTML = '<tr><td colspan="11">Erro ao carregar itens.</td></tr>'; 
-    }
-}
-
-function clearItemForm() {
-    console.log("Limpando formulário de item..."); // DEBUG
-    // document.getElementById('operatorName').value = ''; // O operador não é limpo, é persistente
-    document.getElementById('itemCod').value = ''; 
-    document.getElementById('itemDescription').value = '';
-    document.getElementById('itemQuantity').value = '0';
-    document.getElementById('itemUnit').value = 'Unidade'; 
-    document.getElementById('itemCategory').value = 'Geral'; 
-    document.getElementById('itemLocation').value = ''; 
-    document.getElementById('itemDueDate').value = ''; 
-    document.getElementById('itemObservations').value = ''; 
-    document.getElementById('itemLastUpdate').value = ''; 
-    document.getElementById('itemIdToEdit').value = ''; 
-    document.getElementById('saveItemBtn').textContent = 'Salvar Item';
-    document.getElementById('deleteItemFormBtn').style.display = 'none'; 
-    clearError('operatorName'); 
-    clearError('itemDescription');
-    clearError('itemQuantity');
-    clearError('itemDueDate'); 
-    currentEditingItemId = null; 
-    hideItemLog(); 
-    console.log("Formulário limpo."); // DEBUG
-}
-
-async function saveOrUpdateItem() {
-    console.log("Iniciando saveOrUpdateItem..."); // DEBUG
-    const operatorNameInput = document.getElementById('operatorName'); 
-    const itemCodInput = document.getElementById('itemCod');
-    const descriptionInput = document.getElementById('itemDescription');
-    const quantityInput = document.getElementById('itemQuantity');
-    const unitSelect = document.getElementById('itemUnit'); 
-    const categorySelect = document.getElementById('itemCategory'); 
-    const locationInput = document.getElementById('itemLocation'); 
-    const dueDateInput = document.getElementById('itemDueDate'); 
-    const observationsInput = document.getElementById('itemObservations'); 
-    const itemIdToEdit = document.getElementById('itemIdToEdit').value;
-
-    const operador = operatorNameInput.value.trim(); 
-    const description = descriptionInput.value.trim();
-    const quantity = parseInt(quantityInput.value);
-    const unit = unitSelect.value; 
-    const category = categorySelect.value;
-    const location = locationInput.value.trim(); 
-    const dueDate = dueDateInput.value ? new Date(dueDateInput.value + 'T00:00:00') : null; 
-    const observations = observationsInput.value.trim(); 
-    
-    // --- Atribuir "Não definido" para campos opcionais vazios conforme diretriz ---
-    const finalLocation = location || 'Não definido';
-    const finalObservations = observations || 'Não definido';
-    const finalDueDate = dueDate; // dataVencimento pode ser null
-    const finalUnit = unit || 'Unidade'; 
-    const finalCategory = category || 'Geral'; 
-
-
-    // Validação de campos obrigatórios (operador, item e quantidade)
-    let isValid = true;
-    if (!operador) {
-        showError('operatorName', 'Nome do operador é obrigatório.');
-        isValid = false;
-    } else {
-        clearError('operatorName');
-    }
-    if (!description) {
-        showError('itemDescription', 'A descrição é obrigatória.');
-        isValid = false;
-    } else {
-        clearError('itemDescription');
-    }
-    if (isNaN(quantity) || quantity < 0) { 
-        showError('itemQuantity', 'Quantidade inválida. Deve ser um número maior ou igual a zero.');
-        isValid = false;
-    } else {
-        clearError('itemQuantity');
-    }
-    if (finalDueDate && isNaN(finalDueDate.getTime())) { 
-        showError('itemDueDate', 'Data de vencimento inválida.');
-        isValid = false;
-    } else {
-        clearError('itemDueDate');
-    }
-
-    if (!isValid) {
-        console.log("Validação do formulário falhou."); // DEBUG
-        return;
-    }
-
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
-
-        let currentItemCod = itemCodInput.value; 
-
-        if (itemIdToEdit) { // Modo de Edição (Item Existente)
-            console.log(`Editando item com ID: ${itemIdToEdit}`); // DEBUG
-            const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', itemIdToEdit); 
-            const docSnap = await window.firebaseFirestoreGetDoc(itemDocRef);
-            const oldData = docSnap.data();
-
-            const oldQuantity = oldData.quantidade;
-            const quantityChange = quantity - oldQuantity;
-            
-            let tipoMovimentoLog = "AJUSTE"; 
-            if (quantityChange > 0) {
-                tipoMovimentoLog = "ENTRADA";
-            } else if (quantityChange < 0) {
-                tipoMovimentoLog = "SAIDA";
-            }
-
-            // Alerta de estoque negativo para saída em edição
-            if (tipoMovimentoLog === "SAIDA" && quantity < 0) { 
-                alert(`Impossível realizar a saída. A nova quantidade (${quantity}) resultaria em estoque negativo.`);
-                console.log("Saída em edição impedida: estoque negativo."); // DEBUG
-                return;
-            }
-
-            // Atualiza o documento principal do item
-            await window.firebaseFirestoreUpdateDoc(itemDocRef, {
-                item: description, 
-                quantidade: quantity,
-                unidadeMedida: finalUnit, 
-                categoria: finalCategory, 
-                localizacao: finalLocation, 
-                dataVencimento: finalDueDate ? window.firebaseFirestoreServerTimestamp() : null, 
-                observacoes: finalObservations, 
-                dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(), 
-                ultimoOperador: operador 
-            });
-            console.log("Documento de inventário atualizado."); // DEBUG
-
-            // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE (qualquer campo que não seja o id/cod)
-            const oldDueDateTimestamp = oldData.dataVencimento ? oldData.dataVencimento.toDate().getTime() : null;
-            const newDueDateTimestamp = finalDueDate ? finalDueDate.getTime() : null;
-
-            const hasRelevantChange = quantityChange !== 0 || 
-                                      oldData.item !== description || 
-                                      oldData.observacoes !== finalObservations || 
-                                      oldData.categoria !== finalCategory ||
-                                      oldData.localizacao !== finalLocation ||
-                                      oldData.unidadeMedida !== finalUnit ||
-                                      oldDueDateTimestamp !== newDueDateTimestamp;
-
-            if (hasRelevantChange) {
-                console.log("Registrando log para edição com mudanças relevantes..."); // DEBUG
-                await window.firebaseFirestoreAddDoc(logRef, {
-                    itemId: itemIdToEdit,
-                    itemNome: description, 
-                    itemCod: currentItemCod, 
-                    tipoMovimento: tipoMovimentoLog,
-                    quantidadeMovimentada: quantityChange, 
-                    unidadeMedidaLog: finalUnit, 
-                    quantidadeAntes: oldQuantity,
-                    quantidadeDepois: quantity,
-                    dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-                    observacoesMovimento: (quantityChange !== 0 ? `Qtd. de ${oldQuantity} ${oldData.unidadeMedida||'Unid.'} para ${quantity} ${finalUnit}. ` : '') + 
-                                 (oldData.item !== description ? `Desc. de '${oldData.item}' para '${description}'. ` : '') +
-                                 (oldData.observacoes !== finalObservations ? `Obs. atualizada. ` : '') +
-                                 (oldData.categoria !== finalCategory ? `Cat. de '${oldData.categoria}' para '${finalCategory}'. ` : '') +
-                                 (oldData.localizacao !== finalLocation ? `Local de '${oldData.localizacao}' para '${finalLocation}'. ` : '') +
-                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (newDueDateTimestamp !== null) ? `Validade alterada para '${formatDateToDisplay(new Date(newDueDateTimestamp))}'. ` : '') + // Altera para mostrar só a nova data se mudou e não é null
-                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (oldDueDateTimestamp !== null) && (newDueDateTimestamp === null) ? `Validade removida. ` : '') + // Altera para mostrar se a validade foi removida
-                                 `Operador: ${operador}.`,
-                    operador: operador
-                });
-                console.log("Log de edição registrado."); // DEBUG
-            }
-            alert('Item atualizado com sucesso!');
-            hideItemForm(); // Oculta o formulário após salvar
-        } else { // Modo de Cadastro (Novo Item)
-            console.log("Cadastrando novo item..."); // DEBUG
-            // Geração do código sequencial via transação
-            const configRef = window.firebaseFirestoreCollection(window.firestoreDb, 'config_v3'); 
-            const counterDocRef = window.firebaseFirestoreDoc(configRef, 'contadores');
-
-            let newCod = '';
-            await window.firebaseFirestoreRunTransaction(window.firestoreDb, async (transaction) => {
-                const counterDoc = await transaction.get(counterDocRef);
-                let currentCounter = 0;
-                if (counterDoc.exists) {
-                    currentCounter = counterDoc.data().ultimoCodInventario || 0;
-                } else {
-                    // Se o contador não existe, cria ele com 0 para a primeira transação
-                    transaction.set(counterDocRef, { ultimoCodInventario: 0 }); 
-                }
-                const nextCounter = currentCounter + 1;
-                newCod = formatarCod(nextCounter); 
-                transaction.set(counterDocRef, { ultimoCodInventario: nextCounter });
-                console.log(`Código sequencial gerado: ${newCod}`); // DEBUG
-            });
-
-            const newItemRef = await window.firebaseFirestoreAddDoc(inventarioRef, {
-                cod: newCod, 
-                item: description, 
-                quantidade: quantity,
-                unidadeMedida: finalUnit, 
-                categoria: finalCategory, 
-                localizacao: finalLocation, 
-                dataVencimento: finalDueDate ? window.firebaseFirestoreServerTimestamp() : null, 
-                observacoes: finalObservations, 
-                dataCadastro: window.firebaseFirestoreServerTimestamp(), 
-                dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(), 
-                ultimoOperador: operador 
-            });
-            console.log("Novo documento de inventário salvo."); // DEBUG
-
-            // Registrar no log
-            await window.firebaseFirestoreAddDoc(logRef, {
-                itemId: newItemRef.id,
-                itemNome: description,
-                itemCod: newCod,
-                tipoMovimento: "CADASTRO", 
-                quantidadeMovimentada: quantity,
-                unidadeMedidaLog: finalUnit, 
-                quantidadeAntes: 0, 
-                quantidadeDepois: quantity,
-                dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-                observacoesMovimento: "Cadastro inicial do item",
-                operador: operador
-            });
-            alert('Item salvo com sucesso! Código gerado: ' + newCod);
-            console.log("Log de cadastro inicial registrado."); // DEBUG
-            hideItemForm(); // Oculta o formulário após salvar
         }
-        clearItemForm();
-        listarItensInventario(); 
-    } catch (error) {
-        console.error("Erro ao salvar/atualizar item:", error); // DEBUG
-        alert("Erro ao salvar/atualizar item. Verifique o console.");
-    }
-}
-
-async function loadItemForEdit(itemData) { 
-    console.log("Carregando item para edição:", itemData); // DEBUG
-    document.getElementById('itemCod').value = itemData.cod || ''; 
-    document.getElementById('itemDescription').value = itemData.item;
-    document.getElementById('itemQuantity').value = itemData.quantidade;
-    document.getElementById('itemUnit').value = itemData.unidadeMedida || 'Unidade'; 
-    document.getElementById('itemCategory').value = itemData.categoria || 'Geral'; 
-    document.getElementById('itemLocation').value = itemData.localizacao && itemData.localizacao !== 'Não definido' ? itemData.localizacao : ''; 
-    document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento.toDate()) : ''; 
-    document.getElementById('itemObservations').value = itemData.observacoes && itemData.observacoes !== 'Não definido' ? itemData.observacoes : ''; 
-    document.getElementById('itemLastUpdate').value = itemData.dataUltimaModificacao ? formatDateTimeToDisplay(itemData.dataUltimaModificacao.toDate()) : ''; 
-    document.getElementById('itemIdToEdit').value = itemData.id;
-    document.getElementById('saveItemBtn').textContent = 'Atualizar Item';
-    document.getElementById('deleteItemFormBtn').style.display = 'inline-block'; 
-    currentEditingItemId = itemData.id; 
-
-    // Preenche o campo operador com o último operador que modificou o item, se existir
-    const operatorNameInput = document.getElementById('operatorName');
-    if (itemData.ultimoOperador && itemData.ultimoOperador !== 'Não definido') {
-        operatorNameInput.value = itemData.ultimoOperador;
-    } else {
-        operatorNameInput.value = ''; 
-    }
-    clearError('operatorName'); 
-
-    showItemForm(); // Exibe o formulário ao carregar item para edição
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-    console.log("Item carregado no formulário."); // DEBUG
-}
-
-async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, currentQuantity, quantityChange, unidadeMedida) {
-    console.log(`Movimentação direta: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}, QtdAtual=${currentQuantity}, Mudança=${quantityChange}, Unid=${unidadeMedida}`); // DEBUG
-    
-    // Validação do operador
-    const operador = getOperadorNameFromInput(); 
-    if (operador === null) { 
-        alert("Operação de movimentação cancelada: Nome do operador é obrigatório.");
-        console.log("Movimentação cancelada: Operador não fornecido no input."); // DEBUG
-        return;
-    }
-
-    const newQuantity = currentQuantity + quantityChange;
-    const tipoMovimento = quantityChange > 0 ? "ENTRADA" : "SAIDA";
-
-    // Valida se a quantidade a ser movimentada é um número válido e positivo
-    if (isNaN(quantityChange) || quantityChange === 0 || Math.abs(quantityChange) < 1) { 
-        alert("Por favor, digite uma quantidade válida (número inteiro maior que 0) para movimentar.");
-        console.log("Movimentação direta impedida: quantidade inválida ou zero."); // DEBUG
-        return;
-    }
-
-    // Alerta de estoque negativo
-    if (newQuantity < 0) {
-        alert(`Impossível realizar a saída. Quantidade atual (${currentQuantity} ${unidadeMedida}) é menor que a quantidade a ser retirada (${Math.abs(quantityChange)} ${unidadeMedida}).`);
-        console.log("Movimentação direta impedida: estoque negativo."); // DEBUG
-        return;
-    }
-
-    try {
-        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', itemId); 
+    </style>
+</head>
+<body>
+<div class="main-header-container">
+<div class="sislab-logo">
+<div class="tube tube-1">
+<div class="tube-cap"></div>
+</div>
+<div class="tube tube-2">
+<div class="tube-cap"></div>
+</div>
+<div class="tube tube-3">
+<div class="tube-cap"></div>
+</div>
+</div>
+<h1 class="main-title">SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
+</div>
+<div class="top-action-bar-container">
+<div class="form-field">
+<label for="operatorName">Nome do Operador (Obrigatório):</label>
+<input id="operatorName" placeholder="Seu nome completo" type="text"/>
+<div class="error-message" id="operatorName-error"></div>
+</div>
+<button class="highlight-button" id="showAddItemFormBtn">Cadastrar Novo Item</button> </div>
+<div class="main-content-area-container">
+<div class="column" id="itemFormSection">
+<h3>Cadastro / Edição de Item:</h3>
+<div class="form-row">
+<div class="form-field">
+<label for="itemCod">Código do Item:</label>
+<input id="itemCod" placeholder="Gerado Automaticamente" readonly="" type="text"/>
+</div>
+<div class="form-field full-width">
+<label for="itemDescription">Descrição do Item:</label>
+<textarea id="itemDescription" placeholder="Nome do item (obrigatório)" rows="2"></textarea>
+<div class="error-message" id="itemDescription-error"></div>
+</div>
+</div>
+<div class="form-row">
+<div class="form-field">
+<label for="itemQuantity">Quantidade:</label>
+<input id="itemQuantity" min="0" type="number" value="0"/>
+<div class="error-message" id="itemQuantity-error"></div>
+</div>
+<div class="form-field">
+<label for="itemUnit">Unidade de Medida:</label>
+<select id="itemUnit">
+<option value="Unidade">Unidade</option>
+<option value="Caixa">Caixa</option>
+<option value="Kit">Kit</option>
+</select>
+</div>
+</div>
+<div class="form-row">
+<div class="form-field">
+<label for="itemCategory">Categoria:</label>
+<select id="itemCategory">
+<option value="Geral">Geral</option>
+</select>
+</div>
+<div class="form-field">
+<label for="itemLocation">Localização no Armazém:</label>
+<input id="itemLocation" placeholder="Ex: Prateleira A3" type="text"/>
+</div>
+</div>
+<div class="form-row">
+<div class="form-field">
+<label for="itemDueDate">Data de Vencimento:</label>
+<input id="itemDueDate" type="date"/>
+</div>
+<div class="form-field">
+<label for="itemLastUpdate">Última Atualização:</label>
+<input id="itemLastUpdate" placeholder="Preenchido Automaticamente" readonly="" type="text"/>
+</div>
+</div>
+<div class="form-row">
+<div class="form-field full-width">
+<label for="itemObservations">Observações Gerais:</label>
+<textarea id="itemObservations" placeholder="Informações adicionais sobre o item" rows="2"></textarea>
+</div>
+</div>
+<div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
+<button class="highlight-button" id="saveItemBtn">Salvar Item</button>
+<button id="clearItemFormBtn">Limpar Formulário</button>
+<button class="delete-item-form-btn" id="deleteItemFormBtn" style="display:none;">Excluir Item</button> <input id="itemIdToEdit" type="hidden"/>
+</div>
+</div>
+<div class="column item-list">
+<h3>Itens Atuais em Estoque:</h3>
+<div class="inventory-filters">
+<div class="form-field" style="flex-grow: 1;">
+<label class="sr-only" for="searchInventory">Pesquisar por Cód. ou Descrição</label>
+<input id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição..." type="text"/>
+</div>
+<div class="form-field" style="flex-shrink: 0;">
+<label class="sr-only" for="filterCategory">Filtrar por Categoria</label>
+<select id="filterCategory">
+<option value="">Todas as Categorias</option>
+</select>
+</div>
+<div class="form-field" style="flex-shrink: 0; min-width: unset;">
+<label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
+<input id="criticalQuantityInput" min="0" style="margin-left: 5px;" type="number" value="3"/>
+</div>
+<div class="filter-buttons-group">
+<button class="active-filter" id="filterAllItemsBtn">Todos</button>
+<button id="filterCriticalItemsBtn">Críticos</button>
+<button id="filterInStockItemsBtn">Com Estoque</button>
+<button id="filterOutOfStockItemsBtn">Sem Estoque</button>
+</div>
+</div>
+<div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;">
+<table id="inventoryList">
+<thead>
+<tr>
+<th>Cód.</th>
+<th>Descrição</th>
+<th>Qtd.</th>
+<th>Unid.</th>
+<th>Categoria</th>
+<th>Localização</th>
+<th>Validade</th>
+<th>Últ. Atual.</th>
+<th>Últ. Operador</th>
+<th>Ações</th>
+<th>Mov. Rápida</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="11">Carregando itens...</td></tr>
+</tbody>
+</table>
+</div>
+<div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+<button onclick="imprimirTabelaExibida()">Imprimir Tabela Atual</button>
+</div>
+</div>
+</div>
+<div class="column" id="itemLogSection" style="display: none;">
+<h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
+<div class="item-log-scroll-container">
+<table id="itemLogTable" style="width:100%; border-collapse: collapse;">
+<thead>
+<tr>
+<th style="width: 15%;">Operação</th>
+<th style="width: 10%;">Qtd. Mov.</th>
+<th style="10%;">Qtd. Final</th>
+<th style="width: 20%;">Data e Hora</th>
+<th style="width: 15%;">Operador</th>
+<th style="width: 30%;">Observações</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
+<button id="closeItemLogBtn">Fechar Histórico</button>
+</div>
+</div>
+<div class="action-buttons-container">
+<button id="printInventoryReportBtn">Imprimir Relatório de Estoque Atual</button>
+<button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
+<button id="generateConsumptionReportBtn">Gerar Relatório de Consumo</button>
+<button id="generateDueDateReportBtn">Gerar Relatório de Itens Próximos do Vencimento</button>
+<button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
+</div>
+<script type="module">
+        // Importa as funções do SDK do Firebase (as mesmas do index.html)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
         
-        // Atualiza o item principal
-        await window.firebaseFirestoreUpdateDoc(itemDocRef, {
-            quantidade: newQuantity,
-            dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(),
-            ultimoOperador: operador
-        });
-        console.log("Documento de inventário atualizado por movimentação direta."); // DEBUG
-
-        // Registrar no log
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
-        await window.firebaseFirestoreAddDoc(logRef, {
-            itemId: itemId,
-            itemNome: itemDescription,
-            itemCod: itemCod,
-            tipoMovimento: tipoMovimento,
-            quantidadeMovimentada: quantityChange,
-            unidadeMedidaLog: unidadeMedida, 
-            quantidadeAntes: currentQuantity,
-            quantidadeDepois: newQuantity,
-            dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-            observacoesMovimento: `Movimentação direta: ${quantityChange > 0 ? '+' : ''}${quantityChange} ${unidadeMedida}.`,
-            operador: operador
-        });
-        console.log("Log de movimentação direta registrado."); // DEBUG
-
-        alert(`Quantidade de "${itemDescription}" atualizada para ${newQuantity} ${unidadeMedida}.`);
-        listarItensInventario(); 
-        hideItemLog(); 
-    } catch (error) {
-        console.error("Erro ao atualizar quantidade diretamente:", error); // DEBUG
-        alert("Erro ao atualizar quantidade. Verifique o console.");
-    }
-}
-
-// Função para deletar item a partir do formulário de edição
-async function deleteItemFromForm() {
-    console.log("Botão 'Excluir Item' do formulário clicado."); // DEBUG
-    const itemId = document.getElementById('itemIdToEdit').value;
-    const itemNome = document.getElementById('itemDescription').value;
-    const itemCod = document.getElementById('itemCod').value;
-    const quantidadeAtual = parseInt(document.getElementById('itemQuantity').value);
-
-    // Reutiliza a função deleteItem existente, que já tem a confirmação e lógica de log
-    await deleteItem(itemId, itemNome, itemCod, quantidadeAtual);
-}
-
-
-async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
-    console.log(`Iniciando exclusão de item: ID=${id}, Nome=${itemNome}, Cod=${itemCod}`); // DEBUG
-    if (!confirm(`Tem certeza que deseja remover o item "${itemNome}" (Cód: ${itemCod})? Esta ação não pode ser desfeita.`)) {
-        console.log("Exclusão cancelada pelo usuário."); // DEBUG
-        return;
-    }
-
-    // Validação do operador
-    const operador = getOperadorNameFromInput(); 
-    if (operador === null) { 
-        alert("Remoção de item cancelada: Nome do operador é obrigatório.");
-        console.log("Exclusão cancelada: Operador não fornecido no input."); // DEBUG
-        return;
-    }
-
-    try {
-        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', id); 
-        await window.firebaseFirestoreDeleteDoc(itemDocRef);
-        console.log("Documento de inventário excluído do Firestore."); // DEBUG
-        
-        // Registrar no log
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
-        await window.firebaseFirestoreAddDoc(logRef, {
-            itemId: id,
-            itemNome: itemNome,
-            itemCod: itemCod,
-            tipoMovimento: "REMOCAO",
-            quantidadeMovimentada: -quantidadeAtual, 
-            unidadeMedidaLog: 'Não definida', 
-            quantidadeAntes: quantidadeAtual,
-            quantidadeDepois: 0, 
-            dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-            observacoesMovimento: "Item removido do inventário",
-            operador: operador
-        });
-        alert('Item removido com sucesso!');
-        console.log("Log de remoção registrado."); // DEBUG
-        listarItensInventario(); 
-        clearItemForm(); 
-    } catch (error) {
-        console.error("Erro ao remover item:", error); // DEBUG
-        alert("Erro ao remover item. Verifique o console.");
-    }
-}
-
-// --- Funções de Log Específico por Item ---
-async function showItemLog(itemId, itemDescription, itemCod) { 
-    console.log(`Exibindo log para item: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}`); // DEBUG
-    const itemLogSection = document.getElementById('itemLogSection');
-    const itemLogDescriptionSpan = document.getElementById('itemLogDescription'); 
-    const itemLogTableBody = document.querySelector('#itemLogTable tbody');
-
-    itemLogDescriptionSpan.textContent = `${itemDescription} (Cód: ${itemCod})`; 
-    itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Carregando histórico...</td></tr>';
-    itemLogSection.style.display = 'block'; 
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.error("Firestore DB não inicializado em showItemLog."); // DEBUG
-        itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Banco de dados não inicializado.</td></tr>';
-        return;
-    }
-
-    try {
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
-        const q = window.firebaseFirestoreQuery(
-            logRef,
-            window.firebaseFirestoreWhere('itemId', '==', itemId),
-            window.firebaseFirestoreOrderBy('dataHoraMovimento', 'asc') 
-        );
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        const logs = querySnapshot.docs.map(doc => doc.data());
-        console.log(`Logs encontrados para o item: ${logs.length}`); // DEBUG
-
-        if (logs.length === 0) {
-            itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Nenhum histórico encontrado para este item.</td></tr>';
-            return;
-        }
-
-        itemLogTableBody.innerHTML = ''; 
-        logs.forEach(log => {
-            const row = itemLogTableBody.insertRow();
-            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/D';
-
-            row.insertCell(0).textContent = log.tipoMovimento || 'N/D';
-            row.insertCell(1).textContent = `${log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/D'} ${log.unidadeMedidaLog || ''}`; 
-            row.insertCell(2).textContent = `${log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/D'} ${log.unidadeMedidaLog || ''}`; 
-            row.insertCell(3).textContent = dataHoraFormatada;
-            row.insertCell(4).textContent = log.operador || 'Desconhecido';
-            row.insertCell(5).textContent = log.observacoesMovimento || '';
-        });
-
-        window.scrollTo({ top: itemLogSection.offsetTop, behavior: 'smooth' }); 
-        console.log("Histórico do item exibido."); // DEBUG
-
-    } catch (error) {
-        console.error("Erro ao carregar histórico do item:", error); // DEBUG
-        itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Erro ao carregar histórico.</td></tr>';
-    }
-}
-
-function hideItemLog() {
-    console.log("Ocultando seção de log de item."); // DEBUG
-    document.getElementById('itemLogSection').style.display = 'none';
-    document.querySelector('#itemLogTable tbody').innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>';
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-}
-
-// --- Funções de Relatórios PDF ---
-async function imprimirRelatorioInventario() {
-    console.log("Iniciando geração de Relatório de Estoque Atual..."); // DEBUG
-    const operador = getOperadorNameFromInput(); 
-    if (operador === null) {
-        alert("Operação cancelada: Nome do operador é obrigatório.");
-        console.log("Relatório cancelado: Operador não fornecido."); // DEBUG
-        return;
-    }
-
-    const reportOption = prompt("Digite 'completo' para relatório em ordem alfabética ou 'categoria' para relatório por categoria (padrão: completo):").toLowerCase();
-    let orderByField = 'item'; 
-    let selectedCategory = null;
-
-    if (reportOption === 'categoria') {
-        const categoryInput = prompt("Digite a categoria para filtrar (ex: 'Geral', 'Reagentes'):");
-        selectedCategory = categoryInput ? categoryInput.trim() : null;
-        if (selectedCategory && !categoriasDisponiveis.includes(selectedCategory)) {
-            alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
-            selectedCategory = null; 
-        }
-    }
-
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o relatório de inventário.");
-        console.error("Firestore DB não inicializado para relatório de inventário."); // DEBUG
-        return;
-    }
-
-    let itensInventario = [];
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
-        let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy(orderByField, 'asc')); 
-        
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        itensInventario = querySnapshot.docs.map(doc => doc.data());
-        console.log(`Itens carregados para relatório: ${itensInventario.length}`); // DEBUG
-
-        if (selectedCategory) {
-            itensInventario = itensInventario.filter(item => item.categoria === selectedCategory);
-            console.log(`Itens filtrados por categoria '${selectedCategory}': ${itensInventario.length}`); // DEBUG
-        }
-
-    }
-    // eslint-disable-next-line no-dupe-else-if
-    catch (error) {
-        console.error("Erro ao carregar itens para o relatório de inventário:", error); // DEBUG
-        alert("Erro ao carregar itens para o relatório. Verifique o console.");
-        return;
-    }
-
-    if (itensInventario.length === 0) {
-        alert("Não há itens no inventário para imprimir o relatório com os filtros aplicados.");
-        return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let currentY = 15; 
-
-    // --- Cabeçalho do PDF ---
-    doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-    doc.setFontSize(10); const now = new Date(); const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`; const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-    doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-    doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-
-    // --- Título do Relatório ---
-    doc.setFontSize(14);
-    let reportTitle = "RELATÓRIO DE INVENTÁRIO ATUAL";
-    if (selectedCategory) {
-        reportTitle += ` (Categoria: ${selectedCategory})`;
-    }
-    doc.text(reportTitle, 105, currentY, null, null, "center");
-    currentY += 8;
-    doc.setLineWidth(0.2);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Conteúdo: Itens do Inventário ---
-    doc.setFontSize(8); 
-    const startX = 5; 
-    const colWidths = [15, 50, 15, 20, 25, 25, 25, 25]; 
-    const colPositions = [];
-    let currentX = startX;
-    colWidths.forEach(width => {
-        colPositions.push(currentX);
-        currentX += width;
-    });
-
-    // Títulos das colunas
-    doc.setFont(undefined, 'bold');
-    doc.text("CÓD.", colPositions[0], currentY);
-    doc.text("DESCRIÇÃO", colPositions[1], currentY);
-    doc.text("QTD.", colPositions[2], currentY);
-    doc.text("UNID.", colPositions[3], currentY);
-    doc.text("CATEGORIA", colPositions[4], currentY);
-    doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
-    doc.text("VALIDADE", colPositions[6], currentY);
-    doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
-    currentY += lineHeight + 2; 
-
-    doc.setFont(undefined, 'normal'); 
-
-    itensInventario.forEach(item => {
-        if (currentY > 280) { 
-            doc.addPage();
-            currentY = 15; 
-
-            // Cabeçalho e Título em nova página
-            doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-            doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-            doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-            doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-            doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(14); doc.text(`${reportTitle} (Continuação)`, 105, currentY, null, null, "center"); currentY += 8;
-            doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-            
-            doc.setFontSize(8); 
-            doc.setFont(undefined, 'bold');
-            doc.text("CÓD.", colPositions[0], currentY);
-            doc.text("DESCRIÇÃO", colPositions[1], currentY);
-            doc.text("QTD.", colPositions[2], currentY);
-            doc.text("UNID.", colPositions[3], currentY);
-            doc.text("CATEGORIA", colPositions[4], currentY);
-            doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
-            doc.text("VALIDADE", colPositions[6], currentY);
-            doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
-            currentY += lineHeight + 2; 
-            doc.setFont(undefined, 'normal');
-        }
-
-        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
-        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D';
-        const itemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
-        const itemLocalizacao = item.localizacao || 'Não definido';
-
-        // Linha 1 do item
-        doc.text(item.cod || 'N/D', colPositions[0], currentY);
-        doc.text(item.item, colPositions[1], currentY);
-        doc.text(item.quantidade.toString(), colPositions[2], currentY);
-        doc.text(item.unidadeMedida || 'Não definida', colPositions[3], currentY);
-        doc.text(item.categoria || 'Geral', colPositions[4], currentY);
-        doc.text(itemLocalizacao, colPositions[5], currentY);
-        doc.text(dataValidade, colPositions[6], currentY);
-        doc.text(dataUltimaAtualizacao, colPositions[7], currentY);
-        currentY += lineHeight;
-
-        // Se houver observações, exibe em uma linha separada abaixo do item, com indentação
-        if (itemObsText) {
-            const splitObs = doc.splitTextToSize(itemObsText, doc.internal.pageSize.width - startX - 10); 
-            doc.text(splitObs, startX + 5, currentY); 
-            currentY += (splitObs.length * (lineHeight - 1)); 
-        }
-        currentY += 1; 
-
-
-    });
-
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages()); 
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
-
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
-
-    alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de inventário geral gerado."); // DEBUG
-}
-
-async function gerarRelatorioReposicao() {
-    console.log("Iniciando geração de Relatório de Reposição..."); // DEBUG
-    const operador = getOperadorNameFromInput(); 
-    if (operador === null) {
-        alert("Operação cancelada: Nome do operador é obrigatório.");
-        console.log("Relatório de reposição cancelado: Operador não fornecido."); // DEBUG
-        return;
-    }
-
-    let minQuantityInput = prompt("Digite a quantidade MÁXIMA em estoque para um item entrar no relatório de reposição (ex: 3):");
-    if (minQuantityInput === null) { 
-        alert("Operação de relatório de reposição cancelada.");
-        console.log("Relatório de reposição cancelado pelo usuário."); // DEBUG
-        return;
-    }
-    const minQuantity = parseInt(minQuantityInput.trim());
-
-    if (isNaN(minQuantity) || minQuantity < 0) {
-        alert("Quantidade mínima inválida. Por favor, digite um número positivo ou zero.");
-        console.log("Relatório de reposição impedido: Qtd mínima inválida."); // DEBUG
-        return;
-    }
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o relatório de reposição.");
-        console.error("Firestore DB não inicializado para relatório de reposição."); // DEBUG
-        return;
-    }
-
-    let itensInventario = [];
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
-        const q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        itensInventario = querySnapshot.docs.map(doc => doc.data());
-        console.log(`Itens carregados para relatório de reposição: ${itensInventario.length}`); // DEBUG
-    } catch (error) {
-        console.error("Erro ao carregar itens para o relatório de reposição:", error); // DEBUG
-        alert("Erro ao carregar itens para o relatório de reposição. Verifique o console.");
-        return;
-    }
-
-    // Filtragem em memória para itens <= minQuantity
-    const itensParaReposicao = itensInventario.filter(item => item.quantidade <= minQuantity);
-
-    if (itensParaReposicao.length === 0) {
-        alert(`Nenhum item encontrado com quantidade igual ou inferior a ${minQuantity}.`);
-        console.log("Nenhum item para reposição encontrado."); // DEBUG
-        return;
-    }
-
-    // Agrupar por categoria e ordenar as categorias
-    const itensPorCategoria = itensParaReposicao.reduce((acc, item) => {
-        const categoria = item.categoria || 'Geral';
-        if (!acc[categoria]) {
-            acc[categoria] = [];
-        }
-        acc[categoria].push(item);
-        return acc;
-    }, {});
-
-    const categoriasOrdenadas = Object.keys(itensPorCategoria).sort();
-
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let currentY = 15; 
-
-    // --- Cabeçalho do PDF --- (Igual aos outros)
-    doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-    doc.setFontSize(10); const now = new Date(); const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`; const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-    doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-    doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-
-    // --- Título do Relatório ---
-    doc.setFontSize(14);
-    doc.text(`RELATÓRIO DE REPOSIÇÃO - Qtd. Mínima: ${minQuantity}`, 105, currentY, null, null, "center");
-    currentY += 8;
-    doc.setLineWidth(0.2);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Conteúdo: Itens para Reposição (Separados por Categoria) ---
-    doc.setFontSize(8); 
-    const repColWidths = [15, 50, 15, 20, 25, 25, 25]; 
-    const repColPositions = [];
-    let repCurrentX = startX;
-    repColWidths.forEach(width => {
-        repColPositions.push(repCurrentX);
-        repCurrentX += width;
-    });
-
-    categoriasOrdenadas.forEach(categoria => {
-        const itensDaCategoria = itensPorCategoria[categoria];
-        
-        if (currentY > 270) { 
-            doc.addPage();
-            currentY = 15; 
-            // Cabeçalho e Título em nova página (repetir cabeçalho completo)
-            doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-            doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-            doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-            doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-            doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(14); doc.text(`RELATÓRIO DE REPOSIÇÃO (Continuação) - Qtd. Mínima: ${minQuantity}`, 105, currentY, null, null, "center"); currentY += 8;
-            doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(8); 
-            doc.setFont(undefined, 'bold');
-            doc.text("CÓD.", repColPositions[0], currentY);
-            doc.text("DESCRIÇÃO", repColPositions[1], currentY);
-            doc.text("QTD. ATUAL", repColPositions[2], currentY);
-            doc.text("UNID.", repColPositions[3], currentY);
-            doc.text("LOCALIZAÇÃO", repColPositions[4], currentY);
-            doc.text("VALIDADE", repColPositions[5], currentY);
-            doc.text("OBS.", repColPositions[6], currentY); 
-            currentY += lineHeight + 1; 
-            doc.setFont(undefined, 'normal');
-        }
-        
-        doc.setFont(undefined, 'bold');
-        doc.text(`Categoria: ${categoria}`, startX + 5, currentY); 
-        currentY += lineHeight;
-        
-        doc.text("CÓD.", repColPositions[0], currentY);
-        doc.text("DESCRIÇÃO", repColPositions[1], currentY);
-        doc.text("QTD. ATUAL", repColPositions[2], currentY);
-        doc.text("UNID.", repColPositions[3], currentY);
-        doc.text("LOCALIZAÇÃO", repColPositions[4], currentY);
-        doc.text("VALIDADE", repColPositions[5], currentY);
-        doc.text("OBS.", repColPositions[6], currentY); 
-        currentY += lineHeight + 1; 
-
-        doc.setFont(undefined, 'normal');
-        
-        itensDaCategoria.forEach(item => {
-            if (currentY > 280) { 
-                doc.addPage();
-                currentY = 15;
-                // Repetir cabeçalho e título do relatório
-                doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-                doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-                doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-                doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-                doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(14); doc.text(`RELATÓRIO DE REPOSIÇÃO (Continuação) - Qtd. Mínima: ${minQuantity}`, 105, currentY, null, null, "center"); currentY += 8;
-                doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(8);
-                doc.setFont(undefined, 'bold');
-                doc.text("CÓD.", repColPositions[0], currentY);
-                doc.text("DESCRIÇÃO", repColPositions[1], currentY);
-                doc.text("QTD. ATUAL", repColPositions[2], currentY);
-                doc.text("UNID.", repColPositions[3], currentY);
-                doc.text("LOCALIZAÇÃO", repColPositions[4], currentY);
-                doc.text("VALIDADE", repColPositions[5], currentY);
-                doc.text("OBS.", repColPositions[6], currentY); 
-                currentY += lineHeight + 1;
-                doc.setFont(undefined, 'normal');
-            }
-            
-            const repDataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
-            const repItemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : ''; 
-            
-            doc.text(item.cod || 'N/D', repColPositions[0], currentY);
-            doc.text(item.item, repColPositions[1], currentY);
-            doc.text(item.quantidade.toString(), repColPositions[2], currentY);
-            doc.text(item.unidadeMedida || 'Não definida', repColPositions[3], currentY);
-            doc.text(item.localizacao || 'Não definida', repColPositions[4], currentY);
-            doc.text(repDataValidade, repColPositions[5], currentY);
-            doc.text(repItemObsText, repColPositions[6], currentY); 
-            currentY += lineHeight;
-        });
-        currentY += lineHeight; 
-    });
-
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages());
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
-
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Reposicao_${formattedDate}_QtdMin${minQuantity}.pdf` });
-
-    alert(`Relatório de Reposição gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de reposição gerado."); // DEBUG
-}
-
-async function gerarRelatorioConsumo() {
-    console.log("Iniciando geração de Relatório de Consumo..."); // DEBUG
-    const operador = getOperadorNameFromInput(); 
-    if (operador === null) {
-        alert("Operação cancelada: Nome do operador é obrigatório.");
-        console.log("Relatório de consumo cancelado: Operador não fornecido."); // DEBUG
-        return;
-    }
-
-    let startDateInput = prompt("Digite a Data de Início (AAAA-MM-DD) para o relatório de consumo:");
-    if (startDateInput === null) { alert("Operação cancelada."); return; }
-    let endDateInput = prompt("Digite a Data de Término (AAAA-MM-DD) para o relatório de consumo:");
-    if (endDateInput === null) { alert("Operação cancelada."); return; }
-
-    const startDate = new Date(startDateInput + 'T00:00:00');
-    const endDate = new Date(endDateInput + 'T23:59:59'); 
-    
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || startDate > endDate) {
-        alert("Datas inválidas. Por favor, digite datas no formato AAAA-MM-DD e certifique-se de que a data de início não é posterior à de término.");
-        console.log("Relatório de consumo impedido: Datas inválidas."); // DEBUG
-        return;
-    }
-
-    // Formatação de datas para o título do relatório (DDMMAAAA)
-    const formattedStartDateForTitle = `${startDate.getDate().toString().padStart(2, '0')}${(startDate.getMonth() + 1).toString().padStart(2, '0')}${startDate.getFullYear()}`;
-    const formattedEndDateForTitle = `${endDate.getDate().toString().padStart(2, '0')}${(endDate.getMonth() + 1).toString().padStart(2, '0')}${endDate.getFullYear()}`;
-
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o relatório de consumo.");
-        console.error("Firestore DB não inicializado para relatório de consumo."); // DEBUG
-        return;
-    }
-
-    let logsConsumo = [];
-    try {
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3');
-        // Consulta todos os logs no período
-        const q = window.firebaseFirestoreQuery(
-            logRef,
-            window.firebaseFirestoreWhere('dataHoraMovimento', '>=', startDate),
-            window.firebaseFirestoreWhere('dataHoraMovimento', '<=', endDate),
-            window.firebaseFirestoreOrderBy('dataHoraMovimento', 'asc') 
-        );
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        logsConsumo = querySnapshot.docs.map(doc => doc.data());
-        console.log(`Logs de consumo carregados para o período: ${logsConsumo.length}`); // DEBUG
-
-    } catch (error) {
-        console.error("Erro ao carregar logs para o relatório de consumo:", error); // DEBUG
-        alert("Erro ao carregar logs para o relatório de consumo. Verifique o console.");
-        return;
-    }
-
-    // Processamento e Agregação de Dados de Consumo
-    const consumoPorItemECategoria = {}; 
-
-    logsConsumo.forEach(log => {
-        if (log.tipoMovimento === "SAIDA") { 
-            const categoria = log.categoria || 'Geral'; // Categoria no momento da saída (se existir no log)
-            const itemId = log.itemId;
-            const quantidadeConsumida = Math.abs(log.quantidadeMovimentada); 
-
-            if (!consumoPorItemECategoria[categoria]) {
-                consumoPorItemECategoria[categoria] = {};
-            }
-            if (!consumoPorItemECategoria[categoria][itemId]) {
-                consumoPorItemECategoria[categoria][itemId] = {
-                    itemNome: log.itemNome,
-                    itemCod: log.itemCod,
-                    totalConsumido: 0,
-                    unidadeMedida: log.unidadeMedidaLog || 'Não definida'
-                };
-            }
-            consumoPorItemECategoria[categoria][itemId].totalConsumido += quantidadeConsumida;
-        }
-    });
-    console.log("Consumo processado por item e categoria:", consumoPorItemECategoria); // DEBUG
-
-    const categoriasConsumoOrdenadas = Object.keys(consumoPorItemECategoria).sort();
-
-    if (categoriasConsumoOrdenadas.length === 0) {
-        alert("Nenhum consumo registrado no período selecionado.");
-        return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let currentY = 15; 
-
-    // --- Cabeçalho do PDF ---
-    doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-    doc.setFontSize(10); const now = new Date(); const generalFormattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`; const generalFormattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    doc.text(`Data: ${generalFormattedDate} - Hora: ${generalFormattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-    doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-    doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-
-    // --- Título do Relatório ---
-    doc.setFontSize(14);
-    doc.text(`RELATÓRIO DE CONSUMO - Período: ${formattedStartDateForTitle} a ${formattedEndDateForTitle}`, 105, currentY, null, null, "center");
-    currentY += 8;
-    doc.setLineWidth(0.2);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Conteúdo: Consumo por Categoria ---
-    doc.setFontSize(9);
-    const consColWidths = [20, 60, 20, 30]; 
-    const consColPositions = [];
-    let consCurrentX = startX;
-    consColWidths.forEach(width => {
-        consColPositions.push(consCurrentX);
-        consCurrentX += width;
-    });
-
-    categoriasConsumoOrdenadas.forEach(categoria => {
-        const itensConsumidosNaCategoria = consumoPorItemECategoria[categoria];
-        
-        if (currentY > 270) { 
-            doc.addPage();
-            currentY = 15; 
-            // Cabeçalho e Título em nova página (repetir cabeçalho completo)
-            doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-            doc.setFontSize(10); doc.text(`Data: ${generalFormattedDate} - Hora: ${generalFormattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-            doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-            doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-            doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(14); doc.text(`RELATÓRIO DE CONSUMO (Continuação) - Período: ${formattedStartDateForTitle} a ${formattedEndDateForTitle}`, 105, currentY, null, null, "center"); currentY += 8;
-            doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(9); 
-        }
-        
-        doc.setFont(undefined, 'bold');
-        doc.text(`Categoria: ${categoria}`, startX + 5, currentY); 
-        currentY += lineHeight;
-        
-        doc.text("CÓD.", consColPositions[0], currentY);
-        doc.text("DESCRIÇÃO", consColPositions[1], currentY);
-        doc.text("CONSUMO", consColPositions[2], currentY);
-        doc.text("UNID.", consColPositions[3], currentY);
-        currentY += lineHeight + 1; 
-
-        doc.setFont(undefined, 'normal');
-        
-        Object.values(itensConsumidosNaCategoria).sort((a,b) => a.itemNome.localeCompare(b.itemNome)).forEach(itemConsumo => {
-            if (currentY > 280) { 
-                doc.addPage();
-                currentY = 15;
-                // Repetir cabeçalho e título do relatório
-                doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-                doc.setFontSize(10); doc.text(`Data: ${generalFormattedDate} - Hora: ${generalFormattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-                doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-                doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-                doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(14); doc.text(`RELATÓRIO DE CONSUMO (Continuação) - Período: ${formattedStartDateForTitle} a ${formattedEndDateForTitle}`, 105, currentY, null, null, "center"); currentY += 8;
-                doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(9);
-                doc.setFont(undefined, 'bold');
-                doc.text("CÓD.", consColPositions[0], currentY);
-                doc.text("DESCRIÇÃO", consColPositions[1], currentY);
-                doc.text("CONSUMO", consColPositions[2], currentY);
-                doc.text("UNID.", consColPositions[3], currentY);
-                currentY += lineHeight + 1;
-                doc.setFont(undefined, 'normal');
-            }
-            
-            doc.text(itemConsumo.itemCod || 'N/D', consColPositions[0], currentY);
-            doc.text(itemConsumo.itemNome, consColPositions[1], currentY);
-            doc.text(itemConsumo.totalConsumido.toString(), consColPositions[2], currentY);
-            doc.text(itemConsumo.unidadeMedida, consColPositions[3], currentY);
-            currentY += lineHeight;
-        });
-        currentY += lineHeight; 
-    });
-
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages());
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
-
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Consumo_${formattedDate}.pdf` });
-
-    alert(`Relatório de Consumo gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de consumo gerado."); // DEBUG
-}
-
-async function gerarRelatorioVencimento() {
-    console.log("Iniciando geração de Relatório de Itens Próximos do Vencimento..."); // DEBUG
-    const operador = getOperadorNameFromInput(); 
-    if (operador === null) {
-        alert("Operação cancelada: Nome do operador é obrigatório.");
-        console.log("Relatório de vencimento cancelado: Operador não fornecido."); // DEBUG
-        return;
-    }
-
-    let daysUntilDueInput = prompt("Digite o número de dias MÁXIMO para o vencimento para um item entrar no relatório (ex: 90 para 90 dias):");
-    if (daysUntilDueInput === null) {
-        alert("Operação de relatório de vencimento cancelada.");
-        console.log("Relatório de vencimento cancelado pelo usuário."); // DEBUG
-        return;
-    }
-    const daysUntilDue = parseInt(daysUntilDueInput.trim());
-
-    if (isNaN(daysUntilDue) || daysUntilDue < 0) {
-        alert("Número de dias inválido. Por favor, digite um número positivo ou zero.");
-        console.log("Relatório de vencimento impedido: Dias inválidos."); // DEBUG
-        return;
-    }
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o relatório de vencimento.");
-        console.error("Firestore DB não inicializado para relatório de vencimento."); // DEBUG
-        return;
-    }
-
-    let itensInventario = [];
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
-        const q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        itensInventario = querySnapshot.docs.map(doc => doc.data());
-        console.log(`Itens carregados para relatório de vencimento: ${itensInventario.length}`); // DEBUG
-    } catch (error) {
-        console.error("Erro ao carregar itens para o relatório de vencimento:", error); // DEBUG
-        alert("Erro ao carregar itens para o relatório de vencimento. Verifique o console.");
-        return;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); 
-    const dueDateLimit = new Date();
-    dueDateLimit.setDate(today.getDate() + daysUntilDue);
-    dueDateLimit.setHours(23, 59, 59, 999); 
-
-    // Filtrar itens com data de vencimento válida e dentro do limite
-    const itensProximosVencimento = itensInventario.filter(item => {
-        if (item.dataVencimento) {
-            const vencimentoDate = item.dataVencimento.toDate();
-            return vencimentoDate >= today && vencimentoDate <= dueDateLimit;
-        }
-        return false;
-    });
-
-    if (itensProximosVencimento.length === 0) {
-        alert(`Nenhum item encontrado que vence em até ${daysUntilDue} dias.`);
-        console.log("Nenhum item próximo do vencimento encontrado."); // DEBUG
-        return;
-    }
-
-    // Agrupar por categoria e ordenar as categorias
-    const itensPorCategoria = itensProximosVencimento.reduce((acc, item) => {
-        const categoria = item.categoria || 'Geral';
-        if (!acc[categoria]) {
-            acc[categoria] = [];
-        }
-        acc[categoria].push(item);
-        return acc;
-    }, {});
-
-    const categoriasOrdenadas = Object.keys(itensPorCategoria).sort();
-
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let currentY = 15; 
-
-    // --- Cabeçalho do PDF ---
-    doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-    doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-    doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-    doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-
-    // --- Título do Relatório ---
-    doc.setFontSize(14);
-    doc.text(`RELATÓRIO DE ITENS PRÓXIMOS DO VENCIMENTO (Até ${daysUntilDue} dias)`, 105, currentY, null, null, "center");
-    currentY += 8;
-    doc.setLineWidth(0.2);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Conteúdo: Itens por Categoria ---
-    doc.setFontSize(8); 
-    // Larguras das colunas
-    const vencColWidths = [15, 45, 15, 20, 25, 25, 25]; 
-    const vencColPositions = [];
-    let vencCurrentX = startX;
-    vencColWidths.forEach(width => {
-        vencColPositions.push(vencCurrentX);
-        vencCurrentX += width;
-    });
-
-    categoriasOrdenadas.forEach(categoria => {
-        const itensDaCategoria = itensPorCategoria[categoria];
-        
-        if (currentY > 270) { 
-            doc.addPage();
-            currentY = 15; 
-            // Repetir cabeçalho e título do relatório
-            doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-            doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-            doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-            doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-            doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(14); doc.text(`RELATÓRIO DE ITENS PRÓXIMOS DO VENCIMENTO (Continuação) - Até ${daysUntilDue} dias`, 105, currentY, null, null, "center"); currentY += 8;
-            doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(8);
-            doc.setFont(undefined, 'bold');
-            doc.text("CÓD.", vencColPositions[0], currentY);
-            doc.text("DESCRIÇÃO", vencColPositions[1], currentY);
-            doc.text("QTD.", vencColPositions[2], currentY);
-            doc.text("UNID.", vencColPositions[3], currentY);
-            doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
-            doc.text("VALIDADE", vencColPositions[5], currentY);
-            doc.text("OBS.", vencColPositions[6], currentY); 
-            currentY += lineHeight + 1;
-            doc.setFont(undefined, 'normal');
-        }
-        
-        doc.setFont(undefined, 'bold');
-        doc.text(`Categoria: ${categoria}`, startX + 5, currentY); 
-        currentY += lineHeight;
-        
-        doc.text("CÓD.", vencColPositions[0], currentY);
-        doc.text("DESCRIÇÃO", vencColPositions[1], currentY);
-        doc.text("QTD.", vencColPositions[2], currentY);
-        doc.text("UNID.", vencColPositions[3], currentY);
-        doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
-        doc.text("VALIDADE", vencColPositions[5], currentY);
-        doc.text("OBS.", vencColPositions[6], currentY); 
-        currentY += lineHeight + 1; // Espaço após os títulos
-
-        doc.setFont(undefined, 'normal');
-        
-        itensDaCategoria.sort((a, b) => {
-            const dateA = a.dataVencimento ? a.dataVencimento.toDate().getTime() : Infinity;
-            const dateB = b.dataVencimento ? b.dataVencimento.toDate().getTime() : Infinity;
-            return dateA - dateB;
-        }).forEach(item => {
-            if (currentY > 280) { 
-                doc.addPage();
-                currentY = 15;
-                // Repetir cabeçalho e título do relatório
-                doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-                doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
-                doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
-                doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-                doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(14); doc.text(`RELATÓRIO DE ITENS PRÓXIMOS DO VENCIMENTO (Continuação) - Até ${daysUntilDue} dias`, 105, currentY, null, null, "center"); currentY += 8;
-                doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(8);
-                doc.setFont(undefined, 'bold');
-                doc.text("CÓD.", vencColPositions[0], currentY);
-                doc.text("DESCRIÇÃO", vencColPositions[1], currentY);
-                doc.text("QTD.", vencColPositions[2], currentY);
-                doc.text("UNID.", vencColPositions[3], currentY);
-                doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
-                doc.text("VALIDADE", vencColPositions[5], currentY);
-                doc.text("OBS.", vencColPositions[6], currentY); 
-                currentY += lineHeight + 1;
-                doc.setFont(undefined, 'normal');
-            }
-            
-            const itemVencimentoFormatted = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
-            const itemObservacoesVenc = doc.splitTextToSize(item.observacoes && item.observacoes !== 'Não definido' ? item.observacoes : '', 20); 
-            
-            doc.text(item.cod || 'N/D', vencColPositions[0], currentY);
-            doc.text(item.item, vencColPositions[1], currentY);
-            doc.text(item.quantidade.toString(), vencColPositions[2], currentY);
-            doc.text(item.unidadeMedida || 'Não definida', vencColPositions[3], currentY);
-            doc.text(item.localizacao || 'Não definida', vencColPositions[4], currentY);
-            doc.text(itemVencimentoFormatted, vencColPositions[5], currentY);
-            doc.text(itemObservacoesVenc, vencColPositions[6], currentY);
-            currentY += Math.max(lineHeight, itemObservacoesVenc.length * (lineHeight - 2)); 
-        });
-        currentY += lineHeight; 
-    });
-
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages());
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
-
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Vencimento_${formattedDate}.pdf` });
-
-    alert(`Relatório de Itens Próximos do Vencimento gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de vencimento gerado."); // DEBUG
-        }
-
-
-
-function imprimirTabelaExibida() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'pt', 'a4');
-
-    const dataAtual = new Date().toLocaleString("pt-BR");
-    const operador = document.getElementById("operatorName").value || "Desconhecido";
-
-    // Cabeçalho
-    doc.setFontSize(14);
-    doc.text("Relatório de Inventário - Tabela Atual", 40, 40);
-    doc.setFontSize(10);
-    doc.text("Operador: " + operador, 40, 60);
-    doc.text("Data e Hora: " + dataAtual, 40, 75);
-    doc.setLineWidth(0.5);
-    doc.line(40, 85, 555, 85);
-
-    // Tabela HTML
-    const table = document.querySelector("#inventoryList");
-
-    if (!table) {
-        alert("Tabela não encontrada.");
-        return;
-    }
-
-    doc.autoTable({
-        html: "#inventoryList",
-        startY: 95,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [26, 43, 76] },
-        didDrawPage: function (data) {
-            // Rodapé
-            const pageHeight = doc.internal.pageSize.height;
-            doc.setFontSize(9);
-            doc.text("Sistema SISLAB 3.0.0 - CETEP/LNAB", 40, pageHeight - 30);
-            doc.text("Página " + doc.internal.getNumberOfPages(), 500, pageHeight - 30, { align: 'right' });
-        }
-    });
-
-    doc.save("Relatorio_Tabela_Atual.pdf");
-}
-
-
-window.imprimirTabelaExibida = imprimirTabelaExibida;
+        // Sua configuração do Firebase (a mesma do index.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+        };
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app); 
+
+        // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
+        // Isso permite que o inventario_scripts.js (que é um script 'clássico' ou 'module') as use
+        window.firestoreDb = db;
+        window.firebaseFirestoreCollection = collection;
+        window.firebaseFirestoreAddDoc = addDoc;
+        window.firebaseFirestoreGetDocs = getDocs;
+        window.firebaseFirestoreQuery = query;
+        window.firebaseFirestoreOrderBy = orderBy;
+        window.firebaseFirestoreLimit = limit;
+        window.firebaseFirestoreDeleteDoc = deleteDoc;
+        window.firebaseFirestoreDoc = doc;
+        window.firebaseFirestoreUpdateDoc = updateDoc; 
+        window.firebaseFirestoreWhere = where; 
+        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreGetDoc = getDoc;
+        window.firebaseFirestoreRunTransaction = runTransaction; 
+    </script>
+<script src="inventario_scripts_com_impressao_final.js" type="module"></script> </body>
+</html>
