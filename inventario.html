@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 2.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -236,6 +236,8 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            font-size: 0.9em; /* Ajuste para caber mais info */
+            vertical-align: top; /* Alinha o conteúdo ao topo */
         }
 
         #inventoryList th {
@@ -253,34 +255,46 @@
 
         #inventoryList .action-buttons {
             display: flex;
+            flex-direction: column; /* Botões um abaixo do outro */
             gap: 5px;
         }
         #inventoryList .action-buttons button {
             padding: 5px 10px;
             font-size: 0.85em;
             margin: 0; /* Remover margem extra */
+            width: 100%; /* Ocupa a largura total da célula */
+            box-sizing: border-box;
         }
         button.edit-btn { background-color: #5cb85c; } /* Verde para editar */
         button.edit-btn:hover { background-color: #4cae4c; }
         button.delete-btn { background-color: #d9534f; } /* Vermelho para deletar */
         button.delete-btn:hover { background-color: #c9302c; }
+        button.view-log-btn { background-color: #007bff; } /* Azul para ver log */
+        button.view-log-btn:hover { background-color: #0069d9; }
 
-        /* Estilos para o campo de input de movimentação direta */
+
+        /* Estilos para o campo de input de movimentação direta e botões */
+        .direct-movement-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Centraliza horizontalmente */
+            gap: 3px; /* Espaço entre input e botões */
+            flex-wrap: nowrap; /* Impede que quebre linha em telas pequenas */
+        }
         .movement-input {
-            width: 50px; /* Largura menor */
+            width: 45px; /* Largura menor */
             padding: 5px;
             text-align: center;
-            margin: 0 5px;
             border: 1px solid #ccc;
             border-radius: 3px;
+            font-size: 0.9em;
         }
         /* Estilos para os botões de + e - */
         .movement-button {
-            width: 30px; /* Botões menores */
-            height: 30px;
+            width: 28px; /* Botões menores */
+            height: 28px;
             padding: 0;
-            margin: 0 2px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             line-height: 1;
             border-radius: 50%;
             display: inline-flex; /* Para centralizar o texto */
@@ -290,6 +304,7 @@
             color: white;
             cursor: pointer;
             transition: background-color 0.2s ease;
+            flex-shrink: 0; /* Evita que o botão encolha */
         }
         .movement-button.plus { background-color: #28a745; } /* Verde para + */
         .movement-button.plus:hover { background-color: #218838; }
@@ -307,15 +322,34 @@
             max-width: 1200px;
             margin-top: 20px;
         }
+        #itemLogTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
         #itemLogTable th, #itemLogTable td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            font-size: 0.85em; /* Um pouco menor para caber mais info */
+            vertical-align: top;
         }
         #itemLogTable th {
             background-color: #f2f2f2;
             color: #333;
         }
+        #itemLogTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #itemLogTable tr:hover {
+            background-color: #f1f1f1;
+        }
+        /* Container para rolagem do log */
+        .item-log-scroll-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+        }
+
 
         /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
         @media (max-width: 900px) {
@@ -326,6 +360,10 @@
             .column.item-form, .column.item-list {
                 flex-basis: 100%;
                 min-width: unset;
+            }
+            /* Ajuste para a coluna de Mov. Direta em telas pequenas */
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { /* Coluna Mov. Direta */
+                min-width: 120px; /* Garante espaço para os botões */
             }
         }
     </style>
@@ -344,7 +382,7 @@
                 <div class="tube-cap"></div>
             </div>
         </div>
-        <h1 class="main-title">SISLAB 2.0.4 - Controle de Inventário (CETEP/LNAB)</h1>
+        <h1 class="main-title">SISLAB 2.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
     </div>
 
     <div class="main-content-container">
@@ -394,7 +432,7 @@
                     <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
                 </div>
                 <div class="form-field" style="flex-basis: 30%; min-width: 100px;">
-                    <select id="filterCategory">
+                    <label for="filterCategory" class="sr-only">Filtrar por Categoria</label> <select id="filterCategory">
                         <option value="">Todas as Categorias</option>
                         </select>
                 </div>
@@ -418,16 +456,16 @@
 
     <div id="itemLogSection" class="column" style="display: none;">
         <h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
-        <div style="max-height: 300px; overflow-y: auto;">
+        <div class="item-log-scroll-container">
             <table id="itemLogTable" style="width:100%; border-collapse: collapse;">
                 <thead>
                     <tr>
-                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Operação</th>
-                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Qtd. Mov.</th>
-                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Qtd. Final</th>
-                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Data e Hora</th>
-                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Operador</th>
-                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Observações</th>
+                        <th style="width: 15%;">Operação</th>
+                        <th style="width: 10%;">Qtd. Mov.</th>
+                        <th style="width: 10%;">Qtd. Final</th>
+                        <th style="width: 20%;">Data e Hora</th>
+                        <th style="width: 15%;">Operador</th>
+                        <th style="width: 30%;">Observações</th>
                     </tr>
                 </thead>
                 <tbody>
