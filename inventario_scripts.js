@@ -1,844 +1,536 @@
-// VERSÃO: 2.0.0 (inventario_scripts.js)
-// CHANGELOG:
-// - Nova Versão: Marca o início oficial da Versão 2.0 do Sistema de Inventário.
-// - Adicionado: Campo cod (código sequencial numérico) em itens, com geração automática via transação no Firebase (config/contadores).
-// - Adicionado: categorias para itens, com carregamento dinâmico de Gist público e padrão "Geral".
-// - Modificado: listarItensInventario() para exibir cod e categoria, incluir os controles de movimentação direta (input de quantidade e botões +/-), e implementar filtragem por cod/item e por categoria.
-// - Adicionado: updateItemQuantityDirectly() para gerenciar as movimentações rápidas via botões +/-, incluindo solicitação do operador e alerta de estoque negativo.
-// - Modificado: saveOrUpdateItem() para: integrar solicitação de operador; gerar e salvar cod para novos itens; salvar categoria e observacoes gerais; implementar alerta de estoque negativo para saídas via edição; registrar logs detalhados (tipo "CADASTRO", "ENTRADA", "SAIDA", "AJUSTE"), incluindo itemCod e operador.
-// - Modificado: loadItemForEdit() para preencher todos os campos do formulário (cod, item, quantidade, observacoes, categoria).
-// - Modificado: deleteItem() para integrar solicitação de operador e registrar log de "REMOCAO" detalhado.
-// - Modificado: showItemLog() e hideItemLog() para exibir log por item com campos itemCod e operador.
-// - Remanejado e Modificado: Funções de relatório imprimirRelatorioInventario() e gerarRelatorioReposicao() para este script, acionadas por botões na inventario.html. Incluem solicitação de operador e exibição de cod e categoria.
+// inventario_scripts.js
 
+// Variáveis globais para armazenar os itens e categorias
+let itensInventario = [];
+let categoriasInventario = [];
 
-// --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
-const LOCAL_FILENAME_CATEGORIES = 'categorias_inventario.txt'; // <-- Nome do arquivo local na raiz
+// Função que é executada quando a página inventario.html é carregada
+window.onload = async () => {
+    console.log("Página de inventário carregada. Inicializando...");
+    // Carregar categorias e itens ao iniciar
+    await carregarCategoriasInventario();
+    await carregarItensInventario();
 
+    // Configurar o evento de pesquisa para a tabela de inventário
+    document.getElementById('pesquisaInventario').addEventListener('input', filtrarItensInventario);
+    
+    // Configurar evento para sugestões de movimentação
+    document.getElementById('itemMovimento').addEventListener('input', sugestaoItemMovimento);
+    document.getElementById('itemMovimento').addEventListener('change', carregarQuantidadeAtualParaMovimento);
 
-// Variáveis Globais de Estado
-let currentEditingItemId = null;
-let categoriasDisponiveis = []; // Armazena as categorias carregadas do arquivo local
+    // Configurar ordenação da tabela
+    document.querySelectorAll('#inventarioTable th').forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.dataset.sort;
+            ordenarTabelaInventario(column);
+        });
+    });
 
-// --- Event Listeners Iniciais ---
-document.addEventListener('DOMContentLoaded', async () => {
-    // Carregar categorias antes de listar os itens, pois a lista depende delas
-    await loadCategories(); 
-    listarItensInventario(); // Lista itens após carregar categorias
+    // Chamar alertas de estoque
+    exibirAlertasEstoqueBaixo();
+};
 
-    document.getElementById('saveItemBtn').addEventListener('click', saveOrUpdateItem);
-    document.getElementById('clearItemFormBtn').addEventListener('click', clearItemForm);
-    document.getElementById('searchInventory').addEventListener('input', listarItensInventario);
-    document.getElementById('filterCategory').addEventListener('change', listarItensInventario); // Filtra por categoria
+// --- Funções de Carregamento de Dados ---
 
-    // Adiciona event listeners para os botões de relatório (agora na inventario.html)
-    document.getElementById('printInventoryReportBtn').addEventListener('click', imprimirRelatorioInventario);
-    document.getElementById('generateReplenishmentReportBtn').addEventListener('click', gerarRelatorioReposicao);
-});
-
-// --- Funções Auxiliares Comuns ---
-async function getOperadorName() {
-    let operador = '';
-    while (true) {
-        operador = prompt("Por favor, digite seu nome (operador):");
-        if (operador === null) { // Usuário clicou em cancelar
-            return null; 
-        }
-        if (operador.trim() !== '') {
-            return operador.trim();
-        }
-        alert("O nome do operador não pode ser vazio. Por favor, digite seu nome.");
-    }
-}
-
-function showError(elementId, message) {
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
-    if (inputElement && errorDiv) {
-        inputElement.classList.add('error');
-        errorDiv.textContent = message;
-    }
-}
-
-function clearError(elementId) {
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
-    if (inputElement && errorDiv) {
-        inputElement.classList.remove('error');
-        errorDiv.textContent = '';
-    }
-}
-
-function formatarCod(num) {
-    // Garante 4 dígitos com zeros à esquerda
-    return String(num).padStart(4, '0');
-}
-
-// --- Funções de Carregamento Dinâmico ---
-async function loadCategories() {
-    const itemCategorySelect = document.getElementById('itemCategory');
-    const filterCategorySelect = document.getElementById('filterCategory');
-    const timestamp = new Date().getTime(); // Para evitar cache do navegador no arquivo local
-
-    // Acessa o arquivo local na raiz do projeto
-    const localFileUrl = `${LOCAL_FILENAME_CATEGORIES}?t=${timestamp}`; 
-
+async function carregarCategoriasInventario() {
+    console.log("Carregando categorias do inventário...");
+    const timestamp = new Date().getTime(); // Para evitar cache
     try {
-        const response = await fetch(localFileUrl);
+        const response = await fetch(`categorias_inventario.txt?t=${timestamp}`);
         if (!response.ok) {
-            console.warn(`Erro ao carregar categorias do arquivo local (${response.status}). Usando categorias padrão.`);
-            categoriasDisponiveis = ["Geral"]; // Categoria padrão se o arquivo falhar
+            console.warn(`Erro ao carregar categorias_inventario.txt (${response.status}).`);
+            // Se o arquivo não existir ou houver erro, usa um conjunto padrão
+            categoriasInventario = ["Materiais Consumíveis", "Reagentes", "Equipamentos", "Outros"];
         } else {
             const text = await response.text();
-            categoriasDisponiveis = text.trim().split('\n').map(c => c.trim()).filter(c => c !== '');
-            if (categoriasDisponiveis.length === 0) {
-                categoriasDisponiveis = ["Geral"]; // Garante "Geral" se o arquivo estiver vazio
+            categoriasInventario = text.trim().split('\\n').map(c => c.trim()).filter(c => c !== '');
+            if (categoriasInventario.length === 0) {
+                 categoriasInventario = ["Materiais Consumíveis", "Reagentes", "Equipamentos", "Outros"];
             }
         }
-    } catch (error) {
-        console.error("Erro FATAL ao carregar categorias do arquivo local:", error);
-        categoriasDisponiveis = ["Geral"]; // Categoria padrão em caso de erro fatal
-    }
-
-    // Popular o select do formulário de cadastro/edição
-    itemCategorySelect.innerHTML = '';
-    categoriasDisponiveis.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        itemCategorySelect.appendChild(option);
-    });
-    // Define "Geral" como padrão, ou a primeira opção se "Geral" não existir
-    itemCategorySelect.value = "Geral"; 
-    if (itemCategorySelect.selectedIndex === -1 && categoriasDisponiveis.length > 0) {
-        itemCategorySelect.selectedIndex = 0;
-    }
-
-
-    // Popular o select de filtro por categoria
-    filterCategorySelect.innerHTML = '<option value="">Todas as Categorias</option>';
-    categoriasDisponiveis.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        filterCategorySelect.appendChild(option);
-    });
-}
-
-
-// --- Funções de CRUD de Itens ---
-
-async function listarItensInventario() {
-    const inventoryListBody = document.querySelector('#inventoryList tbody');
-    // Corrigido para 7 colunas visíveis + 1 oculta (actions) na listagem, totalizando 8
-    inventoryListBody.innerHTML = '<tr><td colspan="8">Carregando itens...</td></tr>'; 
-    
-    const searchTerm = document.getElementById('searchInventory').value.toLowerCase();
-    const filterCategory = document.getElementById('filterCategory').value; // Valor da categoria selecionada para filtro
-    let items = [];
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        inventoryListBody.innerHTML = '<tr><td colspan="8">Banco de dados não inicializado.</td></tr>';
-        return;
-    }
-
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario');
-        // Ordena por item (descrição) para a listagem principal
-        let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
-
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        // Filtragem em memória (para até 300 itens, performance ok)
-        let filteredItems = items.filter(item => {
-            const matchesSearch = searchTerm === '' || 
-                                  (item.item && item.item.toLowerCase().includes(searchTerm)) || 
-                                  (item.cod && item.cod.toLowerCase().includes(searchTerm)); // Busca por cod ou item (descrição)
-            const matchesCategory = filterCategory === '' || (item.categoria && item.categoria === filterCategory);
-            return matchesSearch && matchesCategory;
-        });
-
-        if (filteredItems.length === 0) {
-            inventoryListBody.innerHTML = '<tr><td colspan="8">Nenhum item encontrado com os filtros aplicados.</td></tr>'; 
-            return;
-        }
-
-        inventoryListBody.innerHTML = ''; // Limpa antes de preencher
-        filteredItems.forEach(item => {
-            const row = inventoryListBody.insertRow();
-            row.dataset.itemId = item.id; // Guarda o ID no elemento da linha
-            
-            const dataCadastroDate = item.dataCadastro ? item.dataCadastro.toDate() : null;
-            const dataCadastroFormatada = dataCadastroDate ? dataCadastroDate.toLocaleDateString('pt-BR') : 'N/A';
-
-            // Colunas da tabela
-            row.insertCell(0).textContent = item.cod || 'N/A'; // Cód.
-            row.insertCell(1).textContent = item.item; // Descrição
-            row.insertCell(2).textContent = item.quantidade; // Qtd.
-            row.insertCell(3).textContent = item.categoria || 'Geral'; // Categoria
-            row.insertCell(4).textContent = dataCadastroFormatada; // Data Cadastro
-            
-            // Coluna Ações
-            const actionsCell = row.insertCell(5);
-            actionsCell.classList.add('action-buttons');
-            
-            const editButton = document.createElement('button');
-            editButton.textContent = 'Editar';
-            editButton.classList.add('edit-btn');
-            // Passa todos os campos necessários para edição
-            editButton.onclick = () => loadItemForEdit(item.id, item.cod, item.item, item.quantidade, item.observacoes, item.categoria);
-            actionsCell.appendChild(editButton);
-
-            const viewLogButton = document.createElement('button');
-            viewLogButton.textContent = 'Ver Log';
-            viewLogButton.classList.add('view-log-btn'); 
-            viewLogButton.onclick = () => showItemLog(item.id, item.item, item.cod); // Passa item.item e item.cod para o log
-            actionsCell.appendChild(viewLogButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Remover';
-            deleteButton.classList.add('delete-btn');
-            // Passa item.item, item.cod e quantidade atual para o log de remoção
-            deleteButton.onclick = () => deleteItem(item.id, item.item, item.cod, item.quantidade); 
-            actionsCell.appendChild(deleteButton);
-
-            // Coluna Movimentação Direta
-            const directMoveCell = row.insertCell(6);
-            directMoveCell.classList.add('direct-movement-controls'); // Adiciona classe para estilos
-            directMoveCell.style.whiteSpace = 'nowrap'; // Evita quebra de linha
-
-            const moveInput = document.createElement('input');
-            moveInput.type = 'number';
-            moveInput.value = '1'; // Padrão 1
-            moveInput.min = '1';
-            moveInput.classList.add('movement-input');
-            directMoveCell.appendChild(moveInput);
-
-            const plusButton = document.createElement('button');
-            plusButton.textContent = '+';
-            plusButton.classList.add('movement-button', 'plus');
-            // Ao clicar, atualiza a quantidade diretamente com o valor do input
-            plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value));
-            directMoveCell.appendChild(plusButton);
-
-            const minusButton = document.createElement('button');
-            minusButton.textContent = '-';
-            minusButton.classList.add('movement-button', 'minus');
-            // Ao clicar, atualiza a quantidade diretamente com o valor NEGATIVO do input
-            minusButton.onclick = ()ato updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value));
-            directMoveCell.appendChild(minusButton);
+        console.log("Categorias carregadas:", categoriasInventario);
+        // Preenche o datalist de categorias
+        const datalist = document.getElementById('categoriasSugeridas');
+        datalist.innerHTML = '';
+        categoriasInventario.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            datalist.appendChild(option);
         });
 
     } catch (error) {
-        console.error("Erro ao listar itens do inventário:", error);
-        inventoryListBody.innerHTML = '<tr><td colspan="8">Erro ao carregar itens.</td></tr>'; 
+        console.error("Erro FATAL ao carregar categorias do inventário:", error);
+        categoriasInventario = ["Materiais Consumíveis", "Reagentes", "Equipamentos", "Outros"]; // Fallback em caso de erro de rede
+        alert("Não foi possível carregar a lista de categorias. Usando categorias padrão.");
     }
 }
 
-function clearItemForm() {
-    document.getElementById('itemCod').value = ''; // Limpa o cod
-    document.getElementById('itemDescription').value = '';
-    document.getElementById('itemQuantity').value = '0';
-    document.getElementById('itemObservations').value = ''; 
-    document.getElementById('itemCategory').value = 'Geral'; // Reseta para categoria padrão
-    document.getElementById('itemIdToEdit').value = '';
-    document.getElementById('saveItemBtn').textContent = 'Salvar Item';
-    clearError('itemDescription');
-    clearError('itemQuantity');
-    currentEditingItemId = null; // Reseta o ID do item em edição
-    hideItemLog(); // Oculta o log caso estivesse aberto
-}
+async function carregarItensInventario() {
+    console.log("Carregando itens do inventário do Firestore...");
+    const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario');
+    const q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('nome', 'asc')); // Ordena por nome
+    const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
-async function saveOrUpdateItem() {
-    const itemCodInput = document.getElementById('itemCod');
-    const descriptionInput = document.getElementById('itemDescription');
-    const quantityInput = document.getElementById('itemQuantity');
-    const observationsInput = document.getElementById('itemObservations'); 
-    const categorySelect = document.getElementById('itemCategory'); 
-    const itemIdToEdit = document.getElementById('itemIdToEdit').value;
+    itensInventario = [];
+    const tbody = document.getElementById('inventarioTableBody');
+    tbody.innerHTML = ''; // Limpa a tabela
 
-    const description = descriptionInput.value.trim();
-    const quantity = parseInt(quantityInput.value);
-    const observations = observationsInput.value.trim();
-    const category = categorySelect.value;
-
-    let isValid = true;
-    if (!description) {
-        showError('itemDescription', 'A descrição é obrigatória.');
-        isValid = false;
-    } else {
-        clearError('itemDescription');
-    }
-    if (isNaN(quantity) || quantity < 0) { // Quantidade pode ser 0 no cadastro
-        showError('itemQuantity', 'Quantidade inválida. Deve ser um número maior ou igual a zero.');
-        isValid = false;
-    } else {
-        clearError('itemQuantity');
-    }
-
-    if (!isValid) return;
-
-    const operador = await getOperadorName();
-    if (operador === null) {
-        alert("Operação de salvar/atualizar item cancelada: Nome do operador não fornecido.");
+    if (querySnapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="7">Nenhum item no inventário.</td></tr>';
         return;
     }
 
+    querySnapshot.forEach(doc => {
+        const item = { id: doc.id, ...doc.data() };
+        itensInventario.push(item);
+        adicionarItemNaTabela(item);
+    });
+    console.log("Itens do inventário carregados:", itensInventario);
+    exibirAlertasEstoqueBaixo(); // Atualiza alertas após carregar itens
+}
+
+function adicionarItemNaTabela(item) {
+    const tbody = document.getElementById('inventarioTableBody');
+    const row = tbody.insertRow();
+    row.dataset.itemId = item.id; // Armazena o ID do Firestore na linha
+
+    const dataValidadeFormatada = item.dataValidade ? new Date(item.dataValidade).toLocaleDateString('pt-BR') : 'N/A';
+
+    row.innerHTML = `
+        <td>${item.nome}</td>
+        <td>${item.categoria || 'N/A'}</td>
+        <td>${item.quantidadeAtual}</td>
+        <td>${item.unidadeMedida || 'N/A'}</td>
+        <td>${dataValidadeFormatada}</td>
+        <td>${item.limiteMinimo}</td>
+        <td>
+            <button onclick="editarItem('${item.id}')">Editar</button>
+            <button onclick="confirmarExcluirItem('${item.id}', '${item.nome}')">Excluir</button>
+        </td>
+    `;
+}
+
+// --- Funções de Manipulação de Itens ---
+
+async function salvarItemInventario() {
+    console.log("Tentando salvar/atualizar item do inventário...");
+    const itemId = document.getElementById('itemId').value;
+    const nome = document.getElementById('nomeItem').value.trim();
+    const categoria = document.getElementById('categoria').value.trim();
+    const unidadeMedida = document.getElementById('unidadeMedida').value.trim();
+    const localizacao = document.getElementById('localizacao').value.trim();
+    const dataValidade = document.getElementById('dataValidade').value;
+    const limiteMinimo = parseInt(document.getElementById('limiteMinimo').value, 10);
+    const fornecedor = document.getElementById('fornecedor').value.trim();
+    const observacoes = document.getElementById('observacoesItem').value.trim();
+
+    if (!nome) {
+        alert("O nome do item é obrigatório.");
+        return;
+    }
+    if (isNaN(limiteMinimo) || limiteMinimo < 0) {
+        alert("O limite mínimo deve ser um número válido e não negativo.");
+        return;
+    }
+
+    const itemData = {
+        nome: nome,
+        categoria: categoria,
+        // quantidadeAtual será inicializada apenas na criação e atualizada por movimentos
+        unidadeMedida: unidadeMedida,
+        localizacao: localizacao,
+        dataValidade: dataValidade,
+        limiteMinimo: limiteMinimo,
+        fornecedor: fornecedor,
+        observacoes: observacoes,
+        ultimaAtualizacao: window.firebaseFirestoreServerTimestamp()
+    };
+
     try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario');
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_log');
+        if (itemId) {
+            // Atualizar item existente
+            const itemRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', itemId);
+            await window.firebaseFirestoreUpdateDoc(itemRef, itemData);
+            alert("Item atualizado com sucesso!");
+        } else {
+            // Adicionar novo item
+            // Garante que a quantidade inicial é 0 para novos itens
+            itemData.quantidadeAtual = 0; 
+            const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario');
+            await window.firebaseFirestoreAddDoc(inventarioRef, itemData);
+            alert("Item cadastrado com sucesso! Quantidade inicial definida como 0.");
+        }
+        limparFormularioItem();
+        carregarItensInventario(); // Recarrega a lista para refletir as mudanças
+    } catch (error) {
+        console.error("Erro ao salvar item:", error);
+        alert("Erro ao salvar item. Verifique o console para detalhes.");
+    }
+}
 
-        if (itemIdToEdit) { // Modo de Edição (Item Existente)
-            const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', itemIdToEdit);
-            const docSnap = await window.firebaseFirestoreGetDoc(itemDocRef);
-            const oldData = docSnap.data();
+async function editarItem(itemId) {
+    console.log("Editando item com ID:", itemId);
+    const itemRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', itemId);
+    const docSnap = await window.firebaseFirestoreGetDoc(itemRef);
 
-            const oldQuantity = oldData.quantidade;
-            const quantityChange = quantity - oldQuantity;
-            const currentItemCod = oldData.cod; // Pega o COD atual do item
+    if (docSnap.exists) {
+        const item = docSnap.data();
+        document.getElementById('itemId').value = itemId;
+        document.getElementById('nomeItem').value = item.nome;
+        document.getElementById('categoria').value = item.categoria || '';
+        document.getElementById('unidadeMedida').value = item.unidadeMedida || '';
+        document.getElementById('localizacao').value = item.localizacao || '';
+        document.getElementById('dataValidade').value = item.dataValidade || '';
+        document.getElementById('limiteMinimo').value = item.limiteMinimo;
+        document.getElementById('fornecedor').value = item.fornecedor || '';
+        document.getElementById('observacoesItem').value = item.observacoes || '';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Volta para o topo do formulário
+    } else {
+        alert("Item não encontrado.");
+        console.error("Item não encontrado para edição:", itemId);
+    }
+}
 
-            let tipoMovimentoLog = "AJUSTE"; 
-            if (quantityChange > 0) {
-                tipoMovimentoLog = "ENTRADA";
-            } else if (quantityChange < 0) {
-                tipoMovimentoLog = "SAIDA";
+async function confirmarExcluirItem(itemId, nomeItem) {
+    if (confirm(`Tem certeza que deseja excluir o item "${nomeItem}" do inventário? Esta ação é irreversível.`)) {
+        await excluirItemInventario(itemId);
+    }
+}
+
+async function excluirItemInventario(itemId) {
+    console.log("Excluindo item com ID:", itemId);
+    try {
+        const itemRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', itemId);
+        await window.firebaseFirestoreDeleteDoc(itemRef);
+        alert("Item excluído com sucesso!");
+        carregarItensInventario(); // Recarrega a lista
+    } catch (error) {
+        console.error("Erro ao excluir item:", error);
+        alert("Erro ao excluir item. Verifique o console.");
+    }
+}
+
+function limparFormularioItem() {
+    document.getElementById('itemId').value = '';
+    document.getElementById('nomeItem').value = '';
+    document.getElementById('categoria').value = '';
+    document.getElementById('unidadeMedida').value = '';
+    document.getElementById('localizacao').value = '';
+    document.getElementById('dataValidade').value = '';
+    document.getElementById('limiteMinimo').value = '0';
+    document.getElementById('fornecedor').value = '';
+    document.getElementById('observacoesItem').value = '';
+    document.getElementById('quantidadeAtualDisplay').textContent = '--'; // Limpa display de quantidade atual no movimento
+    document.getElementById('itemMovimentoId').value = ''; // Limpa o ID do item selecionado para movimento
+    document.getElementById('itemMovimento').value = ''; // Limpa o campo de pesquisa de movimento
+}
+
+// --- Funções de Movimentação de Estoque ---
+
+// Sugere itens no campo de movimentação
+function sugestaoItemMovimento() {
+    const input = document.getElementById('itemMovimento');
+    const datalist = document.getElementById('itensDisponiveis');
+    const termo = input.value.toLowerCase();
+
+    datalist.innerHTML = ''; // Limpa sugestões anteriores
+
+    const itensFiltrados = itensInventario.filter(item =>
+        item.nome.toLowerCase().includes(termo)
+    );
+
+    itensFiltrados.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.nome;
+        option.dataset.itemId = item.id; // Armazena o ID no dataset da opção
+        datalist.appendChild(option);
+    });
+
+    // Quando o usuário seleciona um item da datalist, seu ID é capturado no evento 'change'
+}
+
+// Carrega a quantidade atual do item selecionado no campo de movimentação
+function carregarQuantidadeAtualParaMovimento() {
+    const input = document.getElementById('itemMovimento');
+    const selectedOption = document.querySelector(`#itensDisponiveis option[value='${input.value}']`);
+
+    if (selectedOption) {
+        const itemId = selectedOption.dataset.itemId;
+        document.getElementById('itemMovimentoId').value = itemId; // Salva o ID real
+        const item = itensInventario.find(i => i.id === itemId);
+        if (item) {
+            document.getElementById('quantidadeAtualDisplay').textContent = item.quantidadeAtual;
+        } else {
+            document.getElementById('quantidadeAtualDisplay').textContent = '--';
+        }
+    } else {
+        document.getElementById('quantidadeAtualDisplay').textContent = '--';
+        document.getElementById('itemMovimentoId').value = '';
+    }
+}
+
+
+async function registrarMovimentoEstoque() {
+    console.log("Registrando movimento de estoque...");
+    const itemId = document.getElementById('itemMovimentoId').value;
+    const itemNome = document.getElementById('itemMovimento').value.trim();
+    const tipoMovimento = document.getElementById('tipoMovimento').value;
+    const quantidadeMovimento = parseInt(document.getElementById('quantidadeMovimento').value, 10);
+    const responsavel = document.getElementById('responsavelMovimento').value.trim();
+    const motivo = document.getElementById('motivoMovimento').value.trim();
+
+    if (!itemId || !itemNome) {
+        alert("Selecione um item válido para movimentar.");
+        return;
+    }
+    if (isNaN(quantidadeMovimento) || quantidadeMovimento <= 0) {
+        alert("A quantidade a movimentar deve ser um número positivo.");
+        return;
+    }
+    if (!responsavel) {
+        alert("O campo 'Responsável' é obrigatório.");
+        return;
+    }
+
+    const itemRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', itemId);
+
+    try {
+        // Usar uma transação para garantir a atomicidade da atualização de estoque
+        await window.firestoreDb.runTransaction(async (transaction) => {
+            const itemDoc = await transaction.get(itemRef);
+
+            if (!itemDoc.exists) {
+                throw "Item não encontrado no inventário!";
             }
 
-            // Alerta de estoque negativo para saída em edição
-            if (tipoMovimentoLog === "SAIDA" && quantity < 0) { // A nova quantidade não pode ser negativa
-                alert(`Impossível realizar a saída. A nova quantidade (${quantity}) resultaria em estoque negativo.`);
-                return;
-            }
+            const itemAtual = itemDoc.data();
+            const quantidadeAntes = itemAtual.quantidadeAtual;
+            let novaQuantidade = quantidadeAntes;
 
-            await window.firebaseFirestoreUpdateDoc(itemDocRef, {
-                item: description, 
-                quantidade: quantity,
-                observacoes: observations,
-                categoria: category, 
-                ultimaAtualizacao: window.firebaseFirestoreServerTimestamp()
-            });
-
-            // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE
-            if (quantityChange !== 0 || oldData.item !== description || oldData.observacoes !== observations || oldData.categoria !== category) {
-                await window.firebaseFirestoreAddDoc(logRef, {
-                    itemId: itemIdToEdit,
-                    itemNome: description, 
-                    itemCod: currentItemCod, // COD do item no momento da edição
-                    tipoMovimento: tipoMovimentoLog,
-                    quantidadeMovimentada: quantityChange, 
-                    quantidadeAntes: oldQuantity,
-                    quantidadeDepois: quantity,
-                    dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-                    observacoesMovimento: (quantityChange !== 0 ? `Qtd. de ${oldQuantity} para ${quantity}. ` : '') + 
-                                 (oldData.item !== description ? `Desc. de '${oldData.item}' para '${description}'. ` : '') +
-                                 (oldData.observacoes !== observations ? `Obs. atualizada. ` : '') +
-                                 (oldData.categoria !== category ? `Cat. de '${oldData.categoria}' para '${category}'.` : ''),
-                    operador: operador
-                });
-            }
-            alert('Item atualizado com sucesso!');
-
-        } else { // Modo de Cadastro (Novo Item)
-            // Geração do código sequencial via transação
-            const configRef = window.firebaseFirestoreCollection(window.firestoreDb, 'config');
-            const counterDocRef = window.firebaseFirestoreDoc(configRef, 'contadores');
-
-            let newCod = '';
-            await window.firebaseFirestoreRunTransaction(window.firestoreDb, async (transaction) => {
-                const counterDoc = await transaction.get(counterDocRef);
-                let currentCounter = 0;
-                if (counterDoc.exists) {
-                    currentCounter = counterDoc.data().ultimoCodInventario || 0;
+            if (tipoMovimento === 'Entrada') {
+                novaQuantidade += quantidadeMovimento;
+            } else { // Saída
+                if (quantidadeAntes < quantidadeMovimento) {
+                    throw "Quantidade em estoque insuficiente para esta saída.";
                 }
-                const nextCounter = currentCounter + 1;
-                newCod = formatarCod(nextCounter); // Formata com zeros à esquerda
-                transaction.set(counterDocRef, { ultimoCodInventario: nextCounter });
-            });
+                novaQuantidade -= quantidadeMovimento;
+            }
 
-            const newItemRef = await window.firebaseFirestoreAddDoc(inventarioRef, {
-                cod: newCod, // Salva o novo código
-                item: description, 
-                quantidade: quantity,
-                observacoes: observations,
-                categoria: category, 
-                dataCadastro: window.firebaseFirestoreServerTimestamp(),
+            // Atualiza o item no inventário
+            transaction.update(itemRef, {
+                quantidadeAtual: novaQuantidade,
                 ultimaAtualizacao: window.firebaseFirestoreServerTimestamp()
             });
 
-            // Registrar no log
-            await window.firebaseFirestoreAddDoc(logRef, {
-                itemId: newItemRef.id,
-                itemNome: description,
-                itemCod: newCod,
-                tipoMovimento: "CADASTRO", // Tipo de movimento para novo item
-                quantidadeMovimentada: quantity,
-                quantidadeAntes: 0, 
-                quantidadeDepois: quantity,
-                dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-                observacoesMovimento: "Cadastro inicial do item",
-                operador: operador
+            // Registra o log da movimentação
+            const inventarioLogRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_log');
+            transaction.set(inventarioLogRef.doc(), { // Cria um novo documento com ID automático
+                itemId: itemId,
+                nomeItem: itemNome, // Salva o nome para facilitar consultas no log
+                tipoMovimento: tipoMovimento,
+                quantidade: quantidadeMovimento,
+                quantidadeAntes: quantidadeAntes,
+                quantidadeDepois: novaQuantidade,
+                dataMovimento: window.firebaseFirestoreServerTimestamp(),
+                responsavel: responsavel,
+                motivo: motivo
             });
-            alert('Item salvo com sucesso! Código gerado: ' + newCod);
+        });
+
+        alert("Movimento de estoque registrado com sucesso!");
+        limparFormularioMovimento();
+        carregarItensInventario(); // Recarrega a lista e alertas
+    } catch (error) {
+        console.error("Erro ao registrar movimento de estoque:", error);
+        alert(`Erro ao registrar movimento: ${error}`);
+    }
+}
+
+function limparFormularioMovimento() {
+    document.getElementById('itemMovimento').value = '';
+    document.getElementById('itemMovimentoId').value = '';
+    document.getElementById('tipoMovimento').value = 'Entrada';
+    document.getElementById('quantidadeMovimento').value = '1';
+    document.getElementById('responsavelMovimento').value = '';
+    document.getElementById('motivoMovimento').value = '';
+    document.getElementById('quantidadeAtualDisplay').textContent = '--';
+}
+
+// --- Funções de Filtragem e Ordenação ---
+
+function filtrarItensInventario() {
+    const termo = document.getElementById('pesquisaInventario').value.toLowerCase();
+    const rows = document.querySelectorAll('#inventarioTableBody tr');
+
+    rows.forEach(row => {
+        const nome = row.cells[0].textContent.toLowerCase();
+        const categoria = row.cells[1].textContent.toLowerCase();
+        const localizacao = row.cells[4].textContent.toLowerCase(); // Supondo que localizacao esteja nesta célula
+
+        if (nome.includes(termo) || categoria.includes(termo) || localizacao.includes(termo)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
-        clearItemForm();
-        listarItensInventario(); // Atualiza a lista
-    } catch (error) {
-        console.error("Erro ao salvar/atualizar item:", error);
-        alert("Erro ao salvar/atualizar item. Verifique o console.");
-    }
+    });
 }
 
-async function loadItemForEdit(id, cod, item, quantidade, observacoes, categoria) {
-    document.getElementById('itemCod').value = cod || ''; 
-    document.getElementById('itemDescription').value = item;
-    document.getElementById('itemQuantity').value = quantidade;
-    document.getElementById('itemObservations').value = observacoes || ''; 
-    document.getElementById('itemCategory').value = categoria || 'Geral'; 
-    document.getElementById('itemIdToEdit').value = id;
-    document.getElementById('saveItemBtn').textContent = 'Atualizar Item';
-    currentEditingItemId = id; 
+let sortDirection = {}; // Para controlar a direção da ordenação por coluna
 
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-}
+function ordenarTabelaInventario(column) {
+    const tbody = document.getElementById('inventarioTableBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
 
-async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, currentQuantity, quantityChange) {
-    const operador = await getOperadorName();
-    if (operador === null) {
-        alert("Operação de movimentação cancelada: Nome do operador não fornecido.");
-        return;
-    }
+    const isAsc = sortDirection[column] === 'asc';
+    sortDirection[column] = isAsc ? 'desc' : 'asc';
 
-    const newQuantity = currentQuantity + quantityChange;
-    const tipoMovimento = quantityChange > 0 ? "ENTRADA" : "SAIDA";
+    rows.sort((a, b) => {
+        let aValue, bValue;
 
-    // Alerta de estoque negativo
-    if (newQuantity < 0) {
-        alert(`Impossível realizar a saída. Quantidade atual (${currentQuantity}) é menor que a quantidade a ser retirada (${Math.abs(quantityChange)}).`);
-        return;
-    }
-    // Alerta se a quantidade a ser movimentada for 0 ou NaN
-    if (isNaN(quantityChange) || quantityChange === 0) {
-        alert("Por favor, digite uma quantidade válida (maior que 0) para movimentar.");
-        return;
-    }
-
-    try {
-        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', itemId);
-        
-        await window.firebaseFirestoreUpdateDoc(itemDocRef, {
-            quantidade: newQuantity,
-            ultimaAtualizacao: window.firebaseFirestoreServerTimestamp()
-        });
-
-        // Registrar no log
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_log');
-        await window.firebaseFirestoreAddDoc(logRef, {
-            itemId: itemId,
-            itemNome: itemDescription,
-            itemCod: itemCod,
-            tipoMovimento: tipoMovimento,
-            quantidadeMovimentada: quantityChange,
-            quantidadeAntes: currentQuantity,
-            quantidadeDepois: newQuantity,
-            dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-            observacoesMovimento: `Movimentação direta: ${quantityChange > 0 ? '+' : ''}${quantityChange} unidades.`,
-            operador: operador
-        });
-
-        alert(`Quantidade de "${itemDescription}" atualizada para ${newQuantity}.`);
-        listarItensInventario(); // Atualiza a lista para refletir a nova quantidade
-        hideItemLog(); // Oculta o log caso estivesse aberto
-    } catch (error) {
-        console.error("Erro ao atualizar quantidade diretamente:", error);
-        alert("Erro ao atualizar quantidade. Verifique o console.");
-    }
-}
-
-
-async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
-    if (!confirm(`Tem certeza que deseja remover o item "${itemNome}" (Cód: ${itemCod})? Esta ação não pode ser desfeita.`)) {
-        return;
-    }
-
-    const operador = await getOperadorName();
-    if (operador === null) {
-        alert("Remoção de item cancelada: Nome do operador não fornecido.");
-        return;
-    }
-
-    try {
-        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario', id);
-        await window.firebaseFirestoreDeleteDoc(itemDocRef);
-        
-        // Registrar no log
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_log');
-        await window.firebaseFirestoreAddDoc(logRef, {
-            itemId: id,
-            itemNome: itemNome,
-            itemCod: itemCod,
-            tipoMovimento: "REMOCAO",
-            quantidadeMovimentada: -quantidadeAtual, // Registra como saída total
-            quantidadeAntes: quantidadeAtual,
-            quantidadeDepois: 0, // A quantidade final é 0 após a remoção
-            dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-            observacoesMovimento: "Item removido do inventário",
-            operador: operador
-        });
-        alert('Item removido com sucesso!');
-        listarItensInventario(); // Atualiza a lista
-        clearItemForm(); // Limpa o formulário caso estivesse editando o item removido
-        hideItemLog(); // Oculta o log caso estivesse aberto
-    } catch (error) {
-        console.error("Erro ao remover item:", error);
-        alert("Erro ao remover item. Verifique o console.");
-    }
-}
-
-// --- Funções de Log Específico por Item ---
-async function showItemLog(itemId, itemDescription, itemCod) { // Adicionado itemCod para o título do log
-    const itemLogSection = document.getElementById('itemLogSection');
-    const itemLogDescriptionSpan = document.getElementById('itemLogDescription'); // Span dentro do título
-    const itemLogTableBody = document.querySelector('#itemLogTable tbody');
-
-    itemLogDescriptionSpan.textContent = `${itemDescription} (Cód: ${itemCod})`; // Título com descrição e código
-    itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Carregando histórico...</td></tr>';
-    itemLogSection.style.display = 'block'; // Mostra a seção do log
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Banco de dados não inicializado.</td></tr>';
-        return;
-    }
-
-    try {
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_log');
-        const q = window.firebaseFirestoreQuery(
-            logRef,
-            window.firebaseFirestoreWhere('itemId', '==', itemId),
-            window.firebaseFirestoreOrderBy('dataHoraMovimento', 'asc') // Ordena por data ascendente para histórico
-        );
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        const logs = querySnapshot.docs.map(doc => doc.data());
-
-        if (logs.length === 0) {
-            itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Nenhum histórico encontrado para este item.</td></tr>';
-            return;
+        switch (column) {
+            case 'nome':
+            case 'categoria':
+            case 'unidadeMedida':
+            case 'localizacao':
+            case 'fornecedor':
+                aValue = a.cells[getColumnIndex(column)].textContent.toLowerCase();
+                bValue = b.cells[getColumnIndex(column)].textContent.toLowerCase();
+                break;
+            case 'quantidadeAtual':
+            case 'limiteMinimo':
+                aValue = parseFloat(a.cells[getColumnIndex(column)].textContent);
+                bValue = parseFloat(b.cells[getColumnIndex(column)].textContent);
+                break;
+            case 'dataValidade':
+                aValue = new Date(a.cells[getColumnIndex(column)].textContent.split('/').reverse().join('-') || '9999-12-31'); // Tratar N/A
+                bValue = new Date(b.cells[getColumnIndex(column)].textContent.split('/').reverse().join('-') || '9999-12-31');
+                break;
+            default:
+                return 0;
         }
 
-        itemLogTableBody.innerHTML = ''; // Limpa antes de preencher
-        logs.forEach(log => {
-            const row = itemLogTableBody.insertRow();
-            const dataHoraFormatada = log.dataHoraMovimento ? new Date(log.dataHoraMovimento.toDate()).toLocaleString('pt-BR') : 'N/A';
+        if (aValue < bValue) return isAsc ? -1 : 1;
+        if (aValue > bValue) return isAsc ? 1 : -1;
+        return 0;
+    });
 
-            row.insertCell(0).textContent = log.tipoMovimento || 'N/A';
-            row.insertCell(1).textContent = log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/A';
-            row.insertCell(2).textContent = log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A'; 
-            row.insertCell(3).textContent = dataHoraFormatada;
-            row.insertCell(4).textContent = log.operador || 'Desconhecido';
-            row.insertCell(5).textContent = log.observacoesMovimento || '';
-        });
-
-        window.scrollTo({ top: itemLogSection.offsetTop, behavior: 'smooth' }); // Rola para a seção do log
-
-    } catch (error) {
-        console.error("Erro ao carregar histórico do item:", error);
-        itemLogTableBody.innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Erro ao carregar histórico.</td></tr>';
-    }
+    // Remove as linhas existentes e adiciona-as na nova ordem
+    rows.forEach(row => tbody.appendChild(row));
 }
 
-function hideItemLog() {
-    document.getElementById('itemLogSection').style.display = 'none';
-    document.querySelector('#itemLogTable tbody').innerHTML = '<tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>';
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo da página
+// Função auxiliar para obter o índice da coluna
+function getColumnIndex(columnName) {
+    const headers = document.querySelectorAll('#inventarioTable th');
+    let index = -1;
+    headers.forEach((header, i) => {
+        if (header.dataset.sort === columnName) {
+            index = i;
+        }
+    });
+    return index;
 }
 
-// --- Funções de Relatórios PDF ---
-async function imprimirRelatorioInventario() {
-    const operador = await getOperadorName();
-    if (operador === null) {
-        alert("Operação cancelada: Nome do operador não fornecido.");
-        return;
-    }
 
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o relatório de inventário.");
-        return;
-    }
+// --- Funções de Alerta ---
 
-    let itensInventario = [];
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario');
-        // Ordena por item (descrição) para o relatório
-        const q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        itensInventario = querySnapshot.docs.map(doc => doc.data());
-    } catch (error) {
-        console.error("Erro ao carregar itens para o relatório de inventário:", error);
-        alert("Erro ao carregar itens para o relatório. Verifique o console.");
-        return;
-    }
-
-    if (itensInventario.length === 0) {
-        alert("Não há itens no inventário para imprimir o relatório.");
-        return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let currentY = 15; // Posição Y inicial no PDF
-
-    // --- Cabeçalho do PDF (reutilizando o padrão do SISLAB) ---
-    doc.setFontSize(18);
-    doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center");
-    currentY += 10;
-    doc.setFontSize(10);
-    const now = new Date();
-    const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-    const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center");
-    currentY += 5;
-    doc.setFontSize(8);
-    doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
-    currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
-    currentY += 6;
-    doc.setLineWidth(0.5);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Título do Relatório ---
-    doc.setFontSize(14);
-    doc.text("RELATÓRIO DE INVENTÁRIO ATUAL", 105, currentY, null, null, "center");
-    currentY += 8;
-    doc.setLineWidth(0.2);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // --- Conteúdo: Itens do Inventário ---
-    doc.setFontSize(9); // Reduzindo fonte para caber mais colunas
-    const startX = 10; // Margem esquerda
-    const colCodX = startX;
-    const colDescX = colCodX + 18; 
-    const colQtdX = colDescX + 60; 
-    const colCatX = colQtdX + 20; 
-    const colDataCadX = colCatX + 30; 
-    const colObsX = colDataCadX + 30; // Coluna para observações
-    const lineHeight = 5; // Reduzindo espaçamento entre linhas
-
-    // Títulos das colunas
-    doc.setFont(undefined, 'bold');
-    doc.text("CÓD.", colCodX, currentY);
-    doc.text("DESCRIÇÃO", colDescX, currentY);
-    doc.text("QTD.", colQtdX, currentY);
-    doc.text("CATEGORIA", colCatX, currentY);
-    doc.text("DATA CAD.", colDataCadX, currentY);
-    doc.text("OBSERVAÇÕES", colObsX, currentY);
-    currentY += lineHeight + 3; 
-
-    doc.setFont(undefined, 'normal'); // Volta para fonte normal para o conteúdo
+function exibirAlertasEstoqueBaixo() {
+    const alertasDiv = document.getElementById('alertasEstoqueBaixo');
+    alertasDiv.innerHTML = '<h4>Alertas de Estoque Baixo:</h4>';
+    let temAlerta = false;
 
     itensInventario.forEach(item => {
-        // Verifica se precisa de nova página
-        if (currentY > 280) { 
-            doc.addPage();
-            currentY = 15; 
-
-            // Opcional: Adicionar cabeçalho e título novamente em cada nova página
-            doc.setFontSize(18);
-            doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center");
-            currentY += 10;
-            doc.setFontSize(10);
-            doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center");
-            currentY += 5;
-            doc.setFontSize(8);
-            doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
-            currentY += 4;
-            doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
-            currentY += 6;
-            doc.setLineWidth(0.5);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 10;
-            doc.setFontSize(14);
-            doc.text("RELATÓRIO DE INVENTÁRIO ATUAL (Continuação)", 105, currentY, null, null, "center");
-            currentY += 8;
-            doc.setLineWidth(0.2);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 10;
-            doc.setFontSize(9); 
-            doc.setFont(undefined, 'bold');
-            doc.text("CÓD.", colCodX, currentY);
-            doc.text("DESCRIÇÃO", colDescX, currentY);
-            doc.text("QTD.", colQtdX, currentY);
-            doc.text("CATEGORIA", colCatX, currentY);
-            doc.text("DATA CAD.", colDataCadX, currentY);
-            doc.text("OBSERVAÇÕES", colObsX, currentY);
-            currentY += lineHeight + 3; 
-            doc.setFont(undefined, 'normal');
+        if (item.quantidadeAtual <= item.limiteMinimo) {
+            temAlerta = true;
+            const p = document.createElement('p');
+            p.classList.add('alert-item');
+            p.textContent = `🚨 ${item.nome} (${item.quantidadeAtual} ${item.unidadeMedida}) está abaixo ou no limite mínimo (${item.limiteMinimo} ${item.unidadeMedida}).`;
+            alertasDiv.appendChild(p);
         }
-
-        const itemDataCadastroFormatada = item.dataCadastro ? new Date(item.dataCadastro.toDate()).toLocaleDateString('pt-BR') : 'N/A';
-        const itemObservacoes = doc.splitTextToSize(item.observacoes || '', 45); // Quebra observações longas
-
-        doc.text(item.cod || 'N/A', colCodX, currentY);
-        doc.text(item.item, colDescX, currentY);
-        doc.text(item.quantidade.toString(), colQtdX, currentY);
-        doc.text(item.categoria || 'Geral', colCatX, currentY);
-        doc.text(itemObservacoes, colObsX, currentY); 
-        currentY += Math.max(lineHeight, itemObservacoes.length * (lineHeight - 2)); // Ajusta linha conforme observações
     });
 
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages());
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
-
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
-
-    alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
+    if (!temAlerta) {
+        alertasDiv.innerHTML += '<p>Nenhum alerta no momento.</p>';
+    }
 }
 
-async function gerarRelatorioReposicao() {
-    const operador = await getOperadorName();
-    if (operador === null) {
-        alert("Operação cancelada: Nome do operador não fornecido.");
-        return;
-    }
+// --- Geração de Relatórios em PDF ---
 
-    let minQuantityInput = prompt("Digite a quantidade MÁXIMA em estoque para um item entrar no relatório de reposição (ex: 3):");
-    if (minQuantityInput === null) { // Usuário cancelou
-        alert("Operação de relatório de reposição cancelada.");
-        return;
-    }
-    const minQuantity = parseInt(minQuantityInput.trim());
-
-    if (isNaN(minQuantity) || minQuantity < 0) {
-        alert("Quantidade mínima inválida. Por favor, digite um número positivo ou zero.");
-        return;
-    }
-
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o relatório de reposição.");
-        return;
-    }
-
-    let itensInventario = [];
-    try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario');
-        const q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        itensInventario = querySnapshot.docs.map(doc => doc.data());
-    } catch (error) {
-        console.error("Erro ao carregar itens para o relatório de reposição:", error);
-        alert("Erro ao carregar itens para o relatório de reposição. Verifique o console.");
-        return;
-    }
-
-    // Filtragem em memória para itens <= minQuantity
-    const itensParaReposicao = itensInventario.filter(item => item.quantidade <= minQuantity);
-
-    if (itensParaReposicao.length === 0) {
-        alert(`Nenhum item encontrado com quantidade igual ou inferior a ${minQuantity}.`);
+async function gerarRelatorioInventarioPDF() {
+    console.log("Gerando relatório de inventário PDF...");
+    if (itensInventario.length === 0) {
+        alert("Não há itens no inventário para gerar relatório.");
         return;
     }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    let currentY = 15; 
+    let currentY = 15;
 
-    // --- Cabeçalho do PDF ---
+    // Cabeçalho
     doc.setFontSize(18);
-    doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center");
+    doc.text("Relatório de Inventário SISLAB", 105, currentY, null, null, "center");
     currentY += 10;
     doc.setFontSize(10);
-    const now = new Date();
-    const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-    const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center");
-    currentY += 5;
-    doc.setFontSize(8);
-    doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
-    currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
-    currentY += 6;
-    doc.setLineWidth(0.5);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
+    doc.text(`Data de Geração: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, 105, currentY, null, null, "center");
+    currentY += 15;
 
-    // --- Título do Relatório ---
-    doc.setFontSize(14);
-    doc.text(`RELATÓRIO DE REPOSIÇÃO - Qtd. Mínima: ${minQuantity}`, 105, currentY, null, null, "center");
-    currentY += 8;
-    doc.setLineWidth(0.2);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
+    // Tabela de itens
+    const headers = [
+        ["Nome do Item", "Categoria", "Qtd. Atual", "Unidade", "Validade", "Limite Mín.", "Localização"]
+    ];
 
-    // --- Conteúdo: Itens para Reposição ---
-    doc.setFontSize(9); // Reduzindo fonte para caber mais colunas
-    const repColCodX = startX;
-    const repColDescX = repColCodX + 18;
-    const repColQtdX = repColDescX + 60;
-    const repColCatX = repColQtdX + 20;
-    const repColObsX = repColCatX + 30; 
-    
-    doc.setFont(undefined, 'bold');
-    doc.text("CÓD.", repColCodX, currentY);
-    doc.text("DESCRIÇÃO", repColDescX, currentY);
-    doc.text("QTD. ATUAL", repColQtdX, currentY);
-    doc.text("CATEGORIA", repColCatX, currentY);
-    doc.text("OBSERVAÇÕES", repColObsX, currentY); 
-    currentY += lineHeight + 3;
+    const data = itensInventario.map(item => [
+        item.nome,
+        item.categoria || 'N/A',
+        item.quantidadeAtual,
+        item.unidadeMedida || 'N/A',
+        item.dataValidade ? new Date(item.dataValidade).toLocaleDateString('pt-BR') : 'N/A',
+        item.limiteMinimo,
+        item.localizacao || 'N/A'
+    ]);
 
-    doc.setFont(undefined, 'normal');
-
-    itensParaReposicao.forEach(item => {
-        if (currentY > 280) { 
-            doc.addPage();
-            currentY = 15; 
-            doc.setFontSize(18);
-            doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center");
-            currentY += 10;
-            doc.setFontSize(10);
-            doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center");
-            currentY += 5;
+    doc.autoTable({
+        startY: currentY,
+        head: headers,
+        body: data,
+        theme: 'striped',
+        headStyles: { fillColor: [26, 43, 76] }, // Cor do cabeçalho similar aos botões
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+            0: { cellWidth: 40 }, // Nome do Item
+            1: { cellWidth: 25 }, // Categoria
+            2: { cellWidth: 15 }, // Qtd. Atual
+            3: { cellWidth: 15 }, // Unidade
+            4: { cellWidth: 20 }, // Validade
+            5: { cellWidth: 20 }, // Limite Mín.
+            6: { cellWidth: 35 }  // Localização
+        },
+        didDrawPage: function (data) {
+            // Rodapé com número de página
             doc.setFontSize(8);
-            doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
-            currentY += 4;
-            doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
-            currentY += 6;
-            doc.setLineWidth(0.5);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 10;
-            doc.setFontSize(14);
-            doc.text(`RELATÓRIO DE REPOSIÇÃO (Continuação) - Qtd. Mínima: ${minQuantity}`, 105, currentY, null, null, "center");
-            currentY += 8;
-            doc.setLineWidth(0.2);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 10;
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'bold');
-            doc.text("CÓD.", repColCodX, currentY);
-            doc.text("DESCRIÇÃO", repColDescX, currentY);
-            doc.text("QTD. ATUAL", repColQtdX, currentY);
-            doc.text("CATEGORIA", repColCatX, currentY);
-            doc.text("OBSERVAÇÕES", repColObsX, currentY);
-            currentY += lineHeight + 3;
-            doc.setFont(undefined, 'normal');
+            doc.text("Página " + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
         }
-        
-        doc.text(item.cod || 'N/A', repColCodX, currentY);
-        doc.text(item.item, repColDescX, currentY);
-        doc.text(item.quantidade.toString(), repColQtdX, currentY);
-        doc.text(item.categoria || 'Geral', repColCatX, currentY);
-        doc.text(item.observacoes || '', repColObsX, currentY); 
-        currentY += lineHeight;
     });
 
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages());
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
+    currentY = doc.autoTable.previous.finalY + 10;
 
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Reposicao_${formattedDate}_QtdMin${minQuantity}.pdf` });
+    // Incluir alertas de estoque baixo no PDF
+    const itensComAlerta = itensInventario.filter(item => item.quantidadeAtual <= item.limiteMinimo);
+    if (itensComAlerta.length > 0) {
+        doc.setFontSize(12);
+        doc.text("Itens com Estoque Baixo:", 20, currentY);
+        currentY += 8;
+        doc.setFontSize(10);
+        itensComAlerta.forEach(item => {
+            if (currentY > doc.internal.pageSize.height - 30) { // Nova página se não couber
+                doc.addPage();
+                currentY = 20;
+            }
+            doc.text(`- ${item.nome} (Atual: ${item.quantidadeAtual}, Mínimo: ${item.limiteMinimo})`, 25, currentY);
+            currentY += 7;
+        });
+    }
 
-    alert(`Relatório de Reposição gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-}
+
+    doc.output('dataurlnewwindow', { filename: 'Relatorio_Inventario_SISLAB.pdf' });
+                }
