@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.1 (inventario_scripts.js)
+// VERSÃO: 2.0.0 (inventario_scripts.js)
 // CHANGELOG:
 // - Nova Versão: Marca o início oficial da Versão 2.0 do Sistema de Inventário.
 // - Adicionado: Campo cod (código sequencial numérico) em itens, com geração automática via transação no Firebase (config/contadores).
@@ -10,8 +10,6 @@
 // - Modificado: deleteItem() para integrar solicitação de operador e registrar log de "REMOCAO" detalhado.
 // - Modificado: showItemLog() e hideItemLog() para exibir log por item com campos itemCod e operador.
 // - Remanejado e Modificado: Funções de relatório imprimirRelatorioInventario() e gerarRelatorioReposicao() para este script, acionadas por botões na inventario.html. Incluem solicitação de operador e exibição de cod e categoria.
-// - Modificado: A leitura das categorias para itens agora é feita de um arquivo local categorias_inventario.txt na raiz do projeto, em vez de um Gist público.
-// - Refatorado: Removidas as constantes relacionadas ao Gist para categorias.
 
 
 // --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
@@ -132,14 +130,15 @@ async function loadCategories() {
 
 async function listarItensInventario() {
     const inventoryListBody = document.querySelector('#inventoryList tbody');
-    inventoryListBody.innerHTML = '<tr><td colspan="7">Carregando itens...</td></tr>'; // 7 colunas, ajustado no HTML para 8 (cod+mov_direta)
+    // Corrigido para 7 colunas visíveis + 1 oculta (actions) na listagem, totalizando 8
+    inventoryListBody.innerHTML = '<tr><td colspan="8">Carregando itens...</td></tr>'; 
     
     const searchTerm = document.getElementById('searchInventory').value.toLowerCase();
     const filterCategory = document.getElementById('filterCategory').value; // Valor da categoria selecionada para filtro
     let items = [];
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        inventoryListBody.innerHTML = '<tr><td colspan="7">Banco de dados não inicializado.</td></tr>';
+        inventoryListBody.innerHTML = '<tr><td colspan="8">Banco de dados não inicializado.</td></tr>';
         return;
     }
 
@@ -161,7 +160,7 @@ async function listarItensInventario() {
         });
 
         if (filteredItems.length === 0) {
-            inventoryListBody.innerHTML = '<tr><td colspan="7">Nenhum item encontrado com os filtros aplicados.</td></tr>'; // 7 colunas, ajustado no HTML para 8
+            inventoryListBody.innerHTML = '<tr><td colspan="8">Nenhum item encontrado com os filtros aplicados.</td></tr>'; 
             return;
         }
 
@@ -227,13 +226,13 @@ async function listarItensInventario() {
             minusButton.textContent = '-';
             minusButton.classList.add('movement-button', 'minus');
             // Ao clicar, atualiza a quantidade diretamente com o valor NEGATIVO do input
-            minusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value));
+            minusButton.onclick = ()ato updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value));
             directMoveCell.appendChild(minusButton);
         });
 
     } catch (error) {
         console.error("Erro ao listar itens do inventário:", error);
-        inventoryListBody.innerHTML = '<tr><td colspan="7">Erro ao carregar itens.</td></tr>'; // 7 colunas, ajustado no HTML para 8
+        inventoryListBody.innerHTML = '<tr><td colspan="8">Erro ao carregar itens.</td></tr>'; 
     }
 }
 
