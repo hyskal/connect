@@ -307,7 +307,7 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário */
+        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE) */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
@@ -317,8 +317,8 @@
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - ligeiramente maior */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 10%; } /* Ações - Ligeiramente mais para caber os 3 botões */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Ligeiramente maior para os 3 elementos */
 
 
         #inventoryList th {
@@ -337,12 +337,12 @@
         #inventoryList .action-buttons {
             display: flex;
             flex-direction: column; 
-            gap: 3px; 
+            gap: 2px; /* Reduzido */
             min-width: unset; 
         }
         #inventoryList .action-buttons button {
-            padding: 2px 4px; 
-            font-size: 0.65em; 
+            padding: 1px 3px; /* Mais reduzido */
+            font-size: 0.6em; /* Mais reduzido */
             margin: 0; 
             width: 100%; 
             box-sizing: border-box;
@@ -350,7 +350,7 @@
         button.edit-btn { background-color: #5cb85c; } 
         button.edit-btn:hover { background-color: #4cae4c; }
         button.delete-btn { background-color: #d9534f; } 
-        button.delete-btn:hover { background-color: #c9302c; }
+        button.delete-item-btn:hover { background-color: #c9302c; } /* Corrigido se for o delete da linha */
         button.view-log-btn { background-color: #007bff; } 
         button.view-log-btn:hover { background-color: #0069d9; }
 
@@ -358,8 +358,8 @@
         /* Estilos para o campo de input de movimentação direta e botões (AJUSTADO PARA IMAGEM) */
         .direct-movement-controls {
             display: flex;
-            flex-direction: column; /* Empilha input e botões */
-            align-items: center; /* Centraliza horizontalmente os elementos empilhados */
+            flex-direction: column; 
+            align-items: center;
             justify-content: center; 
             gap: 2px; 
             min-width: unset; 
@@ -368,7 +368,7 @@
             width: 35px; 
             padding: 2px; 
             font-size: 0.75em; 
-            margin-bottom: 2px;
+            margin-bottom: 0; /* Remove margem inferior para empilhamento */
         }
         /* Estilos para os botões de + e - */
         .movement-button {
@@ -541,7 +541,7 @@
             <input type="text" id="operatorName" placeholder="Seu nome completo">
             <div id="operatorName-error" class="error-message"></div>
         </div>
-        <button id="showAddItemFormBtn">Cadastrar Novo Item</button> </div>
+        <button id="showAddItemFormBtn" class="highlight-button">Cadastrar Novo Item</button> </div>
 
     <div class="main-content-area-container">
         <div id="itemFormSection" class="column">
