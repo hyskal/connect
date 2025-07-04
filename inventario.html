@@ -155,6 +155,19 @@
             margin-bottom: 5px;
             color: #334466;
         }
+        /* Estilo para esconder labels visualmente (para acessibilidade) */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
 
         .form-field input[type="text"],
         .form-field input[type="number"],
@@ -240,15 +253,33 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
+            table-layout: fixed; /* Fixa o layout da tabela */
         }
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px; /* Reduz padding para caber mais */
             text-align: left;
-            font-size: 0.9em; /* Ajuste para caber mais info */
+            font-size: 0.8em; /* Reduz fonte para caber mais info */
             vertical-align: top; /* Alinha o conteúdo ao topo */
+            overflow: hidden; /* Esconde o conteúdo que transborda */
+            text-overflow: ellipsis; /* Adiciona '...' se o texto for cortado */
+            white-space: nowrap; /* Impede que o texto quebre linha automaticamente */
         }
+
+        /* Larguras específicas das colunas da tabela de inventário */
+        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 6%; } /* Cód. */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 18%; } /* Descrição */
+        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
+        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 10%; } /* Categoria */
+        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 10%; } /* Localização */
+        #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
+        #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
+        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 9%; } /* Mov. Rápida */
+
 
         #inventoryList th {
             background-color: #f2f2f2;
@@ -266,61 +297,59 @@
         #inventoryList .action-buttons {
             display: flex;
             flex-direction: column; /* Botões um abaixo do outro */
-            gap: 5px;
-            min-width: 90px; /* Garante espaço para os botões */
+            gap: 3px; /* Reduz gap para caber mais */
+            min-width: unset; /* Remove min-width para o flex-box controlar */
         }
         #inventoryList .action-buttons button {
-            padding: 5px 10px;
-            font-size: 0.85em;
-            margin: 0; /* Remover margem extra */
-            width: 100%; /* Ocupa a largura total da célula */
+            padding: 3px 5px; /* Reduz padding */
+            font-size: 0.7em; /* Reduz fonte */
+            margin: 0; 
+            width: 100%; 
             box-sizing: border-box;
         }
-        button.edit-btn { background-color: #5cb85c; } /* Verde para editar */
+        button.edit-btn { background-color: #5cb85c; } 
         button.edit-btn:hover { background-color: #4cae4c; }
-        button.delete-btn { background-color: #d9534f; } /* Vermelho para deletar */
+        button.delete-btn { background-color: #d9534f; } 
         button.delete-btn:hover { background-color: #c9302c; }
-        button.view-log-btn { background-color: #007bff; } /* Azul para ver log */
+        button.view-log-btn { background-color: #007bff; } 
         button.view-log-btn:hover { background-color: #0069d9; }
 
 
         /* Estilos para o campo de input de movimentação direta e botões */
         .direct-movement-controls {
             display: flex;
+            flex-direction: column; /* Input e botões empilham */
             align-items: center;
-            justify-content: center; /* Centraliza horizontalmente */
-            gap: 3px; /* Espaço entre input e botões */
-            flex-wrap: nowrap; /* Impede que quebre linha em telas pequenas */
-            min-width: 100px; /* Garante espaço para os controles */
+            justify-content: center; 
+            gap: 3px; 
+            min-width: unset; /* Remove min-width */
         }
         .movement-input {
-            width: 45px; /* Largura menor */
-            padding: 5px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 0.9em;
+            width: 40px; /* Largura menor */
+            padding: 3px; /* Reduz padding */
+            font-size: 0.8em; /* Reduz fonte */
+            margin-bottom: 2px;
         }
         /* Estilos para os botões de + e - */
         .movement-button {
-            width: 28px; /* Botões menores */
-            height: 28px;
+            width: 25px; /* Botões menores */
+            height: 25px;
             padding: 0;
-            font-size: 1.1em;
+            font-size: 1em; /* Reduz fonte */
             line-height: 1;
             border-radius: 50%;
-            display: inline-flex; /* Para centralizar o texto */
+            display: inline-flex; 
             justify-content: center;
             align-items: center;
             background-color: #1A2B4C;
             color: white;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            flex-shrink: 0; /* Evita que o botão encolha */
+            flex-shrink: 0; 
         }
-        .movement-button.plus { background-color: #28a745; } /* Verde para + */
+        .movement-button.plus { background-color: #28a745; } 
         .movement-button.plus:hover { background-color: #218838; }
-        .movement-button.minus { background-color: #dc3545; } /* Vermelho para - */
+        .movement-button.minus { background-color: #dc3545; } 
         .movement-button.minus:hover { background-color: #c82333; }
 
         /* Estilos para a seção de log de item */
@@ -330,7 +359,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
-            width: 95%; /* Adapta-se à largura padrão */
+            width: 95%; 
             max-width: 1200px;
             margin-top: 20px;
         }
@@ -342,7 +371,7 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            font-size: 0.85em; /* Um pouco menor para caber mais info */
+            font-size: 0.85em; 
             vertical-align: top;
         }
         #itemLogTable th {
@@ -373,20 +402,35 @@
             align-items: center;
         }
         .inventory-filters .form-field {
-            margin-bottom: 0; /* Remover margem padrão do form-field se for usada aqui */
+            margin-bottom: 0; 
+            flex-grow: 1; /* Permite que os campos cresçam */
+            min-width: 120px; /* Garante que não fiquem muito pequenos */
+        }
+        .inventory-filters .form-field:last-child {
+            flex-grow: 0; /* Botões de filtro não devem crescer */
+        }
+        .inventory-filters .filter-buttons-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap; /* Permite que os botões quebrem linha */
         }
         .inventory-filters button {
             padding: 8px 15px;
             font-size: 0.9em;
             margin: 0;
-            background-color: #6c757d; /* Cinza para filtros */
+            background-color: #6c757d; 
+            flex-shrink: 0; /* Evita que o botão encolha */
         }
         .inventory-filters button.active-filter {
-            background-color: #1A2B4C; /* Azul escuro para filtro ativo */
+            background-color: #1A2B4C; 
             font-weight: bold;
         }
-        .inventory-filters input[type="number"] {
-            width: 60px; /* Largura para Qtd. Crítica */
+        .inventory-filters input[type="number"]#criticalQuantityInput {
+            width: 60px; 
+            min-width: 60px;
+        }
+        .inventory-filters #filterCategory {
+            min-width: 150px;
         }
 
 
@@ -400,12 +444,29 @@
                 flex-basis: 100%;
                 min-width: unset;
             }
-            /* Ajuste para a coluna de Mov. Direta em telas pequenas */
-            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { /* Coluna Mov. Direta */
-                min-width: 120px; /* Garante espaço para os botões */
+            /* Ajuste para as colunas da tabela em telas pequenas */
+            #inventoryList th, #inventoryList td {
+                font-size: 0.75em; /* Fonte ainda menor em mobile para tentar caber */
+                padding: 4px;
             }
+            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 18%; } /* Descrição */
+            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
+            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
+            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
+            #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
+            #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; } /* Validade */
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
+            #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
+            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 8%; } /* Mov. Rápida */
+
             .inventory-filters .form-field {
-                flex-basis: 100%; /* Filtros empilham em telas pequenas */
+                flex-basis: 100%; 
+            }
+            .inventory-filters .filter-buttons-group {
+                width: 100%;
+                justify-content: space-around;
             }
         }
     </style>
@@ -437,7 +498,7 @@
                 </div>
                 <div class="form-field full-width">
                     <label for="itemDescription">Descrição do Item:</label>
-                    <textarea id="itemDescription" rows="2"></textarea>
+                    <textarea id="itemDescription" rows="2" placeholder="Nome do item (obrigatório)"></textarea>
                     <div id="itemDescription-error" class="error-message"></div>
                 </div>
             </div>
@@ -481,7 +542,7 @@
             <div class="form-row">
                 <div class="form-field full-width">
                     <label for="itemObservations">Observações Gerais:</label>
-                    <textarea id="itemObservations" rows="2"></textarea>
+                    <textarea id="itemObservations" rows="2" placeholder="Informações adicionais sobre o item"></textarea>
                 </div>
             </div>
             <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
@@ -498,6 +559,7 @@
                     <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
                 </div>
                 <div class="form-field" style="flex-shrink: 0;">
+                    <label for="filterCategory" class="sr-only">Filtrar por Categoria</label>
                     <select id="filterCategory">
                         <option value="">Todas as Categorias</option>
                         </select>
@@ -506,10 +568,12 @@
                     <label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
                     <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
                 </div>
-                <button id="filterAllItemsBtn" class="active-filter">Todos</button>
-                <button id="filterCriticalItemsBtn">Críticos</button>
-                <button id="filterInStockItemsBtn">Com Estoque</button>
-                <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
+                <div class="filter-buttons-group">
+                    <button id="filterAllItemsBtn" class="active-filter">Todos</button>
+                    <button id="filterCriticalItemsBtn">Críticos</button>
+                    <button id="filterInStockItemsBtn">Com Estoque</button>
+                    <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
+                </div>
             </div>
 
             <div style="max-height: 400px; overflow-y: auto;">
@@ -519,13 +583,19 @@
                             <th>Cód.</th>
                             <th>Descrição</th>
                             <th>Qtd.</th>
-                            <th>Unid.</th> <th>Categoria</th>
-                            <th>Localização</th> <th>Validade</th> <th>Últ. Atual.</th> <th>Últ. Operador</th> <th>Ações</th>
+                            <th>Unid.</th> 
+                            <th>Categoria</th>
+                            <th>Localização</th> 
+                            <th>Validade</th> 
+                            <th>Últ. Atual.</th> 
+                            <th>Últ. Operador</th> 
+                            <th>Ações</th>
                             <th>Mov. Rápida</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="11">Carregando itens...</td></tr> </tbody>
+                        <tr><td colspan="11">Carregando itens...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -551,8 +621,7 @@
             </table>
         </div>
         <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
-            <button onclick="hideItemLog()">Fechar Histórico</button>
-        </div>
+            <button id="closeItemLogBtn">Fechar Histórico</button> </div>
     </div>
 
     <div class="action-buttons-container">
