@@ -111,7 +111,7 @@
             margin-bottom: 20px;
         }
 
-        /* Estilos para as colunas (Reaproveitados do index.html) */
+        /* Estilos para as colunas (AJUSTADO PARA PROPORÇÃO 1/4) */
         .column {
             background-color: white;
             padding: 30px;
@@ -123,9 +123,13 @@
             display: flex;
             flex-direction: column;
         }
-        /* Ajuste para 2 colunas para o inventário */
-        .column.item-form, .column.item-list {
-            flex-basis: calc(50% - 10px); /* Aprox. 50% menos metade do gap */
+        .column.item-form {
+            flex-basis: calc(20% - 10px); /* Aproximadamente 1/4 */
+            max-width: calc(20% - 10px);
+        }
+        .column.item-list {
+            flex-basis: calc(80% - 10px); /* Aproximadamente 4/4 */
+            max-width: calc(80% - 10px);
         }
 
         /* Estilos dos campos de formulário (Reaproveitados do index.html) */
@@ -171,7 +175,7 @@
 
         .form-field input[type="text"],
         .form-field input[type="number"],
-        .form-field input[type="date"], /* Adicionado para dataVencimento */
+        .form-field input[type="date"],
         .form-field textarea,
         .form-field select {
             padding: 10px;
@@ -258,27 +262,27 @@
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 6px; /* Reduz padding para caber mais */
+            padding: 6px; 
             text-align: left;
-            font-size: 0.8em; /* Reduz fonte para caber mais info */
-            vertical-align: top; /* Alinha o conteúdo ao topo */
-            overflow: hidden; /* Esconde o conteúdo que transborda */
-            text-overflow: ellipsis; /* Adiciona '...' se o texto for cortado */
-            white-space: nowrap; /* Impede que o texto quebre linha automaticamente */
+            font-size: 0.8em; 
+            vertical-align: top; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
         }
 
         /* Larguras específicas das colunas da tabela de inventário */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 6%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 18%; } /* Descrição */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
         #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
-        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 10%; } /* Categoria */
-        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 10%; } /* Localização */
+        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
+        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 9%; } /* Mov. Rápida */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 11%; } /* Mov. Rápida - ligeiramente maior */
 
 
         #inventoryList th {
@@ -297,12 +301,12 @@
         #inventoryList .action-buttons {
             display: flex;
             flex-direction: column; /* Botões um abaixo do outro */
-            gap: 3px; /* Reduz gap para caber mais */
-            min-width: unset; /* Remove min-width para o flex-box controlar */
+            gap: 3px; 
+            min-width: unset; 
         }
         #inventoryList .action-buttons button {
-            padding: 3px 5px; /* Reduz padding */
-            font-size: 0.7em; /* Reduz fonte */
+            padding: 3px 5px; 
+            font-size: 0.7em; 
             margin: 0; 
             width: 100%; 
             box-sizing: border-box;
@@ -322,20 +326,20 @@
             align-items: center;
             justify-content: center; 
             gap: 3px; 
-            min-width: unset; /* Remove min-width */
+            min-width: unset; 
         }
         .movement-input {
-            width: 40px; /* Largura menor */
-            padding: 3px; /* Reduz padding */
-            font-size: 0.8em; /* Reduz fonte */
+            width: 40px; 
+            padding: 3px; 
+            font-size: 0.8em; 
             margin-bottom: 2px;
         }
         /* Estilos para os botões de + e - */
         .movement-button {
-            width: 25px; /* Botões menores */
+            width: 25px; 
             height: 25px;
             padding: 0;
-            font-size: 1em; /* Reduz fonte */
+            font-size: 1em; 
             line-height: 1;
             border-radius: 50%;
             display: inline-flex; 
@@ -403,23 +407,23 @@
         }
         .inventory-filters .form-field {
             margin-bottom: 0; 
-            flex-grow: 1; /* Permite que os campos cresçam */
-            min-width: 120px; /* Garante que não fiquem muito pequenos */
+            flex-grow: 1; 
+            min-width: 120px; 
         }
         .inventory-filters .form-field:last-child {
-            flex-grow: 0; /* Botões de filtro não devem crescer */
+            flex-grow: 0; 
         }
         .inventory-filters .filter-buttons-group {
             display: flex;
             gap: 5px;
-            flex-wrap: wrap; /* Permite que os botões quebrem linha */
+            flex-wrap: wrap; 
         }
         .inventory-filters button {
             padding: 8px 15px;
             font-size: 0.9em;
             margin: 0;
             background-color: #6c757d; 
-            flex-shrink: 0; /* Evita que o botão encolha */
+            flex-shrink: 0; 
         }
         .inventory-filters button.active-filter {
             background-color: #1A2B4C; 
@@ -440,17 +444,22 @@
                 flex-direction: column;
                 width: 95%;
             }
+            /* Colunas empilham em mobile, então cada uma ocupa 100% da largura */
             .column.item-form, .column.item-list {
                 flex-basis: 100%;
+                max-width: 100%; /* Garante que o max-width não limite */
                 min-width: unset;
             }
             /* Ajuste para as colunas da tabela em telas pequenas */
             #inventoryList th, #inventoryList td {
-                font-size: 0.75em; /* Fonte ainda menor em mobile para tentar caber */
-                padding: 4px;
+                font-size: 0.7em; /* Fonte ainda menor em mobile para tentar caber */
+                padding: 3px;
+                white-space: normal; /* Permite quebrar linha para caber mais texto */
+                word-break: break-word; /* Força a quebra de palavras longas */
             }
+            /* Larguras específicas para mobile, adaptando-se a 100% da coluna */
             #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
-            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 18%; } /* Descrição */
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
             #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
             #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
             #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
@@ -459,8 +468,8 @@
             #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
             #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
             #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 8%; } /* Mov. Rápida */
-
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 10%; } /* Mov. Rápida */
+            
             .inventory-filters .form-field {
                 flex-basis: 100%; 
             }
@@ -491,6 +500,12 @@
     <div class="main-content-container">
         <div class="column item-form">
             <h3>Cadastro / Edição de Item:</h3>
+            <div class="form-row">
+                <div class="form-field full-width"> <label for="operatorName">Nome do Operador (Obrigatório):</label>
+                    <input type="text" id="operatorName" placeholder="Seu nome completo">
+                    <div id="operatorName-error" class="error-message"></div>
+                </div>
+            </div>
             <div class="form-row">
                 <div class="form-field">
                     <label for="itemCod">Código do Item:</label>
@@ -556,6 +571,7 @@
             <h3>Itens Atuais em Estoque:</h3>
             <div class="inventory-filters">
                 <div class="form-field" style="flex-grow: 1;">
+                    <label for="searchInventory" class="sr-only">Pesquisar por Cód. ou Descrição</label>
                     <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
                 </div>
                 <div class="form-field" style="flex-shrink: 0;">
