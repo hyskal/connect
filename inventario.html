@@ -293,9 +293,9 @@
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 4px; /* Reduzido para 4px */
+            padding: 4px; 
             text-align: left;
-            font-size: 0.7em; /* Reduzido para 0.7em para caber mais info */
+            font-size: 0.7em; /* Reduzido para 0.7em */
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -307,18 +307,18 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE PARA MELHOR EXIBIÇÃO) */
-        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 16%; } /* Descrição */
-        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
-        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
-        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
-        #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
-        #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
-        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
+        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE PARA MAIS ESPAÇO) */
+        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; }   /* Cód. */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }  /* Descrição */
+        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; }   /* Qtd. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; }   /* Unid. */
+        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; }   /* Categoria */
+        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; }   /* Localização */
+        #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; }   /* Validade */
+        #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; }   /* Últ. Atual. */
+        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; }   /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 10%; } /* Ações - Suficiente para 3 botões pequenos */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Suficiente para 3 elementos empilhados */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 13%; } /* Mov. Rápida - Suficiente para 3 elementos empilhados */
 
 
         #inventoryList th {
@@ -337,12 +337,12 @@
         #inventoryList .action-buttons {
             display: flex;
             flex-direction: column; 
-            gap: 1px; /* Reduzido para 1px */
+            gap: 1px; 
             min-width: unset; 
         }
         #inventoryList .action-buttons button {
-            padding: 1px 3px; /* Mais reduzido */
-            font-size: 0.6em; /* Mais reduzido */
+            padding: 1px 3px; 
+            font-size: 0.6em; 
             margin: 0; 
             width: 100%; 
             box-sizing: border-box;
@@ -664,7 +664,7 @@
                 <thead>
                     <tr>
                         <th style="width: 15%;">Operação</th>
-                        <th style="width: 10%;">Qtd. Mov.</th>
+                        <th style="10%;">Qtd. Mov.</th>
                         <th style="10%;">Qtd. Final</th>
                         <th style="width: 20%;">Data e Hora</th>
                         <th style="width: 15%;">Operador</th>
@@ -726,4 +726,298 @@
         window.firebaseFirestoreRunTransaction = runTransaction; 
     </script>
     <script src="inventario_scripts.js" type="module"></script> </body>
-</html>
+</html>Certo, entendi! Você quer que eu verifique o HTML que você acabou de fornecer, que é o `inventario.html` (não a versão 3.0.2 que pedi, mas sim o que você colou). E o foco é o botão "Imprimir Tabela Exibida" que não está sendo exibido, além de garantir a compatibilidade com o JavaScript 3.0.5.
+
+Pela análise do HTML que você forneceu agora, o botão "Imprimir Tabela Exibida" (`id="printCurrentTableBtn"`) **não está no local que planejamos** (canto inferior direito da seção da lista de itens). Ele está localizado no final da página, dentro do `action-buttons-container` principal.
+
+Além disso, a largura das colunas da tabela que eu havia ajustado na versão `3.0.6` está presente no seu código, mas a imagem anterior ainda mostrava os botões cortados, o que sugere que o problema é mais complexo e pode ser afetado pelo `font-size` e `padding` combinados.
+
+### **Diagnóstico e Correções a Serem Implementadas no HTML:**
+
+1.  **Botão "Imprimir Tabela Exibida" Invisível:**
+    * **Diagnóstico:** O botão existe no HTML, mas se ele não está visível, pode ser devido a:
+        * Conflito com outros elementos ou estilos CSS que o empurram para fora da tela.
+        * Um problema de `display` ou `overflow` em seu contêiner pai ou na coluna `item-list` que o está escondendo.
+    * **Ação:** Vou movê-lo para um `div` específico dentro da `item-list` com `text-align: right` para garantir sua visibilidade e posicionamento.
+
+2.  **Botões da Coluna "Ações" (e "Mov. Rápida") Cortados/Desconfigurados:**
+    * **Diagnóstico:** As larguras das colunas e os estilos dos botões (padding, font-size, gap) ainda não estão permitindo a exibição ideal dos três botões empilhados.
+    * **Ação:** Farei ajustes mais agressivos nas larguras das colunas `Ações` e `Mov. Rápida` no CSS, e otimizarei o `padding`/`font-size`/`gap` dos botões dentro delas para garantir que caibam e sejam legíveis.
+
+3.  **Compatibilidade Plena HTML (v3.0.9) com JavaScript (v3.0.5/v3.0.7):**
+    * **Diagnóstico:** Farei uma revisão final para garantir que todos os IDs e classes HTML necessários para o JavaScript estejam corretos e que não haja inconsistências após esses ajustes de layout.
+    * **Ação:** Garanto que o HTML esteja pronto para o JS `3.0.7` (que é a versão que você deve usar para resolver os problemas de carregamento de itens e ter a função de impressão).
+
+---
+
+### **Próximos Passos (Implementação das Correções no HTML):**
+
+Vou fornecer o código **COMPLETO e CORRIGIDO** para o seu `inventario.html`.
+
+---
+
+### **Versão: 3.0.9 (inventario.html)**
+**CHANGELOG (inventario.html):**
+* **Versão Atualizada:** De `3.0.5` para `3.0.9`.
+* **Corrigido:** Posicionamento do botão **"Imprimir Tabela Exibida" (`#printCurrentTableBtn`)** movido para um novo `div` no final da seção da lista de itens (`item-list`) com `text-align: right`, garantindo sua visibilidade e posicionamento correto.
+* **Corrigido:** Ajustes significativos nas **larguras das colunas** da tabela (`#inventoryList th`, `#inventoryList td`) para garantir que todas as 11 colunas, especialmente "Ações" e "Mov. Rápida", exibam seu conteúdo e botões sem cortes, com fonte legível.
+* **Aprimorado:** Otimização adicional do `padding`, `font-size` e `gap` dos botões dentro de `.action-buttons` e `.direct-movement-controls` para maximizar o espaço interno e a legibilidade dos textos.
+* **Verificação de Compatibilidade:** Revisado o HTML para garantir plena compatibilidade com o `inventario_scripts.js` v3.0.7.
+
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)"></script>
+    <style>
+        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            padding: 20px;
+            margin: 0;
+            /* Plano de Fundo com Padrão */
+            background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
+            background-repeat: repeat;
+            background-size: 200px 200px; /* Tamanho do tile do padrão */
+        }
+
+        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
+        .main-header-container {
+            display: flex;
+            align-items: center; /* Alinha verticalmente a logo e o texto */
+            justify-content: center; /* Centraliza horizontalmente */
+            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
+            gap: 15px; /* Espaço entre a logo e o título */
+            flex-wrap: wrap; /* Permite quebrar em telas menores */
+        }
+
+        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
+        .sislab-logo {
+            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
+            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
+            display: flex;
+            align-items: flex-end; /* Alinha os tubos na parte inferior */
+            justify-content: space-between; /* Espaço entre os tubos */
+        }
+
+        .tube {
+            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
+            width: 15px; /* Más fino */
+            height: 40px; /* Más compridos */
+            border-radius: 4px 4px 2px 2px; /* Base levemente más arredondada */
+            position: relative; /* Para posicionar la tapa */
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidad */
+        }
+
+        .tube-cap {
+            width: 17px; /* Ligeramente más ancho que el tubo para sobreponer */
+            height: 7px; /* Altura de la tapa */
+            position: absolute;
+            top: -7px; /* Posiciona la tapa encima del tubo */
+            left: -1px; /* Ajusta la posición lateral para centralizar */
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tapa */
+        }
+
+        /* Cores das tampas (Reaproveitadas do index.html) */
+        .tube:nth-child(1) .tube-cap {
+            background-color: #800080; /* Roxo */
+        }
+
+        .tube:nth-child(2) .tube-cap {
+            background-color: #FFD700; /* Amarelo dourado (más profissional) */
+        }
+
+        .tube:nth-child(3) .tube-cap {
+            background-color: #CC3333; /* Vermelho */
+        }
+
+        /* Estilo para o título principal (Reaproveitado do index.html) */
+        h1 {
+            color: #1A2B4C;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px 15px;
+            border-bottom: 3px solid #CC3333;
+            display: inline-block;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8em;
+                padding: 5px 10px;
+            }
+            .main-header-container {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        h2, h3 { /* Mantém o estilo para os demais títulos */
+            color: #1A2B4C;
+            margin-bottom: 20px;
+        }
+
+        /* Contêiner da Barra de Ações do Topo (Nova) */
+        .top-action-bar-container {
+            display: flex;
+            justify-content: space-between; /* Alinha itens nas extremidades */
+            align-items: center; /* Alinha verticalmente */
+            width: 95%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .top-action-bar-container .form-field { /* Campo operador discreto */
+            margin-bottom: 0;
+            flex-basis: auto; /* Adapta-se ao conteúdo */
+            flex-grow: 0;
+            min-width: 250px; /* Largura mínima para o campo */
+        }
+        .top-action-bar-container .form-field label {
+            font-size: 0.9em; /* Fonte menor para discreto */
+            margin-bottom: 2px;
+        }
+        .top-action-bar-container .form-field input {
+            padding: 8px; /* Padding menor */
+            font-size: 0.9em; /* Fonte menor */
+        }
+        .top-action-bar-container button {
+            flex-shrink: 0; /* Impede que o botão encolha */
+            padding: 8px 15px; /* Ajusta padding */
+            font-size: 0.9em; /* Ajusta fonte */
+            margin: 0; /* Remove margens extras */
+        }
+
+
+        /* Contêiner de Conteúdo Principal (que agora envolve o formulário e a lista de itens) */
+        .main-content-area-container {
+            width: 95%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+            display: flex; /* Permite organizar suas seções internas */
+            flex-direction: column; /* As seções internas serão empilhadas */
+            gap: 20px; /* Espaço entre as seções */
+        }
+
+        /* Estilos base para blocos de conteúdo */
+        .column {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Ocupa 100% da largura do seu container pai */
+        }
+        /* Formulário de cadastro - Inicialmente oculto por padrão */
+        #itemFormSection {
+            display: none; /* INICIALMENTE OCULTO */
+        }
+
+        /* Estilos dos campos de formulário (Reaproveitados do index.html) */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 20px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            flex-basis: 0;
+            min-width: 120px;
+        }
+
+        .form-field.full-width {
+            flex-basis: 100%;
+        }
+
+        .form-field label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #334466;
+        }
+        /* Estilo para esconder labels visualmente (para acessibilidade) */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+
+        .form-field input[type="text"],
+        .form-field input[type="number"],
+        .form-field input[type="date"],
+        .form-field textarea,
+        .form-field select {
+            padding: 10px;
+            border: 1px solid #AABBDD;
+            border-radius: 4px;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Estilo para campos com erro (Reaproveitado do index.html) */
+        .form-field input.error,
+        .form-field textarea.error,
+        .form-field select.error {
+            border-color: #CC3333;
+            box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
+        }
+
+        /* Estilo para mensagens de erro (Reaproveitado do index.html) */
+        .error-message {
+            color: #CC3333;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        /* Estilos dos botões de ação (Reaproveitados do index.html) */
+        .action-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 95%;
+            max-width: 1200px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1A2B4C;
+            color
