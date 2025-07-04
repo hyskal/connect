@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.2 (inventario_scripts.js)
+// VERSÃO: 3.0.5 (inventario_scripts.js)
 // CHANGELOG:
 // - Nova Versão: Marca o início oficial da Versão 3.0 do Sistema de Inventário.
 // - Adicionado: Geração automática de cod sequencial para novos itens via transação no Firebase (config_v3/contadores).
@@ -20,6 +20,8 @@
 // - Corrigido: listarItensInventario() aprimorada para depuração e correção do carregamento de itens na tabela, garantindo exibição de todos os campos e filtragem correta.
 // - Modificado: Função getOperadorName() substituída por getOperadorNameFromInput() para ler o nome do operador do novo campo operatorName (input HTML).
 // - Adicionado: Validação para o campo operatorName (obrigatório) nas funções saveOrUpdateItem, updateItemQuantityDirectly, deleteItem, e em todas as funções de relatório PDF.
+// - Implementado: Lógica de exibição/ocultamento do formulário de cadastro/edição (#itemFormSection) via JavaScript, acionada pelo botão "Cadastrar Novo Item" (#showAddItemFormBtn), pelo clique em "Editar", "Salvar Item", "Limpar Formulário" e "Excluir Item".
+// - Implementado: Persistência do Nome do Operador (#operatorName) no localStorage do navegador, mantendo o valor preenchido entre sessões (até a página ser recarregada).
 
 
 // --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
@@ -29,7 +31,7 @@ const LOCAL_FILENAME_CATEGORIES = 'categorias_inventario.txt';
 let currentEditingItemId = null;
 let categoriasDisponiveis = []; // Armazena as categorias carregadas do arquivo local
 let currentFilterStatus = 'all'; // Estado atual do filtro de status (all, critical, inStock, outOfStock)
-
+const OPERATOR_NAME_STORAGE_KEY = 'sislab_inventario_operator_name'; // Chave para localStorage
 
 // --- Event Listeners Iniciais ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -39,16 +41,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories(); 
     listarItensInventario(); // Lista itens após carregar categorias
 
+    // Carregar nome do operador do localStorage, se existir
+    const savedOperatorName = localStorage.getItem(OPERATOR_NAME_STORAGE_KEY);
+    if (savedOperatorName) {
+        document.getElementById('operatorName').value = savedOperatorName;
+    }
+
     // Event listeners para o formulário de cadastro/edição
     document.getElementById('saveItemBtn').addEventListener('click', saveOrUpdateItem);
     document.getElementById('clearItemFormBtn').addEventListener('click', clearItemForm);
-    document.getElementById('deleteItemFormBtn').addEventListener('click', deleteItemFromForm); // Novo botão de exclusão no formulário
+    document.getElementById('deleteItemFormBtn').addEventListener('click', deleteItemFromForm); 
+
+    // Event listener para o novo botão "Cadastrar Novo Item"
+    document.getElementById('showAddItemFormBtn').addEventListener('click', () => {
+        clearItemForm(); // Limpa o formulário antes de exibi-lo para novo cadastro
+        showItemForm(); // Exibe o formulário
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
+    });
+
 
     // Event listeners para filtros e pesquisa
     document.getElementById('searchInventory').addEventListener('input', listarItensInventario);
     document.getElementById('filterCategory').addEventListener('change', listarItensInventario); 
-    document.getElementById('criticalQuantityInput').addEventListener('input', () => { // Ao mudar qtd crítica, atualiza a lista
-        if (currentFilterStatus === 'critical') { // Só atualiza se o filtro crítico estiver ativo
+    document.getElementById('criticalQuantityInput').addEventListener('input', () => { 
+        if (currentFilterStatus === 'critical') { 
             listarItensInventario();
         }
     });
@@ -65,10 +81,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('generateConsumptionReportBtn').addEventListener('click', gerarRelatorioConsumo);
     document.getElementById('generateDueDateReportBtn').addEventListener('click', gerarRelatorioVencimento);
     
-    document.getElementById('closeItemLogBtn').addEventListener('click', hideItemLog); // Vincular botão Fechar Histórico
+    document.getElementById('closeItemLogBtn').addEventListener('click', hideItemLog); 
 
     console.log("Setup inicial concluído."); // DEBUG
 });
+
+// Funções para mostrar/ocultar o formulário de cadastro/edição
+function showItemForm() {
+    document.getElementById('itemFormSection').style.display = 'flex'; // Altera para flex para manter layout
+    console.log("Formulário de item exibido."); // DEBUG
+}
+
+function hideItemForm() {
+    document.getElementById('itemFormSection').style.display = 'none';
+    console.log("Formulário de item ocultado."); // DEBUG
+}
+
 
 // Função para atualizar o estado visual dos botões de filtro
 function updateFilterButtons(activeButtonId) {
@@ -85,17 +113,20 @@ function updateFilterButtons(activeButtonId) {
 }
 
 // --- Funções Auxiliares Comuns ---
-// Substitui getOperadorName() que usava prompt
+// Lê o nome do operador do input e valida
 function getOperadorNameFromInput() {
+    console.log("Lendo nome do operador do input..."); // DEBUG
     const operatorNameInput = document.getElementById('operatorName');
     const operador = operatorNameInput.value.trim();
+
     if (!operador) {
         showError('operatorName', 'Nome do operador é obrigatório.');
         console.log("Validação: Nome do operador vazio."); // DEBUG
         return null;
     }
     clearError('operatorName');
-    console.log(`Nome do operador lido do input: ${operador}`); // DEBUG
+    localStorage.setItem(OPERATOR_NAME_STORAGE_KEY, operador); // Salva no localStorage
+    console.log(`Nome do operador lido e salvo: ${operador}`); // DEBUG
     return operador;
 }
 
@@ -227,7 +258,6 @@ async function listarItensInventario() {
 
     try {
         const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
-        // Ordena por item (descrição) para a listagem principal
         let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
 
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
@@ -273,7 +303,7 @@ async function listarItensInventario() {
 
             // Contagem de "Dias em Estoque" (Sugestão 5)
             let diasEmEstoque = 'N/D'; 
-            if (item.dataCadastro) { // Assumindo que dataCadastro é o timestamp original (precisa ser salvo assim no cadastro inicial)
+            if (item.dataCadastro) { 
                 const dataCadastroOriginal = item.dataCadastro.toDate();
                 const diffTime = Math.abs(new Date().getTime() - dataCadastroOriginal.getTime());
                 diasEmEstoque = `${Math.ceil(diffTime / (1000 * 60 * 60 * 24))} dias`;
@@ -292,7 +322,7 @@ async function listarItensInventario() {
             row.insertCell(2).textContent = item.quantidade; 
             row.insertCell(3).textContent = item.unidadeMedida || 'Não definida'; 
             row.insertCell(4).textContent = item.categoria || 'Geral'; 
-            row.insertCell(5).textContent = item.localizacao || 'Não definido'; 
+            row.insertCell(5).textContent = item.localizacao || 'Não definida'; 
             row.insertCell(6).textContent = formatDateToDisplay(dataVencimentoDate); 
             row.insertCell(7).textContent = formatDateTimeToDisplay(dataUltimaModificacaoDate); 
             row.insertCell(8).textContent = item.ultimoOperador || 'Não definido'; 
@@ -353,23 +383,23 @@ async function listarItensInventario() {
 
 function clearItemForm() {
     console.log("Limpando formulário de item..."); // DEBUG
-    document.getElementById('operatorName').value = ''; // Limpa nome do operador
+    // document.getElementById('operatorName').value = ''; // O operador não é limpo, é persistente
     document.getElementById('itemCod').value = ''; 
     document.getElementById('itemDescription').value = '';
     document.getElementById('itemQuantity').value = '0';
     document.getElementById('itemUnit').value = 'Unidade'; 
     document.getElementById('itemCategory').value = 'Geral'; 
-    document.getElementById('itemLocation').value = ''; // Limpa localização
+    document.getElementById('itemLocation').value = ''; 
     document.getElementById('itemDueDate').value = ''; 
-    document.getElementById('itemObservations').value = ''; // Limpa observações
-    document.getElementById('itemLastUpdate').value = ''; // Limpa última atualização
+    document.getElementById('itemObservations').value = ''; 
+    document.getElementById('itemLastUpdate').value = ''; 
     document.getElementById('itemIdToEdit').value = ''; 
     document.getElementById('saveItemBtn').textContent = 'Salvar Item';
     document.getElementById('deleteItemFormBtn').style.display = 'none'; 
-    clearError('operatorName'); // Limpa erro do operador
+    clearError('operatorName'); 
     clearError('itemDescription');
     clearError('itemQuantity');
-    clearError('itemDueDate'); // Limpa erro de data
+    clearError('itemDueDate'); 
     currentEditingItemId = null; 
     hideItemLog(); 
     console.log("Formulário limpo."); // DEBUG
@@ -377,7 +407,7 @@ function clearItemForm() {
 
 async function saveOrUpdateItem() {
     console.log("Iniciando saveOrUpdateItem..."); // DEBUG
-    const operatorNameInput = document.getElementById('operatorName'); // Pega o input do operador
+    const operatorNameInput = document.getElementById('operatorName'); 
     const itemCodInput = document.getElementById('itemCod');
     const descriptionInput = document.getElementById('itemDescription');
     const quantityInput = document.getElementById('itemQuantity');
@@ -388,7 +418,7 @@ async function saveOrUpdateItem() {
     const observationsInput = document.getElementById('itemObservations'); 
     const itemIdToEdit = document.getElementById('itemIdToEdit').value;
 
-    const operador = operatorNameInput.value.trim(); // Pega nome do operador
+    const operador = operatorNameInput.value.trim(); 
     const description = descriptionInput.value.trim();
     const quantity = parseInt(quantityInput.value);
     const unit = unitSelect.value; 
@@ -403,6 +433,7 @@ async function saveOrUpdateItem() {
     const finalDueDate = dueDate; // dataVencimento pode ser null
     const finalUnit = unit || 'Unidade'; 
     const finalCategory = category || 'Geral'; 
+
 
     // Validação de campos obrigatórios (operador, item e quantidade)
     let isValid = true;
@@ -479,7 +510,7 @@ async function saveOrUpdateItem() {
             });
             console.log("Documento de inventário atualizado."); // DEBUG
 
-            // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE
+            // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE (qualquer campo que não seja o id/cod)
             const oldDueDateTimestamp = oldData.dataVencimento ? oldData.dataVencimento.toDate().getTime() : null;
             const newDueDateTimestamp = finalDueDate ? finalDueDate.getTime() : null;
 
@@ -508,14 +539,15 @@ async function saveOrUpdateItem() {
                                  (oldData.observacoes !== finalObservations ? `Obs. atualizada. ` : '') +
                                  (oldData.categoria !== finalCategory ? `Cat. de '${oldData.categoria}' para '${finalCategory}'. ` : '') +
                                  (oldData.localizacao !== finalLocation ? `Local de '${oldData.localizacao}' para '${finalLocation}'. ` : '') +
-                                 (oldDueDateTimestamp !== newDueDateTimestamp ? `Validade alterada de '${formatDateToDisplay(oldDueDateTimestamp ? new Date(oldDueDateTimestamp) : null)}' para '${formatDateToDisplay(newDueDateTimestamp ? new Date(newDueDateTimestamp) : null)}'. ` : '') +
+                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (newDueDateTimestamp !== null) ? `Validade alterada para '${formatDateToDisplay(new Date(newDueDateTimestamp))}'. ` : '') + // Altera para mostrar só a nova data se mudou e não é null
+                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (oldDueDateTimestamp !== null) && (newDueDateTimestamp === null) ? `Validade removida. ` : '') + // Altera para mostrar se a validade foi removida
                                  `Operador: ${operador}.`,
                     operador: operador
                 });
                 console.log("Log de edição registrado."); // DEBUG
             }
             alert('Item atualizado com sucesso!');
-
+            hideItemForm(); // Oculta o formulário após salvar
         } else { // Modo de Cadastro (Novo Item)
             console.log("Cadastrando novo item..."); // DEBUG
             // Geração do código sequencial via transação
@@ -569,6 +601,7 @@ async function saveOrUpdateItem() {
             });
             alert('Item salvo com sucesso! Código gerado: ' + newCod);
             console.log("Log de cadastro inicial registrado."); // DEBUG
+            hideItemForm(); // Oculta o formulário após salvar
         }
         clearItemForm();
         listarItensInventario(); 
@@ -586,7 +619,6 @@ async function loadItemForEdit(itemData) {
     document.getElementById('itemUnit').value = itemData.unidadeMedida || 'Unidade'; 
     document.getElementById('itemCategory').value = itemData.categoria || 'Geral'; 
     document.getElementById('itemLocation').value = itemData.localizacao && itemData.localizacao !== 'Não definido' ? itemData.localizacao : ''; 
-    // dataVencimento no Firestore é Timestamp, precisa converter para Date e depois para YYYY-MM-DD
     document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento.toDate()) : ''; 
     document.getElementById('itemObservations').value = itemData.observacoes && itemData.observacoes !== 'Não definido' ? itemData.observacoes : ''; 
     document.getElementById('itemLastUpdate').value = itemData.dataUltimaModificacao ? formatDateTimeToDisplay(itemData.dataUltimaModificacao.toDate()) : ''; 
@@ -600,11 +632,11 @@ async function loadItemForEdit(itemData) {
     if (itemData.ultimoOperador && itemData.ultimoOperador !== 'Não definido') {
         operatorNameInput.value = itemData.ultimoOperador;
     } else {
-        operatorNameInput.value = ''; // Limpa se não houver um último operador
+        operatorNameInput.value = ''; 
     }
-    clearError('operatorName'); // Limpa qualquer erro de validação anterior para o operador
+    clearError('operatorName'); 
 
-
+    showItemForm(); // Exibe o formulário ao carregar item para edição
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     console.log("Item carregado no formulário."); // DEBUG
 }
@@ -613,8 +645,8 @@ async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, curr
     console.log(`Movimentação direta: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}, QtdAtual=${currentQuantity}, Mudança=${quantityChange}, Unid=${unidadeMedida}`); // DEBUG
     
     // Validação do operador
-    const operador = getOperadorNameFromInput(); // Lê do input
-    if (operador === null) { // Retorna null se campo estiver vazio
+    const operador = getOperadorNameFromInput(); 
+    if (operador === null) { 
         alert("Operação de movimentação cancelada: Nome do operador é obrigatório.");
         console.log("Movimentação cancelada: Operador não fornecido no input."); // DEBUG
         return;
@@ -714,8 +746,8 @@ async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
             itemNome: itemNome,
             itemCod: itemCod,
             tipoMovimento: "REMOCAO",
-            // quantidadeMovimentada: -quantidadeAtual, // Não definido aqui, pois pode não haver unidadeMedidaLog disponível facilmente
-            unidadeMedidaLog: 'Não definida', // Placeholder, idealmente buscaria do item antes de deletar
+            quantidadeMovimentada: -quantidadeAtual, 
+            unidadeMedidaLog: 'Não definida', 
             quantidadeAntes: quantidadeAtual,
             quantidadeDepois: 0, 
             dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
@@ -797,7 +829,7 @@ function hideItemLog() {
 // --- Funções de Relatórios PDF ---
 async function imprimirRelatorioInventario() {
     console.log("Iniciando geração de Relatório de Estoque Atual..."); // DEBUG
-    const operador = getOperadorNameFromInput(); // Lê do input
+    const operador = getOperadorNameFromInput(); 
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório cancelado: Operador não fornecido."); // DEBUG
@@ -838,7 +870,9 @@ async function imprimirRelatorioInventario() {
             console.log(`Itens filtrados por categoria '${selectedCategory}': ${itensInventario.length}`); // DEBUG
         }
 
-    } catch (error) {
+    }
+    // eslint-disable-next-line no-dupe-else-if
+    catch (error) {
         console.error("Erro ao carregar itens para o relatório de inventário:", error); // DEBUG
         alert("Erro ao carregar itens para o relatório. Verifique o console.");
         return;
@@ -966,7 +1000,7 @@ async function imprimirRelatorioInventario() {
 
 async function gerarRelatorioReposicao() {
     console.log("Iniciando geração de Relatório de Reposição..."); // DEBUG
-    const operador = getOperadorNameFromInput(); // Lê do input
+    const operador = getOperadorNameFromInput(); 
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório de reposição cancelado: Operador não fornecido."); // DEBUG
@@ -1153,7 +1187,7 @@ async function gerarRelatorioReposicao() {
 
 async function gerarRelatorioConsumo() {
     console.log("Iniciando geração de Relatório de Consumo..."); // DEBUG
-    const operador = getOperadorNameFromInput(); // Lê do input
+    const operador = getOperadorNameFromInput(); 
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório de consumo cancelado: Operador não fornecido."); // DEBUG
@@ -1210,7 +1244,7 @@ async function gerarRelatorioConsumo() {
 
     logsConsumo.forEach(log => {
         if (log.tipoMovimento === "SAIDA") { 
-            const categoria = log.categoria || 'Geral'; 
+            const categoria = log.categoria || 'Geral'; // Categoria no momento da saída (se existir no log)
             const itemId = log.itemId;
             const quantidadeConsumida = Math.abs(log.quantidadeMovimentada); 
 
@@ -1340,7 +1374,7 @@ async function gerarRelatorioConsumo() {
 
 async function gerarRelatorioVencimento() {
     console.log("Iniciando geração de Relatório de Itens Próximos do Vencimento..."); // DEBUG
-    const operador = getOperadorNameFromInput(); // Lê do input
+    const operador = getOperadorNameFromInput(); 
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório de vencimento cancelado: Operador não fornecido."); // DEBUG
@@ -1381,10 +1415,10 @@ async function gerarRelatorioVencimento() {
     }
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Zera hora para comparação de data
+    today.setHours(0, 0, 0, 0); 
     const dueDateLimit = new Date();
     dueDateLimit.setDate(today.getDate() + daysUntilDue);
-    dueDateLimit.setHours(23, 59, 59, 999); // Até o final do dia limite
+    dueDateLimit.setHours(23, 59, 59, 999); 
 
     // Filtrar itens com data de vencimento válida e dentro do limite
     const itensProximosVencimento = itensInventario.filter(item => {
@@ -1482,7 +1516,7 @@ async function gerarRelatorioVencimento() {
         doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
         doc.text("VALIDADE", vencColPositions[5], currentY);
         doc.text("OBS.", vencColPositions[6], currentY); 
-        currentY += lineHeight + 1; 
+        currentY += lineHeight + 1; // Espaço após os títulos
 
         doc.setFont(undefined, 'normal');
         
@@ -1539,4 +1573,4 @@ async function gerarRelatorioVencimento() {
 
     alert(`Relatório de Itens Próximos do Vencimento gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
     console.log("Relatório de vencimento gerado."); // DEBUG
-                                  }
+        }
