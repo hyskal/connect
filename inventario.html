@@ -295,7 +295,7 @@
             border: 1px solid #ddd;
             padding: 4px; /* Reduzido para 4px */
             text-align: left;
-            font-size: 0.75em; /* Reduzido para 0.75em */
+            font-size: 0.7em; /* Reduzido para 0.7em para caber mais info */
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -307,18 +307,18 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE) */
+        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS NOVAMENTE PARA MELHOR EXIBIÇÃO) */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 16%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
         #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
         #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 10%; } /* Ações - Ligeiramente mais para caber os 3 botões */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Ligeiramente maior para os 3 elementos */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 10%; } /* Ações - Suficiente para 3 botões pequenos */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Suficiente para 3 elementos empilhados */
 
 
         #inventoryList th {
@@ -337,7 +337,7 @@
         #inventoryList .action-buttons {
             display: flex;
             flex-direction: column; 
-            gap: 2px; /* Reduzido */
+            gap: 1px; /* Reduzido para 1px */
             min-width: unset; 
         }
         #inventoryList .action-buttons button {
@@ -350,7 +350,7 @@
         button.edit-btn { background-color: #5cb85c; } 
         button.edit-btn:hover { background-color: #4cae4c; }
         button.delete-btn { background-color: #d9534f; } 
-        button.delete-item-btn:hover { background-color: #c9302c; } /* Corrigido se for o delete da linha */
+        button.delete-item-btn:hover { background-color: #c9302c; } 
         button.view-log-btn { background-color: #007bff; } 
         button.view-log-btn:hover { background-color: #0069d9; }
 
@@ -368,7 +368,7 @@
             width: 35px; 
             padding: 2px; 
             font-size: 0.75em; 
-            margin-bottom: 0; /* Remove margem inferior para empilhamento */
+            margin-bottom: 0; 
         }
         /* Estilos para os botões de + e - */
         .movement-button {
@@ -677,7 +677,7 @@
             </table>
         </div>
         <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
-            <button id="closeItemLogBtn">Fechar Histórico</button>
+            <button id="closeItemLogBtn">Fechar Histórico</button> 
         </div>
     </div>
 
