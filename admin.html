@@ -30,13 +30,20 @@
             margin: 10px;
             border: none;
             border-radius: 5px;
-            background-color: #CC3333; /* Vermelho para ação perigosa */
+            background-color: #1A2B4C; /* Cor padrão para botões admin */
             color: white;
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.3s ease;
         }
         button:hover {
+            background-color: #0F1D33;
+        }
+        /* Estilo específico para o botão de limpar histórico, se for de "perigo" */
+        button.danger-button {
+            background-color: #CC3333; /* Vermelho para ação perigosa */
+        }
+        button.danger-button:hover {
             background-color: #A02222;
         }
         p.warning {
@@ -44,23 +51,27 @@
             font-weight: bold;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
     <div class="admin-container">
         <h1>Área Administrativa SISLAB</h1>
-        <p class="warning">Cuidado: As ações nesta página são irreversíveis!</p>
-        <button onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
+        <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
+        
+        <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
+        
+        <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
+        
         <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
     </div>
 
     <script type="module">
+        // Importa as funções do SDK do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, limit, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-        // Não precisamos de analytics aqui, a menos que você queira rastrear acessos admin
-        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
-
-        // Your web app's Firebase configuration
+        import { getFirestore, collection, getDocs, query, limit, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        
+        // Sua configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
             authDomain: "sislab-cetep.firebaseapp.com",
@@ -71,10 +82,9 @@
             measurementId: "G-3TL54MWJFS" // Opcional, se não usar analytics aqui
         };
 
-        // Initialize Firebase
+        // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app); 
-        // const analytics = getAnalytics(app); // Descomente se for usar Analytics aqui
 
         // Torna as instâncias e funções do Firebase acessíveis globalmente para o JavaScript desta página
         window.firestoreDb = db;
@@ -83,6 +93,7 @@
         window.firebaseFirestoreQuery = query;
         window.firebaseFirestoreLimit = limit;
         window.firebaseFirestoreWriteBatch = writeBatch;
+        window.firebaseFirestoreOrderBy = orderBy; 
     </script>
 
     <script>
@@ -142,6 +153,15 @@
             } else {
                 alert('Senha incorreta. Histórico não foi limpo.');
             }
+        }
+
+        // NOVO: Função para exibir o Log Geral de Inventário
+        async function mostrarLogGeralInventario() {
+            // Esta função pode abrir uma nova página HTML (ex: log_inventario.html)
+            // ou um modal grande para exibir o log.
+            // Por simplicidade na primeira fase, podemos redirecionar para uma página ainda a ser criada.
+            alert("Redirecionando para a página do Log Geral de Inventário (a ser implementada).");
+            window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
         }
     </script>
 
