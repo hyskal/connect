@@ -117,8 +117,8 @@
         }
 
 
-        /* Contêiner principal para as colunas (Reaproveitado do index.html) */
-        .main-content-container {
+        /* Contêineres de Seção Superior e Inferior (Novos) */
+        .top-section-container, .bottom-section-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
@@ -126,29 +126,14 @@
             max-width: 1200px;
             margin-bottom: 20px;
         }
+        /* Item form e item list se tornam de largura total dentro de suas seções */
+        .column.item-form, .column.item-list {
+            flex-basis: 100%; /* Ocupa a largura total do seu container */
+            max-width: 100%; /* Garante que não estique além do desejado */
+            min-width: unset; /* Permite que seja totalmente responsivo */
+            padding: 30px; /* Mantém o padding de coluna */
+        }
 
-        /* Estilos para as colunas (AJUSTADO PARA PROPORÇÃO 1/4) */
-        .column {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            box-sizing: border-box;
-            flex: 1;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-        }
-        .column.item-form {
-            flex-basis: calc(20% - 10px); /* Aproximadamente 1/4 */
-            max-width: calc(20% - 10px); /* Garante que não estique além do desejado */
-            min-width: 200px; /* Mínimo para não quebrar muito feio */
-        }
-        .column.item-list {
-            flex-basis: calc(80% - 10px); /* Aproximadamente 4/4 */
-            max-width: calc(80% - 10px); /* Garante que não estique além do desejado */
-            min-width: 500px; /* Mínimo para a tabela ser legível */
-        }
 
         /* Estilos dos campos de formulário (Reaproveitados do index.html) */
         .form-row {
@@ -280,13 +265,13 @@
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 4px; /* Reduz padding */
+            padding: 4px; /* Reduzido para 4px */
             text-align: left;
-            font-size: 0.75em; /* Reduz fonte para caber mais info */
+            font-size: 0.75em; /* Reduzido para 0.75em */
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
-            white-space: nowrap; /* Impede que o texto quebre linha */
+            white-space: nowrap; 
         }
         #inventoryList td:nth-child(2) { /* Descrição, permite quebra de linha */
             white-space: normal;
@@ -305,7 +290,7 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - ligeiramente maior */
 
 
         #inventoryList th {
@@ -348,21 +333,21 @@
             flex-direction: column; 
             align-items: center;
             justify-content: center; 
-            gap: 2px; /* Reduz gap */
+            gap: 2px; 
             min-width: unset; 
         }
         .movement-input {
-            width: 35px; /* Largura menor */
-            padding: 2px; /* Reduz padding */
-            font-size: 0.75em; /* Reduz fonte */
+            width: 35px; 
+            padding: 2px; 
+            font-size: 0.75em; 
             margin-bottom: 2px;
         }
         /* Estilos para os botões de + e - */
         .movement-button {
-            width: 22px; /* Botões menores */
+            width: 22px; 
             height: 22px;
             padding: 0;
-            font-size: 0.9em; /* Reduz fonte */
+            font-size: 0.9em; 
             line-height: 1;
             border-radius: 50%;
             display: inline-flex; 
@@ -474,13 +459,13 @@
                 min-width: unset;
             }
             .operator-field-container {
-                width: 100%; /* Ajusta para largura total em mobile */
+                width: 100%; 
                 max-width: 100%;
             }
 
             /* Ajuste para as colunas da tabela em telas pequenas */
             #inventoryList th, #inventoryList td {
-                font-size: 0.65em; /* Fonte ainda menor em mobile para tentar caber */
+                font-size: 0.6em; /* Fonte ainda menor em mobile para tentar caber */
                 padding: 2px;
                 white-space: normal; 
                 word-break: break-word; 
@@ -525,17 +510,16 @@
         <h1 class="main-title">SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
     </div>
 
-    <div class="operator-field-container">
-        <div class="form-field full-width">
-            <label for="operatorName">Nome do Operador (Obrigatório para todas as operações):</label>
-            <input type="text" id="operatorName" placeholder="Seu nome completo">
-            <div id="operatorName-error" class="error-message"></div>
+    <div class="top-section-container">
+        <div class="operator-field-container">
+            <div class="form-field full-width">
+                <label for="operatorName">Nome do Operador (Obrigatório para todas as operações):</label>
+                <input type="text" id="operatorName" placeholder="Seu nome completo">
+                <div id="operatorName-error" class="error-message"></div>
+            </div>
         </div>
-    </div>
 
-    <div class="main-content-container">
-        <div class="column item-form">
-            <h3>Cadastro / Edição de Item:</h3>
+        <div class="column item-form"> <h3>Cadastro / Edição de Item:</h3>
             <div class="form-row">
                 <div class="form-field">
                     <label for="itemCod">Código do Item:</label>
@@ -596,9 +580,10 @@
                 <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;">Excluir Item</button> <input type="hidden" id="itemIdToEdit"> 
             </div>
         </div>
+    </div>
 
-        <div class="column item-list">
-            <h3>Itens Atuais em Estoque:</h3>
+    <div class="bottom-section-container">
+        <div class="column item-list"> <h3>Itens Atuais em Estoque:</h3>
             <div class="inventory-filters">
                 <div class="form-field" style="flex-grow: 1;">
                     <label for="searchInventory" class="sr-only">Pesquisar por Cód. ou Descrição</label>
