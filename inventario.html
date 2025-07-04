@@ -101,35 +101,67 @@
             margin-bottom: 20px;
         }
 
-        /* Contêineres de Seção Superior e Inferior (Novos) */
-        .top-section-container, .bottom-section-container {
+        /* Contêiner da Barra de Ações do Topo (Nova) */
+        .top-action-bar-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            justify-content: space-between; /* Alinha itens nas extremidades */
+            align-items: center; /* Alinha verticalmente */
+            width: 95%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .top-action-bar-container .form-field { /* Campo operador discreto */
+            margin-bottom: 0;
+            flex-basis: auto; /* Adapta-se ao conteúdo */
+            flex-grow: 0;
+            min-width: 250px; /* Largura mínima para o campo */
+        }
+        .top-action-bar-container .form-field label {
+            font-size: 0.9em; /* Fonte menor para discreto */
+            margin-bottom: 2px;
+        }
+        .top-action-bar-container .form-field input {
+            padding: 8px; /* Padding menor */
+            font-size: 0.9em; /* Fonte menor */
+        }
+        .top-action-bar-container button {
+            flex-shrink: 0; /* Impede que o botão encolha */
+            padding: 8px 15px; /* Ajusta padding */
+            font-size: 0.9em; /* Ajusta fonte */
+            margin: 0; /* Remove margens extras */
+        }
+
+
+        /* Contêiner de Conteúdo Principal (que agora envolve o formulário e a lista de itens) */
+        .main-content-area-container {
             width: 95%;
             max-width: 1200px;
             margin-bottom: 20px;
-        }
-        /* Definição das larguras para as colunas na seção superior */
-        .top-section-container .column.operator-info { /* Coluna do operador */
-            flex-basis: calc(20% - 10px); /* 20% da largura total, menos metade do gap */
-            max-width: calc(20% - 10px);
-            min-width: 180px; /* Mínimo para não quebrar muito feio */
-        }
-        .top-section-container .column.item-form { /* Coluna do formulário */
-            flex-basis: calc(80% - 10px); /* 80% da largura total, menos metade do gap */
-            max-width: calc(80% - 10px);
-            min-width: 300px; /* Mínimo para o formulário ser legível */
+            display: flex; /* Permite organizar suas seções internas */
+            flex-direction: column; /* As seções internas serão empilhadas */
+            gap: 20px; /* Espaço entre as seções */
         }
 
-        /* A lista de itens e a seção de log de item ocupam 100% da largura dentro de seus containers */
-        .column.item-list, #itemLogSection.column {
-            flex-basis: 100%; 
-            max-width: 100%; 
-            min-width: unset; 
-            padding: 30px; 
+        /* Estilos base para blocos de conteúdo */
+        .column {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Ocupa 100% da largura do seu container pai */
         }
-
+        /* Formulário de cadastro - Inicialmente oculto por padrão */
+        #itemFormSection {
+            display: none; /* INICIALMENTE OCULTO */
+        }
 
         /* Estilos dos campos de formulário (Reaproveitados do index.html) */
         .form-row {
@@ -210,7 +242,7 @@
             margin-top: 20px;
             padding: 20px;
             background-color: white;
-            border-radius: 81px; /* Ajustado */
+            border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
         }
@@ -261,9 +293,9 @@
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 4px; 
+            padding: 4px; /* Reduzido para 4px */
             text-align: left;
-            font-size: 0.75em; 
+            font-size: 0.75em; /* Reduzido para 0.75em */
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -275,18 +307,18 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS) */
+        /* Larguras específicas das colunas da tabela de inventário */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 15%; } /* Descrição */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
         #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
         #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 13%; } /* Mov. Rápida - Ligeiramente maior para os 3 elementos */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - ligeiramente maior */
 
 
         #inventoryList th {
@@ -503,16 +535,16 @@
         <h1 class="main-title">SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
     </div>
 
-    <div class="top-section-container">
-        <div class="column operator-info"> <h3>Informações do Operador:</h3>
-            <div class="form-field full-width">
-                <label for="operatorName">Nome do Operador (Obrigatório):</label>
-                <input type="text" id="operatorName" placeholder="Seu nome completo">
-                <div id="operatorName-error" class="error-message"></div>
-            </div>
+    <div class="top-action-bar-container">
+        <div class="form-field">
+            <label for="operatorName">Nome do Operador (Obrigatório):</label>
+            <input type="text" id="operatorName" placeholder="Seu nome completo">
+            <div id="operatorName-error" class="error-message"></div>
         </div>
+        <button id="showAddItemFormBtn">Cadastrar Novo Item</button> </div>
 
-        <div class="column item-form"> 
+    <div class="main-content-area-container">
+        <div id="itemFormSection" class="column">
             <h3>Cadastro / Edição de Item:</h3>
             <div class="form-row">
                 <div class="form-field">
@@ -574,9 +606,7 @@
                 <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;">Excluir Item</button> <input type="hidden" id="itemIdToEdit"> 
             </div>
         </div>
-    </div>
 
-    <div class="bottom-section-container">
         <div class="column item-list"> 
             <h3>Itens Atuais em Estoque:</h3>
             <div class="inventory-filters">
