@@ -101,22 +101,6 @@
             margin-bottom: 20px;
         }
 
-        /* Contêiner para o campo do operador, separado das colunas */
-        .operator-field-container {
-            width: 95%;
-            max-width: 1200px;
-            background-color: white;
-            padding: 20px 30px; /* Ajusta padding para ser como uma coluna */
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            margin-bottom: 20px; /* Espaço antes das colunas principais */
-            box-sizing: border-box;
-        }
-        .operator-field-container .form-field {
-            min-width: unset; /* Permite que o campo ocupe 100% da largura do container */
-        }
-
-
         /* Contêineres de Seção Superior e Inferior (Novos) */
         .top-section-container, .bottom-section-container {
             display: flex;
@@ -126,12 +110,24 @@
             max-width: 1200px;
             margin-bottom: 20px;
         }
-        /* Item form e item list se tornam de largura total dentro de suas seções */
-        .column.item-form, .column.item-list {
-            flex-basis: 100%; /* Ocupa a largura total do seu container */
-            max-width: 100%; /* Garante que não estique além do desejado */
-            min-width: unset; /* Permite que seja totalmente responsivo */
-            padding: 30px; /* Mantém o padding de coluna */
+        /* Definição das larguras para as colunas na seção superior */
+        .top-section-container .column.operator-info { /* Coluna do operador */
+            flex-basis: calc(20% - 10px); /* 20% da largura total, menos metade do gap */
+            max-width: calc(20% - 10px);
+            min-width: 180px; /* Mínimo para não quebrar muito feio */
+        }
+        .top-section-container .column.item-form { /* Coluna do formulário */
+            flex-basis: calc(80% - 10px); /* 80% da largura total, menos metade do gap */
+            max-width: calc(80% - 10px);
+            min-width: 300px; /* Mínimo para o formulário ser legível */
+        }
+
+        /* A lista de itens e a seção de log de item ocupam 100% da largura dentro de seus containers */
+        .column.item-list, #itemLogSection.column {
+            flex-basis: 100%; 
+            max-width: 100%; 
+            min-width: unset; 
+            padding: 30px; 
         }
 
 
@@ -214,7 +210,7 @@
             margin-top: 20px;
             padding: 20px;
             background-color: white;
-            border-radius: 8px;
+            border-radius: 81px; /* Ajustado */
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
         }
@@ -265,9 +261,9 @@
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 4px; /* Reduzido para 4px */
+            padding: 4px; 
             text-align: left;
-            font-size: 0.75em; /* Reduzido para 0.75em */
+            font-size: 0.75em; 
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -279,18 +275,18 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário */
+        /* Larguras específicas das colunas da tabela de inventário (AJUSTADAS) */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 15%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
         #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
         #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - ligeiramente maior */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 13%; } /* Mov. Rápida - Ligeiramente maior para os 3 elementos */
 
 
         #inventoryList th {
@@ -313,8 +309,8 @@
             min-width: unset; 
         }
         #inventoryList .action-buttons button {
-            padding: 2px 4px; /* Mais reduzido */
-            font-size: 0.65em; /* Mais reduzido */
+            padding: 2px 4px; 
+            font-size: 0.65em; 
             margin: 0; 
             width: 100%; 
             box-sizing: border-box;
@@ -327,11 +323,11 @@
         button.view-log-btn:hover { background-color: #0069d9; }
 
 
-        /* Estilos para o campo de input de movimentação direta e botões */
+        /* Estilos para o campo de input de movimentação direta e botões (AJUSTADO PARA IMAGEM) */
         .direct-movement-controls {
             display: flex;
-            flex-direction: column; 
-            align-items: center;
+            flex-direction: column; /* Empilha input e botões */
+            align-items: center; /* Centraliza horizontalmente os elementos empilhados */
             justify-content: center; 
             gap: 2px; 
             min-width: unset; 
@@ -448,21 +444,18 @@
 
         /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
         @media (max-width: 900px) {
-            .main-content-container {
+            /* Seções Superior e Inferior empilham */
+            .top-section-container, .bottom-section-container {
                 flex-direction: column;
                 width: 95%;
             }
-            /* Colunas empilham em mobile, então cada uma ocupa 100% da largura */
-            .column.item-form, .column.item-list {
-                flex-basis: 100%;
+            /* Colunas dentro da seção superior empilham */
+            .top-section-container .column.operator-info,
+            .top-section-container .column.item-form {
+                flex-basis: 100%; 
                 max-width: 100%; 
-                min-width: unset;
+                min-width: unset; 
             }
-            .operator-field-container {
-                width: 100%; 
-                max-width: 100%;
-            }
-
             /* Ajuste para as colunas da tabela em telas pequenas */
             #inventoryList th, #inventoryList td {
                 font-size: 0.6em; /* Fonte ainda menor em mobile para tentar caber */
@@ -511,15 +504,16 @@
     </div>
 
     <div class="top-section-container">
-        <div class="operator-field-container">
+        <div class="column operator-info"> <h3>Informações do Operador:</h3>
             <div class="form-field full-width">
-                <label for="operatorName">Nome do Operador (Obrigatório para todas as operações):</label>
+                <label for="operatorName">Nome do Operador (Obrigatório):</label>
                 <input type="text" id="operatorName" placeholder="Seu nome completo">
                 <div id="operatorName-error" class="error-message"></div>
             </div>
         </div>
 
-        <div class="column item-form"> <h3>Cadastro / Edição de Item:</h3>
+        <div class="column item-form"> 
+            <h3>Cadastro / Edição de Item:</h3>
             <div class="form-row">
                 <div class="form-field">
                     <label for="itemCod">Código do Item:</label>
@@ -583,7 +577,8 @@
     </div>
 
     <div class="bottom-section-container">
-        <div class="column item-list"> <h3>Itens Atuais em Estoque:</h3>
+        <div class="column item-list"> 
+            <h3>Itens Atuais em Estoque:</h3>
             <div class="inventory-filters">
                 <div class="form-field" style="flex-grow: 1;">
                     <label for="searchInventory" class="sr-only">Pesquisar por Cód. ou Descrição</label>
@@ -607,7 +602,8 @@
                 </div>
             </div>
 
-            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;"> <table id="inventoryList">
+            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;"> 
+                <table id="inventoryList">
                     <thead>
                         <tr>
                             <th>Cód.</th>
