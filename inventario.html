@@ -2,76 +2,28 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 2.0.0 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB - Inventário de Materiais</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            align-items: center;
             padding: 20px;
             margin: 0;
-            /* Plano de Fundo com Padrão */
-            background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
-            background-repeat: repeat;
-            background-size: 200px 200px; /* Tamanho do tile do padrão */
+            background-color: #E0E6EE;
         }
 
-        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
         .main-header-container {
             display: flex;
-            align-items: center; /* Alinha verticalmente a logo e o texto */
-            justify-content: center; /* Centraliza horizontalmente */
-            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
-            gap: 15px; /* Espaço entre a logo e o título */
-            flex-wrap: wrap; /* Permite quebrar em telas menores */
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
-        .sislab-logo {
-            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
-            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
-            display: flex;
-            align-items: flex-end; /* Alinha os tubos na parte inferior */
-            justify-content: space-between; /* Espaço entre os tubos */
-        }
-
-        .tube {
-            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
-            width: 15px; /* Más fino */
-            height: 40px; /* Más compridos */
-            border-radius: 4px 4px 2px 2px; /* Base levemente más arredondada */
-            position: relative; /* Para posicionar la tapa */
-            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidad */
-        }
-
-        .tube-cap {
-            width: 17px; /* Ligeramente más ancho que el tubo para sobreponer */
-            height: 7px; /* Altura de la tapa */
-            position: absolute;
-            top: -7px; /* Posiciona la tapa encima del tubo */
-            left: -1px; /* Ajusta la posición lateral para centralizar */
-            border-radius: 4px 4px 0 0;
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tapa */
-        }
-
-        /* Cores das tampas (Reaproveitadas do index.html) */
-        .tube:nth-child(1) .tube-cap {
-            background-color: #800080; /* Roxo */
-        }
-
-        .tube:nth-child(2) .tube-cap {
-            background-color: #FFD700; /* Amarelo dourado (más profissional) */
-        }
-
-        .tube:nth-child(3) .tube-cap {
-            background-color: #CC3333; /* Vermelho */
-        }
-
-        /* Estilo para o título principal (Reaproveitado do index.html) */
         h1 {
             color: #1A2B4C;
             margin: 0;
@@ -79,7 +31,7 @@
             font-weight: bold;
             text-align: center;
             padding: 5px 15px;
-            border-bottom: 3px solid #CC3333;
+            border-bottom: 3px solid #007BFF; /* Cor diferente para inventário */
             display: inline-block;
             letter-spacing: 1.5px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
@@ -96,22 +48,15 @@
             }
         }
 
-        h2, h3 { /* Mantém o estilo para os demais títulos */
-            color: #1A2B4C;
-            margin-bottom: 20px;
-        }
-
-        /* Contêiner principal para as colunas (Reaproveitado do index.html) */
         .main-content-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             width: 95%;
-            max-width: 1200px;
+            max-width: 1400px; /* Aumenta a largura para comportar mais conteúdo */
             margin-bottom: 20px;
         }
 
-        /* Estilos para as colunas (Reaproveitados do index.html) */
         .column {
             background-color: white;
             padding: 30px;
@@ -119,16 +64,18 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
             flex: 1;
-            min-width: 280px;
+            min-width: 300px;
             display: flex;
             flex-direction: column;
         }
-        /* Ajuste para 2 colunas para o inventário */
-        .column.item-form, .column.item-list {
-            flex-basis: calc(50% - 10px); /* Aprox. 50% menos metade do gap */
+
+        .column.wide {
+            flex-basis: calc(66.66% - 10px); /* Para a coluna da lista de itens */
+        }
+        .column.narrow {
+            flex-basis: calc(33.33% - 10px); /* Para a coluna de cadastro/movimentação */
         }
 
-        /* Estilos dos campos de formulário (Reaproveitados do index.html) */
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -143,7 +90,7 @@
             flex-direction: column;
             flex-grow: 1;
             flex-basis: 0;
-            min-width: 120px;
+            min-width: 150px;
         }
 
         .form-field.full-width {
@@ -157,9 +104,10 @@
         }
 
         .form-field input[type="text"],
-        .form-field input[type="number"], /* Adicionado para campo de quantidade */
-        .form-field textarea,
-        .form-field select { /* Adicionado para campo de categoria */
+        .form-field input[type="number"],
+        .form-field input[type="date"],
+        .form-field select,
+        .form-field textarea {
             padding: 10px;
             border: 1px solid #AABBDD;
             border-radius: 4px;
@@ -168,28 +116,12 @@
             box-sizing: border-box;
         }
 
-        /* Estilo para campos com erro (Reaproveitado do index.html) */
-        .form-field input.error,
-        .form-field textarea.error,
-        .form-field select.error { /* Adicionado para campo de categoria */
-            border-color: #CC3333;
-            box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
-        }
-
-        /* Estilo para mensagens de erro (Reaproveitado do index.html) */
-        .error-message {
-            color: #CC3333;
-            font-size: 0.85em;
-            margin-top: 5px;
-        }
-
-        /* Estilos dos botões de ação (Reaproveitados do index.html) */
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             width: 95%;
-            max-width: 1200px;
+            max-width: 1400px;
             margin-top: 20px;
             padding: 20px;
             background-color: white;
@@ -214,282 +146,201 @@
             background-color: #0F1D33;
         }
 
-        /* Estilo para botão de destaque (Reaproveitado do index.html) */
         button.highlight-button {
-            background-color: #CC3333;
+            background-color: #007BFF; /* Azul para destaque */
             font-weight: bold;
             padding: 12px 25px;
         }
 
         button.highlight-button:hover {
-            background-color: #A02222;
+            background-color: #0056b3;
         }
 
-        /* Estilos para a Tabela/Lista de Itens do Inventário */
-        #inventoryList {
+        /* Tabela de Inventário */
+        #inventarioTable {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        #inventoryList th, #inventoryList td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            font-size: 0.9em; /* Ajuste para caber mais info */
-            vertical-align: top; /* Alinha o conteúdo ao topo */
-        }
-
-        #inventoryList th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        #inventoryList tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        #inventoryList tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        #inventoryList .action-buttons {
-            display: flex;
-            flex-direction: column; /* Botões um abaixo do outro */
-            gap: 5px;
-        }
-        #inventoryList .action-buttons button {
-            padding: 5px 10px;
-            font-size: 0.85em;
-            margin: 0; /* Remover margem extra */
-            width: 100%; /* Ocupa a largura total da célula */
-            box-sizing: border-box;
-        }
-        button.edit-btn { background-color: #5cb85c; } /* Verde para editar */
-        button.edit-btn:hover { background-color: #4cae4c; }
-        button.delete-btn { background-color: #d9534f; } /* Vermelho para deletar */
-        button.delete-btn:hover { background-color: #c9302c; }
-        button.view-log-btn { background-color: #007bff; } /* Azul para ver log */
-        button.view-log-btn:hover { background-color: #0069d9; }
-
-
-        /* Estilos para o campo de input de movimentação direta e botões */
-        .direct-movement-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Centraliza horizontalmente */
-            gap: 3px; /* Espaço entre input e botões */
-            flex-wrap: nowrap; /* Impede que quebre linha em telas pequenas */
-        }
-        .movement-input {
-            width: 45px; /* Largura menor */
-            padding: 5px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 0.9em;
-        }
-        /* Estilos para os botões de + e - */
-        .movement-button {
-            width: 28px; /* Botões menores */
-            height: 28px;
-            padding: 0;
-            font-size: 1.1em;
-            line-height: 1;
-            border-radius: 50%;
-            display: inline-flex; /* Para centralizar o texto */
-            justify-content: center;
-            align-items: center;
-            background-color: #1A2B4C;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            flex-shrink: 0; /* Evita que o botão encolha */
-        }
-        .movement-button.plus { background-color: #28a745; } /* Verde para + */
-        .movement-button.plus:hover { background-color: #218838; }
-        .movement-button.minus { background-color: #dc3545; } /* Vermelho para - */
-        .movement-button.minus:hover { background-color: #c82333; }
-
-        /* Estilos para a seção de log de item */
-        #itemLogSection {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            box-sizing: border-box;
-            width: 95%; /* Adapta-se à largura padrão */
-            max-width: 1200px;
             margin-top: 20px;
         }
-        #itemLogTable {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        #itemLogTable th, #itemLogTable td {
+        #inventarioTable th, #inventarioTable td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            font-size: 0.85em; /* Um pouco menor para caber mais info */
-            vertical-align: top;
         }
-        #itemLogTable th {
+        #inventarioTable th {
             background-color: #f2f2f2;
             color: #333;
+            cursor: pointer;
         }
-        #itemLogTable tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        #itemLogTable tr:hover {
-            background-color: #f1f1f1;
-        }
-        /* Container para rolagem do log */
-        .item-log-scroll-container {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #eee;
+        #inventarioTable tr:nth-child(even){background-color: #f9f9f9;}
+        #inventarioTable tr:hover {background-color: #f1f1f1;}
+
+        .alert-item {
+            background-color: #ffcccc;
+            border: 1px solid #ff0000;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
         }
 
-
-        /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
         @media (max-width: 900px) {
             .main-content-container {
                 flex-direction: column;
                 width: 95%;
             }
-            .column.item-form, .column.item-list {
+            .column.wide, .column.narrow {
                 flex-basis: 100%;
                 min-width: unset;
-            }
-            /* Ajuste para a coluna de Mov. Direta em telas pequenas */
-            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { /* Coluna Mov. Direta */
-                min-width: 120px; /* Garante espaço para os botões */
             }
         }
     </style>
 </head>
 <body>
-
     <div class="main-header-container">
-        <div class="sislab-logo">
-            <div class="tube tube-1">
-                <div class="tube-cap"></div>
-            </div>
-            <div class="tube tube-2">
-                <div class="tube-cap"></div>
-            </div>
-            <div class="tube tube-3">
-                <div class="tube-cap"></div>
-            </div>
-        </div>
-        <h1 class="main-title">SISLAB 2.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
+        <h1 class="main-title">Inventário de Materiais - SISLAB</h1>
     </div>
 
     <div class="main-content-container">
-        <div class="column item-form">
-            <h3>Cadastro / Edição de Item:</h3>
+        <div class="column narrow">
+            <h3>Cadastro/Edição de Item:</h3>
             <div class="form-row">
-                <div class="form-field">
-                    <label for="itemCod">Código do Item:</label>
-                    <input type="text" id="itemCod" readonly placeholder="Gerado Automaticamente">
-                </div>
+                <input type="hidden" id="itemId">
                 <div class="form-field full-width">
-                    <label for="itemDescription">Descrição do Item:</label>
-                    <textarea id="itemDescription" rows="2"></textarea>
-                    <div id="itemDescription-error" class="error-message"></div>
+                    <label for="nomeItem">Nome do Item:</label>
+                    <input type="text" id="nomeItem" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-field">
-                    <label for="itemQuantity">Quantidade:</label>
-                    <input type="number" id="itemQuantity" value="0" min="0">
-                    <div id="itemQuantity-error" class="error-message"></div>
+                    <label for="categoria">Categoria:</label>
+                    <input type="text" list="categoriasSugeridas" id="categoria">
+                    <datalist id="categoriasSugeridas">
+                        <option value="Materiais Consumíveis">
+                        <option value="Reagentes">
+                        <option value="Equipamentos">
+                    </datalist>
                 </div>
                 <div class="form-field">
-                    <label for="itemCategory">Categoria:</label>
-                    <select id="itemCategory">
-                        <option value="Geral">Geral</option>
+                    <label for="unidadeMedida">Unidade de Medida:</label>
+                    <input type="text" id="unidadeMedida" placeholder="unidades, caixas, ml">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="localizacao">Localização:</label>
+                    <input type="text" id="localizacao">
+                </div>
+                <div class="form-field">
+                    <label for="dataValidade">Data de Validade:</label>
+                    <input type="date" id="dataValidade">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="limiteMinimo">Limite Mínimo:</label>
+                    <input type="number" id="limiteMinimo" min="0" value="0">
+                </div>
+                <div class="form-field">
+                    <label for="fornecedor">Fornecedor:</label>
+                    <input type="text" id="fornecedor">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="observacoesItem">Observações do Item:</label>
+                    <textarea id="observacoesItem" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <button onclick="salvarItemInventario()" class="highlight-button">Salvar/Atualizar Item</button>
+                <button onclick="limparFormularioItem()">Novo Item</button>
+            </div>
+
+            <hr style="margin: 25px 0;">
+
+            <h3>Movimentação de Estoque:</h3>
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="itemMovimento">Item para Movimentar:</label>
+                    <input type="text" id="itemMovimento" placeholder="Pesquise o item aqui..." list="itensDisponiveis">
+                    <datalist id="itensDisponiveis"></datalist>
+                    <input type="hidden" id="itemMovimentoId">
+                    <p style="font-size: 0.9em; color: #555;">Quantidade Atual: <span id="quantidadeAtualDisplay">--</span></p>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="tipoMovimento">Tipo de Movimento:</label>
+                    <select id="tipoMovimento">
+                        <option value="Entrada">Entrada</option>
+                        <option value="Saida">Saída</option>
                     </select>
                 </div>
+                <div class="form-field">
+                    <label for="quantidadeMovimento">Quantidade:</label>
+                    <input type="number" id="quantidadeMovimento" min="1" value="1">
+                </div>
             </div>
             <div class="form-row">
+                <div class="form-field">
+                    <label for="responsavelMovimento">Responsável:</label>
+                    <input type="text" id="responsavelMovimento" placeholder="Seu nome">
+                </div>
+                <div class="form-field">
+                    <label for="motivoMovimento">Motivo:</label>
+                    <textarea id="motivoMovimento" rows="1"></textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <button onclick="registrarMovimentoEstoque()" class="highlight-button">Registrar Movimento</button>
+            </div>
+        </div>
+
+        <div class="column wide">
+            <h3>Itens do Inventário:</h3>
+            <div class="form-row">
                 <div class="form-field full-width">
-                    <label for="itemObservations">Observações Gerais:</label>
-                    <textarea id="itemObservations" rows="2"></textarea>
+                    <label for="pesquisaInventario">Pesquisar Itens:</label>
+                    <input type="text" id="pesquisaInventario" placeholder="Pesquisar por nome, categoria, localização...">
                 </div>
             </div>
-            <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0;">
-                <button id="saveItemBtn" class="highlight-button">Salvar Item</button>
-                <button id="clearItemFormBtn">Limpar Formulário</button>
-                <input type="hidden" id="itemIdToEdit"> 
+            <div id="alertasEstoqueBaixo" style="margin-top: 10px;">
+                <h4>Alertas de Estoque Baixo:</h4>
+                <p>Nenhum alerta no momento.</p>
             </div>
-        </div>
-
-        <div class="column item-list">
-            <h3>Itens Atuais em Estoque:</h3>
-            <div class="form-row" style="margin-bottom:10px;">
-                <div class="form-field" style="flex-basis: 60%; min-width: 150px;">
-                    <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
-                </div>
-                <div class="form-field" style="flex-basis: 30%; min-width: 100px;">
-                    <label for="filterCategory" class="sr-only">Filtrar por Categoria</label> <select id="filterCategory">
-                        <option value="">Todas as Categorias</option>
-                        </select>
-                </div>
-            </div>
-            <div style="max-height: 400px; overflow-y: auto;">
-                <table id="inventoryList">
-                    <thead>
-                        <tr>
-                            <th>Cód.</th> <th>Descrição</th>
-                            <th>Qtd.</th>
-                            <th>Categoria</th> <th>Data Cadastro</th>
-                            <th>Ações</th>
-                            <th>Mov. Direta</th> </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="7">Carregando itens...</td></tr> </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="itemLogSection" class="column" style="display: none;">
-        <h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
-        <div class="item-log-scroll-container">
-            <table id="itemLogTable" style="width:100%; border-collapse: collapse;">
+            <table id="inventarioTable">
                 <thead>
                     <tr>
-                        <th style="width: 15%;">Operação</th>
-                        <th style="width: 10%;">Qtd. Mov.</th>
-                        <th style="width: 10%;">Qtd. Final</th>
-                        <th style="width: 20%;">Data e Hora</th>
-                        <th style="width: 15%;">Operador</th>
-                        <th style="width: 30%;">Observações</th>
+                        <th data-sort="nome">Nome do Item</th>
+                        <th data-sort="categoria">Categoria</th>
+                        <th data-sort="quantidadeAtual">Qtd. Atual</th>
+                        <th data-sort="unidadeMedida">Unidade</th>
+                        <th data-sort="dataValidade">Validade</th>
+                        <th data-sort="limiteMinimo">Limite Mínimo</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>
+                <tbody id="inventarioTableBody">
+                    <tr><td colspan="7">Carregando itens...</td></tr>
                 </tbody>
             </table>
-        </div>
-        <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
-            <button onclick="hideItemLog()">Fechar Histórico</button>
-        </div>
+            </div>
     </div>
 
     <div class="action-buttons-container">
-        <button id="printInventoryReportBtn">Imprimir Relatório de Inventário</button>
-        <button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
+        <button onclick="gerarRelatorioInventarioPDF()">Gerar Relatório de Inventário (PDF)</button>
+        <button onclick="window.location.href='log_inventario.html'">Ver Log de Movimentações</button>
         <button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
+        <button onclick="window.location.href='admin.html'">Acessar Admin</button>
     </div>
 
     <script type="module">
-        // Importa as funções do SDK do Firebase (as mesmas do index.html)
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-        
-        // Sua configuração do Firebase (a mesma do index.html)
+        // Importar TODOS os módulos do Firestore que serão usados
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
             authDomain: "sislab-cetep.firebaseapp.com",
@@ -499,13 +350,15 @@
             appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
         };
 
-        // Inicializa o Firebase
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app); 
+        const db = getFirestore(app);
 
         // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
-        // Isso permite que o inventario_scripts.js (que é um script 'clássico' ou 'module') as use
+        window.firebaseApp = app;
         window.firestoreDb = db;
+
+        // Funções do Firestore para usar no inventario_scripts.js
         window.firebaseFirestoreCollection = collection;
         window.firebaseFirestoreAddDoc = addDoc;
         window.firebaseFirestoreGetDocs = getDocs;
@@ -514,11 +367,13 @@
         window.firebaseFirestoreLimit = limit;
         window.firebaseFirestoreDeleteDoc = deleteDoc;
         window.firebaseFirestoreDoc = doc;
-        window.firebaseFirestoreUpdateDoc = updateDoc; 
-        window.firebaseFirestoreWhere = where; 
-        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreWriteBatch = writeBatch;
+        window.firebaseFirestoreWhere = where;
+        window.firebaseFirestoreServerTimestamp = serverTimestamp;
         window.firebaseFirestoreGetDoc = getDoc;
-        window.firebaseFirestoreRunTransaction = runTransaction; // Adicionado para operações de contador
+        window.firebaseFirestoreUpdateDoc = updateDoc; // Adicionado para updateDoc
+
     </script>
-    <script src="inventario_scripts.js" type="module"></script> </body>
+    <script src="inventario_scripts.js"></script>
+</body>
 </html>
