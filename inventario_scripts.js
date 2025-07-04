@@ -1,18 +1,22 @@
-// VERSÃO: 3.0.0 (inventario_scripts.js)
+// VERSÃO: 3.0.1 (inventario_scripts.js)
 // CHANGELOG:
 // - Nova Versão: Marca o início oficial da Versão 3.0 do Sistema de Inventário.
 // - Adicionado: Geração automática de cod sequencial para novos itens via transação no Firebase (config_v3/contadores).
 // - Adicionado: categorias para itens, com carregamento dinâmico de categorias_inventario.txt (local) e usadas em formulário e filtro.
-// - Adicionado: Novos campos de item (localizacao, dataVencimento, unidadeMedida) no formulário e na estrutura do Firestore (inventario_v3).
+// - Adicionado: Novos campos de item na inventario_v3: localizacao, dataVencimento, unidadeMedida.
 // - Adicionado: Campos dataUltimaModificacao e ultimoOperador no item (inventario_v3), atualizados automaticamente em cada modificação.
 // - Modificado: saveOrUpdateItem() para: lidar com todos os novos campos, salvando "Não definido" para campos opcionais não preenchidos; integrar solicitação do operador e alertas de estoque negativo; registrar logs detalhados (tipos "CADASTRO", "ENTRADA", "SAIDA", "AJUSTE"), incluindo todos os novos campos no log.
 // - Modificado: listarItensInventario() para: exibir todas as novas colunas; implementar filtros por cod/item e categoria; implementar Filtro Rápido por Status de Estoque; adicionar Notificação Visual para Estoque Crítico; incluir Contagem de "Dias em Estoque"; configurar os controles de Movimentação Direta.
 // - Adicionado: updateItemQuantityDirectly() para gerenciar as movimentações rápidas via botões +/-, com operador, alerta de estoque negativo e registro detalhado no log.
 // - Modificado: loadItemForEdit() para preencher todos os campos do formulário e exibir/ocultar o botão "Excluir Item".
-// - Modificado: deleteItem() para integrar solicitação do operador, log detalhado "REMOCAO", e lidar com o botão "Excluir Item" do formulário.
+// - Modificado: deleteItem() e adicionado deleteItemFromForm() para integrar solicitação do operador, log detalhado "REMOCAO", e lidar com o botão "Excluir Item" do formulário.
 // - Modificado: showItemLog() e hideItemLog() para exibir log por item com todos os campos relevantes.
 // - Implementado: Funções de relatório PDF (imprimirRelatorioInventario, gerarRelatorioReposicao, gerarRelatorioConsumo, gerarRelatorioVencimento), acionadas pelos botões na inventario.html. Todos incluem operador no cabeçalho e detalhes dos novos campos nos relatórios.
 // - Incluído: console.log para depuração em funções críticas.
+// - Corrigido: Botão "Fechar Histórico" (id closeItemLogBtn) agora está corretamente vinculado à função hideItemLog().
+// - Corrigido: Formatação da data no título do "Relatório de Consumo" de AAAA-MM-DD para DDMMAAAA.
+// - Melhoria: Adição de mais console.log detalhados nas funções de relatório para auxiliar na depuração.
+// - Manutenção: Refatoração de funções de formatação de data para reutilização.
 
 
 // --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
@@ -58,6 +62,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('generateConsumptionReportBtn').addEventListener('click', gerarRelatorioConsumo);
     document.getElementById('generateDueDateReportBtn').addEventListener('click', gerarRelatorioVencimento);
     
+    document.getElementById('closeItemLogBtn').addEventListener('click', hideItemLog); // Vincular botão Fechar Histórico
+
     console.log("Setup inicial concluído."); // DEBUG
 });
 
@@ -126,6 +132,28 @@ function formatDateToInput(date) {
     return `${year}-${month}-${day}`;
 }
 
+function formatDateToDisplay(date) {
+    // Formata um objeto Date para DD/MM/AAAA
+    if (!date) return 'N/D';
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+function formatDateTimeToDisplay(date) {
+    // Formata um objeto Date para DD/MM/AAAA HH:MM:SS
+    if (!date) return 'N/D';
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const seconds = d.getSeconds().toString().padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
 
 // --- Funções de Carregamento Dinâmico ---
 async function loadCategories() {
@@ -188,7 +216,7 @@ async function listarItensInventario() {
     
     const searchTerm = document.getElementById('searchInventory').value.toLowerCase();
     const filterCategory = document.getElementById('filterCategory').value;
-    const criticalQuantity = parseInt(document.getElementById('criticalQuantityInput').value); // Qtd crítica para filtro
+    const criticalQuantity = parseInt(document.getElementById('criticalQuantityInput').value); 
     let items = [];
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
@@ -198,7 +226,7 @@ async function listarItensInventario() {
     }
 
     try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); // USAR _v3
+        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
         let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy('item', 'asc')); 
 
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
@@ -215,11 +243,13 @@ async function listarItensInventario() {
             // Lógica do filtro de status
             let matchesStatus = true;
             if (currentFilterStatus === 'critical') {
-                matchesStatus = item.quantidade <= criticalQuantity;
+                matchesStatus = item.quantidade <= criticalQuantity && item.quantidade > 0; // Críticos, mas não sem estoque
             } else if (currentFilterStatus === 'inStock') {
                 matchesStatus = item.quantidade > 0;
             } else if (currentFilterStatus === 'outOfStock') {
                 matchesStatus = item.quantidade === 0;
+            } else if (currentFilterStatus === 'all') {
+                matchesStatus = true; // Todos os itens
             }
             
             return matchesSearch && matchesCategory && matchesStatus;
@@ -231,46 +261,42 @@ async function listarItensInventario() {
             return;
         }
 
-        inventoryListBody.innerHTML = ''; // Limpa antes de preencher
+        inventoryListBody.innerHTML = ''; 
         filteredItems.forEach(item => {
             const row = inventoryListBody.insertRow();
             row.dataset.itemId = item.id; 
             
             // Formatação de datas
-            const dataCadastroDate = item.dataCadastro ? item.dataCadastro.toDate() : null; // dataCadastro é do log, item tem dataUltimaAtualizacao
-            const dataUltimaAtualizacaoDate = item.dataUltimaAtualizacao ? item.dataUltimaAtualizacao.toDate() : null;
             const dataVencimentoDate = item.dataVencimento ? item.dataVencimento.toDate() : null;
+            const dataUltimaModificacaoDate = item.dataUltimaModificacao ? item.dataUltimaModificacao.toDate() : null;
 
-            const dataCadastroFormatada = dataCadastroDate ? dataCadastroDate.toLocaleDateString('pt-BR') : 'N/A';
-            const dataUltimaAtualizacaoFormatada = dataUltimaAtualizacaoDate ? dataUltimaAtualizacaoDate.toLocaleDateString('pt-BR') : 'N/A';
-            const dataVencimentoFormatada = dataVencimentoDate ? dataVencimentoDate.toLocaleDateString('pt-BR') : 'N/A';
-
-            // Contagem de "Dias em Estoque" (baseado na dataCadastro do item, que é a primeira entrada no log)
-            let diasEmEstoque = 'N/A';
-            if (dataCadastroDate) {
-                const diffTime = Math.abs(new Date().getTime() - dataCadastroDate.getTime());
+            // Contagem de "Dias em Estoque"
+            // Supondo que dataCadastro original está no item.dataCadastro (Timestamp)
+            let diasEmEstoque = 'N/A'; 
+            if (item.dataCadastro) { 
+                const dataCadastroOriginal = item.dataCadastro.toDate();
+                const diffTime = Math.abs(new Date().getTime() - dataCadastroOriginal.getTime());
                 diasEmEstoque = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             }
 
 
-            // Colunas da tabela (11 colunas no total)
-            row.insertCell(0).textContent = item.cod || 'N/A'; // Cód.
-            row.insertCell(1).textContent = item.item; // Descrição
-            row.insertCell(2).textContent = item.quantidade; // Qtd.
-            row.insertCell(3).textContent = item.unidadeMedida || 'Não definida'; // Unidade
-            row.insertCell(4).textContent = item.categoria || 'Não definida'; // Categoria
-            row.insertCell(5).textContent = item.localizacao || 'Não definida'; // Localização
-            row.insertCell(6).textContent = dataVencimentoFormatada; // Validade
-            row.insertCell(7).textContent = dataUltimaAtualizacaoFormatada; // Última Atualização
-            row.insertCell(8).textContent = item.ultimoOperador || 'Não definido'; // Últ. Operador (NOVO)
-
-            // Destaque visual para estoque crítico
-            if (item.quantidade <= criticalQuantity && item.quantidade > 0 && currentFilterStatus !== 'outOfStock') { // Crítico mas não zero
+            // Destaque visual para estoque crítico/zerado
+            if (item.quantidade <= criticalQuantity && item.quantidade > 0 && currentFilterStatus !== 'outOfStock') { 
                 row.style.backgroundColor = '#fff3cd'; // Amarelo claro (aviso)
-            } else if (item.quantidade === 0) { // Estoque zero
+            } else if (item.quantidade === 0) { 
                 row.style.backgroundColor = '#f8d7da'; // Vermelho claro (perigo)
             }
 
+            // Colunas da tabela
+            row.insertCell(0).textContent = item.cod || 'N/D'; 
+            row.insertCell(1).textContent = item.item; 
+            row.insertCell(2).textContent = item.quantidade; 
+            row.insertCell(3).textContent = item.unidadeMedida || 'Não definida'; 
+            row.insertCell(4).textContent = item.categoria || 'Geral'; 
+            row.insertCell(5).textContent = item.localizacao || 'Não definida'; 
+            row.insertCell(6).textContent = formatDateToDisplay(dataVencimentoDate); 
+            row.insertCell(7).textContent = formatDateTimeToDisplay(dataUltimaModificacaoDate); // Última Atualização (com hora)
+            row.insertCell(8).textContent = item.ultimoOperador || 'Não definido'; 
 
             // Coluna Ações
             const actionsCell = row.insertCell(9);
@@ -279,7 +305,7 @@ async function listarItensInventario() {
             const editButton = document.createElement('button');
             editButton.textContent = 'Editar';
             editButton.classList.add('edit-btn');
-            editButton.onclick = () => loadItemForEdit(item); // Passa o objeto item completo
+            editButton.onclick = () => loadItemForEdit(item); 
             actionsCell.appendChild(editButton);
 
             const viewLogButton = document.createElement('button');
@@ -309,13 +335,13 @@ async function listarItensInventario() {
             const plusButton = document.createElement('button');
             plusButton.textContent = '+';
             plusButton.classList.add('movement-button', 'plus');
-            plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value), item.unidadeMedida || 'Não definida'); // Passa unidade
+            plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value), item.unidadeMedida || 'Unidade'); 
             directMoveCell.appendChild(plusButton);
 
             const minusButton = document.createElement('button');
             minusButton.textContent = '-';
             minusButton.classList.add('movement-button', 'minus');
-            minusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value), item.unidadeMedida || 'Não definida'); // Passa unidade
+            minusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value), item.unidadeMedida || 'Unidade'); 
             directMoveCell.appendChild(minusButton);
         });
         console.log("Listagem de itens concluída com sucesso."); // DEBUG
@@ -331,15 +357,15 @@ function clearItemForm() {
     document.getElementById('itemCod').value = ''; 
     document.getElementById('itemDescription').value = '';
     document.getElementById('itemQuantity').value = '0';
-    document.getElementById('itemUnit').value = 'Unidade'; // Reseta unidade para padrão
+    document.getElementById('itemUnit').value = 'Unidade'; 
     document.getElementById('itemCategory').value = 'Geral'; 
-    document.getElementById('itemLocation').value = ''; // Limpa localização
-    document.getElementById('itemDueDate').value = ''; // Limpa data de vencimento
-    document.getElementById('itemObservations').value = ''; 
+    document.getElementById('itemLocation').value = 'Não definido'; // Reseta para "Não definido"
+    document.getElementById('itemDueDate').value = ''; 
+    document.getElementById('itemObservations').value = 'Não definido'; // Reseta para "Não definido"
     document.getElementById('itemLastUpdate').value = ''; // Limpa última atualização
     document.getElementById('itemIdToEdit').value = ''; 
     document.getElementById('saveItemBtn').textContent = 'Salvar Item';
-    document.getElementById('deleteItemFormBtn').style.display = 'none'; // Oculta botão de exclusão
+    document.getElementById('deleteItemFormBtn').style.display = 'none'; 
     clearError('itemDescription');
     clearError('itemQuantity');
     currentEditingItemId = null; 
@@ -352,45 +378,44 @@ async function saveOrUpdateItem() {
     const itemCodInput = document.getElementById('itemCod');
     const descriptionInput = document.getElementById('itemDescription');
     const quantityInput = document.getElementById('itemQuantity');
-    const unitSelect = document.getElementById('itemUnit'); // Novo campo
+    const unitSelect = document.getElementById('itemUnit'); 
     const categorySelect = document.getElementById('itemCategory'); 
-    const locationInput = document.getElementById('itemLocation'); // Novo campo
-    const dueDateInput = document.getElementById('itemDueDate'); // Novo campo
+    const locationInput = document.getElementById('itemLocation'); 
+    const dueDateInput = document.getElementById('itemDueDate'); 
     const observationsInput = document.getElementById('itemObservations'); 
     const itemIdToEdit = document.getElementById('itemIdToEdit').value;
 
     const description = descriptionInput.value.trim();
     const quantity = parseInt(quantityInput.value);
-    const unit = unitSelect.value; // Valor da unidade
+    const unit = unitSelect.value; 
     const category = categorySelect.value;
-    const location = locationInput.value.trim();
-    const dueDate = dueDateInput.value ? new Date(dueDateInput.value + 'T00:00:00') : null; // Converte para Date ou null
-    const observations = observationsInput.value.trim();
+    const location = locationInput.value.trim(); 
+    const dueDate = dueDateInput.value ? new Date(dueDateInput.value + 'T00:00:00') : null; 
+    const observations = observationsInput.value.trim(); 
     
-    // Default para campos opcionais
-    const finalDescription = description; // Descrição é obrigatória
-    const finalQuantity = quantity; // Quantidade é obrigatória
+    // --- Atribuir "Não definido" para campos opcionais vazios conforme diretriz ---
+    const finalLocation = location || 'Não definido';
+    const finalObservations = observations || 'Não definido';
+    const finalDueDate = dueDate; // dataVencimento pode ser null
     const finalUnit = unit || 'Unidade'; // Padrão 'Unidade'
     const finalCategory = category || 'Geral'; // Padrão 'Geral'
-    const finalLocation = location || 'Não definido'; // Padrão 'Não definido'
-    const finalDueDate = dueDate; // Pode ser null
-    const finalObservations = observations || 'Não definido'; // Padrão 'Não definido'
 
 
+    // Validação de campos obrigatórios (apenas item e quantidade)
     let isValid = true;
-    if (!finalDescription) {
+    if (!description) {
         showError('itemDescription', 'A descrição é obrigatória.');
         isValid = false;
     } else {
         clearError('itemDescription');
     }
-    if (isNaN(finalQuantity) || finalQuantity < 0) { 
+    if (isNaN(quantity) || quantity < 0) { 
         showError('itemQuantity', 'Quantidade inválida. Deve ser um número maior ou igual a zero.');
         isValid = false;
     } else {
         clearError('itemQuantity');
     }
-    if (finalDueDate && isNaN(finalDueDate.getTime())) {
+    if (finalDueDate && isNaN(finalDueDate.getTime())) { // Valida formato da data
         showError('itemDueDate', 'Data de vencimento inválida.');
         isValid = false;
     } else {
@@ -410,19 +435,19 @@ async function saveOrUpdateItem() {
     }
 
     try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); // USAR _v3
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); // USAR _v3
+        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
+        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
 
         let currentItemCod = itemCodInput.value; // Para logs de edição
 
         if (itemIdToEdit) { // Modo de Edição (Item Existente)
             console.log(`Editando item com ID: ${itemIdToEdit}`); // DEBUG
-            const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', itemIdToEdit); // USAR _v3
+            const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', itemIdToEdit); 
             const docSnap = await window.firebaseFirestoreGetDoc(itemDocRef);
             const oldData = docSnap.data();
 
             const oldQuantity = oldData.quantidade;
-            const quantityChange = finalQuantity - oldQuantity;
+            const quantityChange = quantity - oldQuantity;
             
             let tipoMovimentoLog = "AJUSTE"; 
             if (quantityChange > 0) {
@@ -432,53 +457,56 @@ async function saveOrUpdateItem() {
             }
 
             // Alerta de estoque negativo para saída em edição
-            if (tipoMovimentoLog === "SAIDA" && finalQuantity < 0) { 
-                alert(`Impossível realizar a saída. A nova quantidade (${finalQuantity}) resultaria em estoque negativo.`);
+            if (tipoMovimentoLog === "SAIDA" && quantity < 0) { 
+                alert(`Impossível realizar a saída. A nova quantidade (${quantity}) resultaria em estoque negativo.`);
                 console.log("Saída em edição impedida: estoque negativo."); // DEBUG
                 return;
             }
 
             // Atualiza o documento principal do item
             await window.firebaseFirestoreUpdateDoc(itemDocRef, {
-                item: finalDescription, 
-                quantidade: finalQuantity,
-                unidadeMedida: finalUnit, // Novo campo
+                item: description, 
+                quantidade: quantity,
+                unidadeMedida: finalUnit, 
                 categoria: finalCategory, 
-                localizacao: finalLocation, // Novo campo
-                dataVencimento: finalDueDate ? window.firebaseFirestoreServerTimestamp() : null, // Salva como Timestamp ou null
+                localizacao: finalLocation, 
+                dataVencimento: finalDueDate ? window.firebaseFirestoreServerTimestamp() : null, 
                 observacoes: finalObservations, 
-                dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(), // NOVO: Data/Hora da última modificação
-                ultimoOperador: operador // NOVO: Último operador que modificou
+                dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(), 
+                ultimoOperador: operador 
             });
             console.log("Documento de inventário atualizado."); // DEBUG
 
-            // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE
+            // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE (qualquer campo que não seja o id/cod)
+            const oldDueDateTimestamp = oldData.dataVencimento ? oldData.dataVencimento.toDate().getTime() : null;
+            const newDueDateTimestamp = finalDueDate ? finalDueDate.getTime() : null;
+
             const hasRelevantChange = quantityChange !== 0 || 
-                                      oldData.item !== finalDescription || 
+                                      oldData.item !== description || 
                                       oldData.observacoes !== finalObservations || 
                                       oldData.categoria !== finalCategory ||
                                       oldData.localizacao !== finalLocation ||
                                       oldData.unidadeMedida !== finalUnit ||
-                                      (oldData.dataVencimento ? oldData.dataVencimento.toDate().getTime() : null) !== (finalDueDate ? finalDueDate.getTime() : null);
+                                      oldDueDateTimestamp !== newDueDateTimestamp;
 
             if (hasRelevantChange) {
                 console.log("Registrando log para edição com mudanças relevantes..."); // DEBUG
                 await window.firebaseFirestoreAddDoc(logRef, {
                     itemId: itemIdToEdit,
-                    itemNome: finalDescription, 
+                    itemNome: description, 
                     itemCod: currentItemCod, 
                     tipoMovimento: tipoMovimentoLog,
                     quantidadeMovimentada: quantityChange, 
-                    unidadeMedidaLog: finalUnit, // Unidade no momento do log
+                    unidadeMedidaLog: finalUnit, 
                     quantidadeAntes: oldQuantity,
-                    quantidadeDepois: finalQuantity,
+                    quantidadeDepois: quantity,
                     dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
-                    observacoesMovimento: (quantityChange !== 0 ? `Qtd. de ${oldQuantity} para ${finalQuantity}. ` : '') + 
-                                 (oldData.item !== finalDescription ? `Desc. de '${oldData.item}' para '${finalDescription}'. ` : '') +
+                    observacoesMovimento: (quantityChange !== 0 ? `Qtd. de ${oldQuantity} ${oldData.unidadeMedida||'Unid.'} para ${quantity} ${finalUnit}. ` : '') + 
+                                 (oldData.item !== description ? `Desc. de '${oldData.item}' para '${description}'. ` : '') +
                                  (oldData.observacoes !== finalObservations ? `Obs. atualizada. ` : '') +
                                  (oldData.categoria !== finalCategory ? `Cat. de '${oldData.categoria}' para '${finalCategory}'. ` : '') +
                                  (oldData.localizacao !== finalLocation ? `Local de '${oldData.localizacao}' para '${finalLocation}'. ` : '') +
-                                 ((oldData.dataVencimento ? oldData.dataVencimento.toDate().getTime() : null) !== (finalDueDate ? finalDueDate.getTime() : null) ? `Validade alterada. ` : '') +
+                                 (oldDueDateTimestamp !== newDueDateTimestamp ? `Validade alterada de '${formatDateToDisplay(oldDueDateTimestamp ? new Date(oldDueDateTimestamp) : null)}' para '${formatDateToDisplay(newDueDateTimestamp ? new Date(newDueDateTimestamp) : null)}'. ` : '') +
                                  `Operador: ${operador}.`,
                     operador: operador
                 });
@@ -489,7 +517,7 @@ async function saveOrUpdateItem() {
         } else { // Modo de Cadastro (Novo Item)
             console.log("Cadastrando novo item..."); // DEBUG
             // Geração do código sequencial via transação
-            const configRef = window.firebaseFirestoreCollection(window.firestoreDb, 'config_v3'); // USAR _v3
+            const configRef = window.firebaseFirestoreCollection(window.firestoreDb, 'config_v3'); 
             const counterDocRef = window.firebaseFirestoreDoc(configRef, 'contadores');
 
             let newCod = '';
@@ -498,6 +526,9 @@ async function saveOrUpdateItem() {
                 let currentCounter = 0;
                 if (counterDoc.exists) {
                     currentCounter = counterDoc.data().ultimoCodInventario || 0;
+                } else {
+                    // Se o contador não existe, cria ele com 0 para a primeira transação
+                    transaction.set(counterDocRef, { ultimoCodInventario: 0 }); 
                 }
                 const nextCounter = currentCounter + 1;
                 newCod = formatarCod(nextCounter); 
@@ -507,29 +538,29 @@ async function saveOrUpdateItem() {
 
             const newItemRef = await window.firebaseFirestoreAddDoc(inventarioRef, {
                 cod: newCod, 
-                item: finalDescription, 
-                quantidade: finalQuantity,
-                unidadeMedida: finalUnit, // Novo campo
+                item: description, 
+                quantidade: quantity,
+                unidadeMedida: finalUnit, 
                 categoria: finalCategory, 
-                localizacao: finalLocation, // Novo campo
-                dataVencimento: finalDueDate ? window.firebaseFirestoreServerTimestamp() : null, // Salva como Timestamp ou null
+                localizacao: finalLocation, 
+                dataVencimento: finalDueDate ? window.firebaseFirestoreServerTimestamp() : null, 
                 observacoes: finalObservations, 
-                dataCadastro: window.firebaseFirestoreServerTimestamp(), // Data de criação original
-                dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(), // NOVO: Data/Hora da última modificação
-                ultimoOperador: operador // NOVO: Último operador que modificou
+                dataCadastro: window.firebaseFirestoreServerTimestamp(), 
+                dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(), 
+                ultimoOperador: operador 
             });
             console.log("Novo documento de inventário salvo."); // DEBUG
 
             // Registrar no log
             await window.firebaseFirestoreAddDoc(logRef, {
                 itemId: newItemRef.id,
-                itemNome: finalDescription,
+                itemNome: description,
                 itemCod: newCod,
                 tipoMovimento: "CADASTRO", 
-                quantidadeMovimentada: finalQuantity,
-                unidadeMedidaLog: finalUnit, // Unidade no momento do log
+                quantidadeMovimentada: quantity,
+                unidadeMedidaLog: finalUnit, 
                 quantidadeAntes: 0, 
-                quantidadeDepois: finalQuantity,
+                quantidadeDepois: quantity,
                 dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
                 observacoesMovimento: "Cadastro inicial do item",
                 operador: operador
@@ -545,17 +576,18 @@ async function saveOrUpdateItem() {
     }
 }
 
-async function loadItemForEdit(itemData) { // Agora recebe o objeto item completo
+async function loadItemForEdit(itemData) { 
     console.log("Carregando item para edição:", itemData); // DEBUG
     document.getElementById('itemCod').value = itemData.cod || ''; 
     document.getElementById('itemDescription').value = itemData.item;
     document.getElementById('itemQuantity').value = itemData.quantidade;
-    document.getElementById('itemUnit').value = itemData.unidadeMedida || 'Unidade'; // Preenche unidade
+    document.getElementById('itemUnit').value = itemData.unidadeMedida || 'Unidade'; 
     document.getElementById('itemCategory').value = itemData.categoria || 'Geral'; 
-    document.getElementById('itemLocation').value = itemData.localizacao || ''; // Preenche localização
-    document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento.toDate()) : ''; // Preenche data de vencimento
-    document.getElementById('itemObservations').value = itemData.observacoes || ''; 
-    document.getElementById('itemLastUpdate').value = itemData.dataUltimaModificacao ? new Date(itemData.dataUltimaModificacao.toDate()).toLocaleString('pt-BR') : ''; // Preenche última atualização
+    document.getElementById('itemLocation').value = itemData.localizacao && itemData.localizacao !== 'Não definido' ? itemData.localizacao : ''; // Pega valor real ou vazio
+    // dataVencimento no Firestore é Timestamp, precisa converter para Date e depois para YYYY-MM-DD
+    document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento.toDate()) : ''; 
+    document.getElementById('itemObservations').value = itemData.observacoes && itemData.observacoes !== 'Não definido' ? itemData.observacoes : ''; // Pega valor real ou vazio
+    document.getElementById('itemLastUpdate').value = itemData.dataUltimaModificacao ? formatDateTimeToDisplay(itemData.dataUltimaModificacao.toDate()) : ''; // Última atualização
     document.getElementById('itemIdToEdit').value = itemData.id;
     document.getElementById('saveItemBtn').textContent = 'Atualizar Item';
     document.getElementById('deleteItemFormBtn').style.display = 'inline-block'; // Mostra botão de exclusão
@@ -566,7 +598,7 @@ async function loadItemForEdit(itemData) { // Agora recebe o objeto item complet
 }
 
 async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, currentQuantity, quantityChange, unidadeMedida) {
-    console.log(`Movimentação direta: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}, QtdAtual=${currentQuantity}, Mudança=${quantityChange}`); // DEBUG
+    console.log(`Movimentação direta: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}, QtdAtual=${currentQuantity}, Mudança=${quantityChange}, Unid=${unidadeMedida}`); // DEBUG
     const operador = await getOperadorName();
     if (operador === null) {
         alert("Operação de movimentação cancelada: Nome do operador não fornecido.");
@@ -577,39 +609,40 @@ async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, curr
     const newQuantity = currentQuantity + quantityChange;
     const tipoMovimento = quantityChange > 0 ? "ENTRADA" : "SAIDA";
 
+    // Valida se a quantidade a ser movimentada é um número válido e positivo
+    if (isNaN(quantityChange) || quantityChange === 0 || Math.abs(quantityChange) < 1) { 
+        alert("Por favor, digite uma quantidade válida (número inteiro maior que 0) para movimentar.");
+        console.log("Movimentação direta impedida: quantidade inválida ou zero."); // DEBUG
+        return;
+    }
+
     // Alerta de estoque negativo
     if (newQuantity < 0) {
         alert(`Impossível realizar a saída. Quantidade atual (${currentQuantity} ${unidadeMedida}) é menor que a quantidade a ser retirada (${Math.abs(quantityChange)} ${unidadeMedida}).`);
         console.log("Movimentação direta impedida: estoque negativo."); // DEBUG
         return;
     }
-    // Alerta se a quantidade a ser movimentada for 0 ou NaN
-    if (isNaN(quantityChange) || quantityChange === 0) {
-        alert("Por favor, digite uma quantidade válida (maior que 0) para movimentar.");
-        console.log("Movimentação direta impedida: quantidade inválida."); // DEBUG
-        return;
-    }
 
     try {
-        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', itemId); // USAR _v3
+        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', itemId); 
         
         // Atualiza o item principal
         await window.firebaseFirestoreUpdateDoc(itemDocRef, {
             quantidade: newQuantity,
-            ultimaAtualizacao: window.firebaseFirestoreServerTimestamp(),
+            dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(),
             ultimoOperador: operador
         });
         console.log("Documento de inventário atualizado por movimentação direta."); // DEBUG
 
         // Registrar no log
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); // USAR _v3
+        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
         await window.firebaseFirestoreAddDoc(logRef, {
             itemId: itemId,
             itemNome: itemDescription,
             itemCod: itemCod,
             tipoMovimento: tipoMovimento,
             quantidadeMovimentada: quantityChange,
-            unidadeMedidaLog: unidadeMedida, // Unidade no momento do log
+            unidadeMedidaLog: unidadeMedida, 
             quantidadeAntes: currentQuantity,
             quantidadeDepois: newQuantity,
             dataHoraMovimento: window.firebaseFirestoreServerTimestamp(),
@@ -619,7 +652,7 @@ async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, curr
         console.log("Log de movimentação direta registrado."); // DEBUG
 
         alert(`Quantidade de "${itemDescription}" atualizada para ${newQuantity} ${unidadeMedida}.`);
-        listarItensInventario(); // Atualiza a lista para refletir a nova quantidade
+        listarItensInventario(); 
         hideItemLog(); 
     } catch (error) {
         console.error("Erro ao atualizar quantidade diretamente:", error); // DEBUG
@@ -634,7 +667,7 @@ async function deleteItemFromForm() {
     const itemCod = document.getElementById('itemCod').value;
     const quantidadeAtual = parseInt(document.getElementById('itemQuantity').value);
 
-    // Reutiliza a função deleteItem existente
+    // Reutiliza a função deleteItem existente, que já tem a confirmação e lógica de log
     await deleteItem(itemId, itemNome, itemCod, quantidadeAtual);
 }
 
@@ -654,12 +687,12 @@ async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
     }
 
     try {
-        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', id); // USAR _v3
+        const itemDocRef = window.firebaseFirestoreDoc(window.firestoreDb, 'inventario_v3', id); 
         await window.firebaseFirestoreDeleteDoc(itemDocRef);
         console.log("Documento de inventário excluído do Firestore."); // DEBUG
         
         // Registrar no log
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); // USAR _v3
+        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
         await window.firebaseFirestoreAddDoc(logRef, {
             itemId: id,
             itemNome: itemNome,
@@ -701,7 +734,7 @@ async function showItemLog(itemId, itemDescription, itemCod) {
     }
 
     try {
-        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); // USAR _v3
+        const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3'); 
         const q = window.firebaseFirestoreQuery(
             logRef,
             window.firebaseFirestoreWhere('itemId', '==', itemId),
@@ -719,11 +752,11 @@ async function showItemLog(itemId, itemDescription, itemCod) {
         itemLogTableBody.innerHTML = ''; 
         logs.forEach(log => {
             const row = itemLogTableBody.insertRow();
-            const dataHoraFormatada = log.dataHoraMovimento ? new Date(log.dataHoraMovimento.toDate()).toLocaleString('pt-BR') : 'N/A';
+            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/D';
 
-            row.insertCell(0).textContent = log.tipoMovimento || 'N/A';
-            row.insertCell(1).textContent = `${log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/A'} ${log.unidadeMedidaLog || ''}`; // Qtd com unidade
-            row.insertCell(2).textContent = `${log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A'} ${log.unidadeMedidaLog || ''}`; // Qtd final com unidade
+            row.insertCell(0).textContent = log.tipoMovimento || 'N/D';
+            row.insertCell(1).textContent = `${log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/D'} ${log.unidadeMedidaLog || ''}`; 
+            row.insertCell(2).textContent = `${log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/D'} ${log.unidadeMedidaLog || ''}`; 
             row.insertCell(3).textContent = dataHoraFormatada;
             row.insertCell(4).textContent = log.operador || 'Desconhecido';
             row.insertCell(5).textContent = log.observacoesMovimento || '';
@@ -756,16 +789,16 @@ async function imprimirRelatorioInventario() {
     }
 
     // Pergunta o tipo de relatório
-    const reportType = prompt("Digite 'completo' para relatório em ordem alfabética ou 'categoria' para relatório por categoria (padrão: completo):").toLowerCase();
-    let orderByField = 'item'; // Padrão: ordem alfabética por item
+    const reportOption = prompt("Digite 'completo' para relatório em ordem alfabética ou 'categoria' para relatório por categoria (padrão: completo):").toLowerCase();
+    let orderByField = 'item'; 
     let selectedCategory = null;
 
-    if (reportType === 'categoria') {
-        const categoryInput = prompt("Digite a categoria para filtrar (ou deixe vazio para todas as categorias):");
+    if (reportOption === 'categoria') {
+        const categoryInput = prompt("Digite a categoria para filtrar (ex: 'Geral', 'Reagentes'):");
         selectedCategory = categoryInput ? categoryInput.trim() : null;
         if (selectedCategory && !categoriasDisponiveis.includes(selectedCategory)) {
-            alert("Categoria não encontrada. Gerando relatório completo.");
-            selectedCategory = null;
+            alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
+            selectedCategory = null; // Volta para completo se categoria inválida
         }
     }
 
@@ -778,7 +811,7 @@ async function imprimirRelatorioInventario() {
 
     let itensInventario = [];
     try {
-        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); // USAR _v3
+        const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3'); 
         let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy(orderByField, 'asc')); 
         
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
@@ -806,23 +839,12 @@ async function imprimirRelatorioInventario() {
     let currentY = 15; 
 
     // --- Cabeçalho do PDF ---
-    doc.setFontSize(18);
-    doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center");
-    currentY += 10;
-    doc.setFontSize(10);
-    const now = new Date();
-    const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-    const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center");
-    currentY += 5;
-    doc.setFontSize(8);
-    doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
-    currentY += 4;
-    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
-    currentY += 6;
-    doc.setLineWidth(0.5);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
+    doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
+    doc.setFontSize(10); const now = new Date(); const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`; const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
+    doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
+    doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
+    doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
 
     // --- Título do Relatório ---
     doc.setFontSize(14);
@@ -839,7 +861,7 @@ async function imprimirRelatorioInventario() {
     // --- Conteúdo: Itens do Inventário ---
     doc.setFontSize(8); // Reduzindo fonte para caber mais colunas
     const startX = 5; 
-    const colWidths = [15, 50, 15, 20, 25, 25, 25, 25]; // Ajuste para caber todos
+    const colWidths = [15, 50, 15, 20, 25, 25, 25, 25]; // Cód, Descrição, Qtd, Unid, Categoria, Localização, Validade, Últ. Atualização
     const colPositions = [];
     let currentX = startX;
     colWidths.forEach(width => {
@@ -857,8 +879,6 @@ async function imprimirRelatorioInventario() {
     doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
     doc.text("VALIDADE", colPositions[6], currentY);
     doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
-    // As observações serão tratadas com quebra de linha no loop
-
     currentY += lineHeight + 2; 
 
     doc.setFont(undefined, 'normal'); // Volta para fonte normal para o conteúdo
@@ -891,8 +911,8 @@ async function imprimirRelatorioInventario() {
             doc.setFont(undefined, 'normal');
         }
 
-        const dataValidade = item.dataVencimento ? new Date(item.dataVencimento.toDate()).toLocaleDateString('pt-BR') : 'N/D';
-        const dataUltimaAtualizacao = item.dataUltimaAtualizacao ? new Date(item.dataUltimaAtualizacao.toDate()).toLocaleDateString('pt-BR') : 'N/D';
+        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
+        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D';
         const itemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
         const itemLocalizacao = item.localizacao || 'Não definida';
 
@@ -909,11 +929,11 @@ async function imprimirRelatorioInventario() {
 
         // Se houver observações, exibe em uma linha separada abaixo do item, com indentação
         if (itemObsText) {
-            const splitObs = doc.splitTextToSize(itemObsText, doc.internal.pageSize.width - startX - 10); // Ajusta largura da observação
-            doc.text(splitObs, startX + 5, currentY); // 5mm de indentação
-            currentY += (splitObs.length * (lineHeight - 1)); // Ajusta linha conforme observações
+            const splitObs = doc.splitTextToSize(itemObsText, doc.internal.pageSize.width - startX - 10); 
+            doc.text(splitObs, startX + 5, currentY); 
+            currentY += (splitObs.length * (lineHeight - 1)); 
         }
-        currentY += 1; // Espaço extra entre itens
+        currentY += 1; 
 
 
     });
@@ -1015,7 +1035,7 @@ async function gerarRelatorioReposicao() {
 
     // --- Conteúdo: Itens para Reposição (Separados por Categoria) ---
     doc.setFontSize(8); 
-    const repColWidths = [15, 50, 15, 20, 25, 25]; // Ajuste para colunas
+    const repColWidths = [15, 50, 15, 20, 25, 25, 25]; 
     const repColPositions = [];
     let repCurrentX = startX;
     repColWidths.forEach(width => {
@@ -1026,8 +1046,7 @@ async function gerarRelatorioReposicao() {
     categoriasOrdenadas.forEach(categoria => {
         const itensDaCategoria = itensPorCategoria[categoria];
         
-        // Categoria como subtítulo
-        if (currentY > 270) { // Verifica se há espaço para categoria e item
+        if (currentY > 270) { 
             doc.addPage();
             currentY = 15; 
             // Cabeçalho e Título em nova página (repetir cabeçalho completo)
@@ -1038,26 +1057,36 @@ async function gerarRelatorioReposicao() {
             doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
             doc.setFontSize(14); doc.text(`RELATÓRIO DE REPOSIÇÃO (Continuação) - Qtd. Mínima: ${minQuantity}`, 105, currentY, null, null, "center"); currentY += 8;
             doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(8); // Volta fonte do conteúdo
+            doc.setFontSize(8); 
+            doc.setFont(undefined, 'bold');
+            doc.text("CÓD.", repColPositions[0], currentY);
+            doc.text("DESCRIÇÃO", repColPositions[1], currentY);
+            doc.text("QTD. ATUAL", repColPositions[2], currentY);
+            doc.text("UNID.", repColPositions[3], currentY);
+            doc.text("LOCALIZAÇÃO", repColPositions[4], currentY);
+            doc.text("VALIDADE", repColPositions[5], currentY);
+            doc.text("OBS.", repColPositions[6], currentY); 
+            currentY += lineHeight + 1; 
+            doc.setFont(undefined, 'normal');
         }
         
         doc.setFont(undefined, 'bold');
-        doc.text(`Categoria: ${categoria}`, startX + 5, currentY); // Subtítulo da categoria
+        doc.text(`Categoria: ${categoria}`, startX + 5, currentY); 
         currentY += lineHeight;
         
-        // Títulos das colunas dentro da categoria
         doc.text("CÓD.", repColPositions[0], currentY);
         doc.text("DESCRIÇÃO", repColPositions[1], currentY);
         doc.text("QTD. ATUAL", repColPositions[2], currentY);
         doc.text("UNID.", repColPositions[3], currentY);
         doc.text("LOCALIZAÇÃO", repColPositions[4], currentY);
         doc.text("VALIDADE", repColPositions[5], currentY);
-        currentY += lineHeight + 1; // Espaço após os títulos
+        doc.text("OBS.", repColPositions[6], currentY); 
+        currentY += lineHeight + 1; 
 
         doc.setFont(undefined, 'normal');
         
         itensDaCategoria.forEach(item => {
-            if (currentY > 280) { // Se o item não couber, nova página
+            if (currentY > 280) { 
                 doc.addPage();
                 currentY = 15;
                 // Repetir cabeçalho e título do relatório
@@ -1076,22 +1105,24 @@ async function gerarRelatorioReposicao() {
                 doc.text("UNID.", repColPositions[3], currentY);
                 doc.text("LOCALIZAÇÃO", repColPositions[4], currentY);
                 doc.text("VALIDADE", repColPositions[5], currentY);
+                doc.text("OBS.", repColPositions[6], currentY); 
                 currentY += lineHeight + 1;
                 doc.setFont(undefined, 'normal');
             }
             
-            const repDataValidade = item.dataVencimento ? new Date(item.dataVencimento.toDate()).toLocaleDateString('pt-BR') : 'N/D';
-            const repItemLocalizacao = item.localizacao || 'Não definida';
-
+            const repDataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
+            const repItemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : ''; 
+            
             doc.text(item.cod || 'N/D', repColPositions[0], currentY);
             doc.text(item.item, repColPositions[1], currentY);
             doc.text(item.quantidade.toString(), repColPositions[2], currentY);
             doc.text(item.unidadeMedida || 'Não definida', repColPositions[3], currentY);
-            doc.text(repItemLocalizacao, repColPositions[4], currentY);
+            doc.text(item.localizacao || 'Não definida', repColPositions[4], currentY);
             doc.text(repDataValidade, repColPositions[5], currentY);
+            doc.text(repItemObsText, repColPositions[6], currentY); 
             currentY += lineHeight;
         });
-        currentY += lineHeight; // Espaço após cada categoria
+        currentY += lineHeight; 
     });
 
     // --- Rodapé do PDF ---
@@ -1120,13 +1151,19 @@ async function gerarRelatorioConsumo() {
     if (endDateInput === null) { alert("Operação cancelada."); return; }
 
     const startDate = new Date(startDateInput + 'T00:00:00');
-    const endDate = new Date(endDateInput + 'T23:59:59'); // Até o final do dia
+    const endDate = new Date(endDateInput + 'T23:59:59'); 
     
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || startDate > endDate) {
         alert("Datas inválidas. Por favor, digite datas no formato AAAA-MM-DD e certifique-se de que a data de início não é posterior à de término.");
         console.log("Relatório de consumo impedido: Datas inválidas."); // DEBUG
         return;
     }
+
+    // Formatação de datas para o título do relatório (DDMMAAAA)
+    // CORREÇÃO AQUI: Mudança de AAAA-MM-DD para DDMMAAAA
+    const formattedStartDateForTitle = `${startDate.getDate().toString().padStart(2, '0')}${(startDate.getMonth() + 1).toString().padStart(2, '0')}${startDate.getFullYear()}`;
+    const formattedEndDateForTitle = `${endDate.getDate().toString().padStart(2, '0')}${(endDate.getMonth() + 1).toString().padStart(2, '0')}${endDate.getFullYear()}`;
+
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Banco de dados não inicializado. Não é possível imprimir o relatório de consumo.");
@@ -1155,13 +1192,13 @@ async function gerarRelatorioConsumo() {
     }
 
     // Processamento e Agregação de Dados de Consumo
-    const consumoPorItemECategoria = {}; // {categoria: {itemId: {itemNome, itemCod, totalConsumido}}}
+    const consumoPorItemECategoria = {}; 
 
     logsConsumo.forEach(log => {
-        if (log.tipoMovimento === "SAIDA") { // Ou REMOCAO, se quiser contabilizar como consumo completo
+        if (log.tipoMovimento === "SAIDA") { 
             const categoria = log.categoria || 'Geral'; // Categoria no momento da saída (se existir no log)
             const itemId = log.itemId;
-            const quantidadeConsumida = Math.abs(log.quantidadeMovimentada); // Consumo é sempre positivo
+            const quantidadeConsumida = Math.abs(log.quantidadeMovimentada); 
 
             if (!consumoPorItemECategoria[categoria]) {
                 consumoPorItemECategoria[categoria] = {};
@@ -1192,14 +1229,16 @@ async function gerarRelatorioConsumo() {
 
     // --- Cabeçalho do PDF ---
     doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-    doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
+    doc.setFontSize(10); const now = new Date(); const generalFormattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`; const generalFormattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    doc.text(`Data: ${generalFormattedDate} - Hora: ${generalFormattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
     doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
     doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
     doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
 
     // --- Título do Relatório ---
     doc.setFontSize(14);
-    doc.text(`RELATÓRIO DE CONSUMO - Período: ${startDateInput} a ${endDateInput}`, 105, currentY, null, null, "center");
+    // CORREÇÃO AQUI: Título com DDMMAAAA
+    doc.text(`RELATÓRIO DE CONSUMO - Período: ${formattedStartDateForTitle} a ${formattedEndDateForTitle}`, 105, currentY, null, null, "center");
     currentY += 8;
     doc.setLineWidth(0.2);
     doc.line(20, currentY, 190, currentY);
@@ -1207,7 +1246,7 @@ async function gerarRelatorioConsumo() {
 
     // --- Conteúdo: Consumo por Categoria ---
     doc.setFontSize(9);
-    const consColWidths = [20, 60, 20, 30]; // Cód, Descrição, Consumo, Unidade
+    const consColWidths = [20, 60, 20, 30]; 
     const consColPositions = [];
     let consCurrentX = startX;
     consColWidths.forEach(width => {
@@ -1223,11 +1262,11 @@ async function gerarRelatorioConsumo() {
             currentY = 15; 
             // Cabeçalho e Título em nova página (repetir cabeçalho completo)
             doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-            doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
+            doc.setFontSize(10); doc.text(`Data: ${generalFormattedDate} - Hora: ${generalFormattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
             doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
             doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
             doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-            doc.setFontSize(14); doc.text(`RELATÓRIO DE CONSUMO (Continuação) - Período: ${startDateInput} a ${endDateInput}`, 105, currentY, null, null, "center"); currentY += 8;
+            doc.setFontSize(14); doc.text(`RELATÓRIO DE CONSUMO (Continuação) - Período: ${formattedStartDateForTitle} a ${formattedEndDateForTitle}`, 105, currentY, null, null, "center"); currentY += 8;
             doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
             doc.setFontSize(9); 
         }
@@ -1244,18 +1283,17 @@ async function gerarRelatorioConsumo() {
 
         doc.setFont(undefined, 'normal');
         
-        // Ordena itens por nome para exibição
         Object.values(itensConsumidosNaCategoria).sort((a,b) => a.itemNome.localeCompare(b.itemNome)).forEach(itemConsumo => {
             if (currentY > 280) { 
                 doc.addPage();
                 currentY = 15;
                 // Repetir cabeçalho e título do relatório
                 doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
-                doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
+                doc.setFontSize(10); doc.text(`Data: ${generalFormattedDate} - Hora: ${generalFormattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
                 doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
                 doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
                 doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(14); doc.text(`RELATÓRIO DE CONSUMO (Continuação) - Período: ${startDateInput} a ${endDateInput}`, 105, currentY, null, null, "center"); currentY += 8;
+                doc.setFontSize(14); doc.text(`RELATÓRIO DE CONSUMO (Continuação) - Período: ${formattedStartDateForTitle} a ${formattedEndDateForTitle}`, 105, currentY, null, null, "center"); currentY += 8;
                 doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
                 doc.setFontSize(9);
                 doc.setFont(undefined, 'bold');
@@ -1273,7 +1311,7 @@ async function gerarRelatorioConsumo() {
             doc.text(itemConsumo.unidadeMedida, consColPositions[3], currentY);
             currentY += lineHeight;
         });
-        currentY += lineHeight; // Espaço após cada categoria
+        currentY += lineHeight; 
     });
 
     // --- Rodapé do PDF ---
@@ -1385,7 +1423,7 @@ async function gerarRelatorioVencimento() {
     // --- Conteúdo: Itens por Categoria ---
     doc.setFontSize(8); 
     // Larguras das colunas
-    const vencColWidths = [15, 45, 15, 20, 25, 25, 25]; // Cód, Descrição, Qtd, Unid, Local, Validade, Obs
+    const vencColWidths = [15, 45, 15, 20, 25, 25, 25]; 
     const vencColPositions = [];
     let vencCurrentX = startX;
     vencColWidths.forEach(width => {
@@ -1408,6 +1446,16 @@ async function gerarRelatorioVencimento() {
             doc.setFontSize(14); doc.text(`RELATÓRIO DE ITENS PRÓXIMOS DO VENCIMENTO (Continuação) - Até ${daysUntilDue} dias`, 105, currentY, null, null, "center"); currentY += 8;
             doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
             doc.setFontSize(8);
+            doc.setFont(undefined, 'bold');
+            doc.text("CÓD.", vencColPositions[0], currentY);
+            doc.text("DESCRIÇÃO", vencColPositions[1], currentY);
+            doc.text("QTD.", vencColPositions[2], currentY);
+            doc.text("UNID.", vencColPositions[3], currentY);
+            doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
+            doc.text("VALIDADE", vencColPositions[5], currentY);
+            doc.text("OBS.", vencColPositions[6], currentY); 
+            currentY += lineHeight + 1;
+            doc.setFont(undefined, 'normal');
         }
         
         doc.setFont(undefined, 'bold');
@@ -1420,12 +1468,11 @@ async function gerarRelatorioVencimento() {
         doc.text("UNID.", vencColPositions[3], currentY);
         doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
         doc.text("VALIDADE", vencColPositions[5], currentY);
-        doc.text("OBS.", vencColPositions[6], currentY); // Observações aqui
-        currentY += lineHeight + 1; 
+        doc.text("OBS.", vencColPositions[6], currentY); 
+        currentY += lineHeight + 1; // Espaço após os títulos
 
         doc.setFont(undefined, 'normal');
         
-        // Ordena itens por data de vencimento para exibição
         itensDaCategoria.sort((a, b) => {
             const dateA = a.dataVencimento ? a.dataVencimento.toDate().getTime() : Infinity;
             const dateB = b.dataVencimento ? b.dataVencimento.toDate().getTime() : Infinity;
@@ -1441,42 +1488,3 @@ async function gerarRelatorioVencimento() {
                 doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
                 doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
                 doc.setFontSize(14); doc.text(`RELATÓRIO DE ITENS PRÓXIMOS DO VENCIMENTO (Continuação) - Até ${daysUntilDue} dias`, 105, currentY, null, null, "center"); currentY += 8;
-                doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
-                doc.setFontSize(8);
-                doc.setFont(undefined, 'bold');
-                doc.text("CÓD.", vencColPositions[0], currentY);
-                doc.text("DESCRIÇÃO", vencColPositions[1], currentY);
-                doc.text("QTD.", vencColPositions[2], currentY);
-                doc.text("UNID.", vencColPositions[3], currentY);
-                doc.text("LOCALIZAÇÃO", vencColPositions[4], currentY);
-                doc.text("VALIDADE", vencColPositions[5], currentY);
-                doc.text("OBS.", vencColPositions[6], currentY);
-                currentY += lineHeight + 1;
-                doc.setFont(undefined, 'normal');
-            }
-            
-            const itemVencimentoFormatted = item.dataVencimento ? new Date(item.dataVencimento.toDate()).toLocaleDateString('pt-BR') : 'N/D';
-            const itemObservacoesVenc = doc.splitTextToSize(item.observacoes && item.observacoes !== 'Não definido' ? item.observacoes : '', 20); // Quebra observações longas
-            
-            doc.text(item.cod || 'N/D', vencColPositions[0], currentY);
-            doc.text(item.item, vencColPositions[1], currentY);
-            doc.text(item.quantidade.toString(), vencColPositions[2], currentY);
-            doc.text(item.unidadeMedida || 'Não definida', vencColPositions[3], currentY);
-            doc.text(item.localizacao || 'Não definida', vencColPositions[4], currentY);
-            doc.text(itemVencimentoFormatted, vencColPositions[5], currentY);
-            doc.text(itemObservacoesVenc, vencColPositions[6], currentY);
-            currentY += Math.max(lineHeight, itemObservacoesVenc.length * (lineHeight - 2)); // Ajusta linha conforme observações
-        });
-        currentY += lineHeight; // Espaço após cada categoria
-    });
-
-    // --- Rodapé do PDF ---
-    doc.setPage(doc.internal.getNumberOfPages());
-    doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
-
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Vencimento_${formattedDate}.pdf` });
-
-    alert(`Relatório de Itens Próximos do Vencimento gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de vencimento gerado."); // DEBUG
-}
