@@ -1617,6 +1617,3 @@ function imprimirTabelaExibida() {
 
     doc.save("Relatorio_Tabela_Atual.pdf");
 }
-
-
-window.imprimirTabelaExibida = imprimirTabelaExibida;
