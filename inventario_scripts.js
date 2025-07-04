@@ -1,5 +1,18 @@
 // inventario_scripts.js
 
+// VERSÃO: 2.0.0
+// CHANGELOG:
+// - Implementação inicial do Sistema de Controle de Inventário.
+// - Criação das coleções 'inventario' e 'inventario_log' no Firebase Firestore.
+// - Funcionalidades de cadastro, edição e exclusão de itens de inventário.
+// - Funcionalidades de movimentação de estoque (entrada/saída) com atualização de quantidade.
+// - Registro de log detalhado para cada movimentação de estoque.
+// - Leitura de categorias de inventário a partir do arquivo 'categorias_inventario.txt'.
+// - Exibição de alertas para itens com estoque baixo.
+// - Geração de relatório de inventário em PDF.
+// - Correção na leitura de categorias do arquivo (split de '\\n' para '\n').
+
+
 // Variáveis globais para armazenar os itens e categorias
 let itensInventario = [];
 let categoriasInventario = [];
@@ -43,7 +56,8 @@ async function carregarCategoriasInventario() {
             categoriasInventario = ["Materiais Consumíveis", "Reagentes", "Equipamentos", "Outros"];
         } else {
             const text = await response.text();
-            categoriasInventario = text.trim().split('\\n').map(c => c.trim()).filter(c => c !== '');
+            // CORREÇÃO: Usar '\n' para quebra de linha real
+            categoriasInventario = text.trim().split('\n').map(c => c.trim()).filter(c => c !== '');
             if (categoriasInventario.length === 0) {
                  categoriasInventario = ["Materiais Consumíveis", "Reagentes", "Equipamentos", "Outros"];
             }
@@ -402,8 +416,13 @@ function ordenarTabelaInventario(column) {
                 bValue = parseFloat(b.cells[getColumnIndex(column)].textContent);
                 break;
             case 'dataValidade':
-                aValue = new Date(a.cells[getColumnIndex(column)].textContent.split('/').reverse().join('-') || '9999-12-31'); // Tratar N/A
-                bValue = new Date(b.cells[getColumnIndex(column)].textContent.split('/').reverse().join('-') || '9999-12-31');
+                // Garante que 'N/A' ou datas inválidas sejam tratadas para ordenação (colocadas no final)
+                aValue = new Date(a.cells[getColumnIndex(column)].textContent.split('/').reverse().join('-'));
+                bValue = new Date(b.cells[getColumnIndex(column)].textContent.split('/').reverse().join('-'));
+                
+                // Se a data for inválida, atribui um valor muito alto para que vá para o final
+                if (isNaN(aValue.getTime())) aValue = new Date('9999-12-31');
+                if (isNaN(bValue.getTime())) bValue = new Date('9999-12-31');
                 break;
             default:
                 return 0;
@@ -420,14 +439,16 @@ function ordenarTabelaInventario(column) {
 
 // Função auxiliar para obter o índice da coluna
 function getColumnIndex(columnName) {
-    const headers = document.querySelectorAll('#inventarioTable th');
-    let index = -1;
-    headers.forEach((header, i) => {
-        if (header.dataset.sort === columnName) {
-            index = i;
-        }
-    });
-    return index;
+    // Note: a ordem das colunas na tabela é Nome, Categoria, Qtd. Atual, Unidade, Validade, Limite Mín., Ações
+    const columnMap = {
+        'nome': 0,
+        'categoria': 1,
+        'quantidadeAtual': 2,
+        'unidadeMedida': 3,
+        'dataValidade': 4,
+        'limiteMinimo': 5
+    };
+    return columnMap[columnName];
 }
 
 
@@ -530,7 +551,6 @@ async function gerarRelatorioInventarioPDF() {
             currentY += 7;
         });
     }
-
 
     doc.output('dataurlnewwindow', { filename: 'Relatorio_Inventario_SISLAB.pdf' });
                 }
