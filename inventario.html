@@ -2,29 +2,79 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB - Controle de Inventário</title>
+    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Estilos Gerais */
+        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: center; /* Centraliza o conteúdo horizontalmente */
             padding: 20px;
             margin: 0;
-            background-color: #E0E6EE;
+            /* Plano de Fundo com Padrão */
+            background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
+            background-repeat: repeat;
+            background-size: 200px 200px; /* Tamanho do tile do padrão */
         }
+
+        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
         .main-header-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 25px;
-            gap: 15px;
-            flex-wrap: wrap;
+            align-items: center; /* Alinha verticalmente a logo e o texto */
+            justify-content: center; /* Centraliza horizontalmente */
+            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
+            gap: 15px; /* Espaço entre a logo e o título */
+            flex-wrap: wrap; /* Permite quebrar em telas menores */
         }
+
+        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
+        .sislab-logo {
+            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
+            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
+            display: flex;
+            align-items: flex-end; /* Alinha os tubos na parte inferior */
+            justify-content: space-between; /* Espaço entre os tubos */
+        }
+
+        .tube {
+            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
+            width: 15px; /* Más fino */
+            height: 40px; /* Más compridos */
+            border-radius: 4px 4px 2px 2px; /* Base levemente más arredondada */
+            position: relative; /* Para posicionar la tapa */
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidad */
+        }
+
+        .tube-cap {
+            width: 17px; /* Ligeramente más ancho que el tubo para sobreponer */
+            height: 7px; /* Altura de la tapa */
+            position: absolute;
+            top: -7px; /* Posiciona la tapa encima del tubo */
+            left: -1px; /* Ajusta la posición lateral para centralizar */
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tapa */
+        }
+
+        /* Cores das tampas (Reaproveitadas do index.html) */
+        .tube:nth-child(1) .tube-cap {
+            background-color: #800080; /* Roxo */
+        }
+
+        .tube:nth-child(2) .tube-cap {
+            background-color: #FFD700; /* Amarelo dourado (más profissional) */
+        }
+
+        .tube:nth-child(3) .tube-cap {
+            background-color: #CC3333; /* Vermelho */
+        }
+
+        /* Estilo para o título principal (Reaproveitado do index.html) */
         h1 {
             color: #1A2B4C;
+            margin: 0;
             font-size: 2.5em;
             font-weight: bold;
             text-align: center;
@@ -35,14 +85,33 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
             white-space: nowrap;
         }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8em;
+                padding: 5px 10px;
+            }
+            .main-header-container {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        h2, h3 { /* Mantém o estilo para os demais títulos */
+            color: #1A2B4C;
+            margin-bottom: 20px;
+        }
+
+        /* Contêiner principal para as colunas (Reaproveitado do index.html) */
         .main-content-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             width: 95%;
-            max-width: 1400px; /* Aumentado para acomodar mais conteúdo */
+            max-width: 1200px;
             margin-bottom: 20px;
         }
+
+        /* Estilos para as colunas (Reaproveitados do index.html) */
         .column {
             background-color: white;
             padding: 30px;
@@ -50,18 +119,16 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
             flex: 1;
-            min-width: 300px;
+            min-width: 280px;
             display: flex;
             flex-direction: column;
         }
-        /* Ajustes para layout de 2 ou 3 colunas */
-        .column.left, .column.right {
-            flex-basis: calc(50% - 10px); /* Tenta duas colunas inicialmente */
+        /* Ajuste para 2 colunas para o inventário */
+        .column.item-form, .column.item-list {
+            flex-basis: calc(50% - 10px); /* Aprox. 50% menos metade do gap */
         }
-        /* Para telas maiores, a coluna de exibição pode ser maior */
-        .column.right {
-            flex-basis: calc(60% - 10px);
-        }
+
+        /* Estilos dos campos de formulário (Reaproveitados do index.html) */
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -70,25 +137,30 @@
             margin-bottom: 15px;
             width: 100%;
         }
+
         .form-field {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
             flex-basis: 0;
-            min-width: 150px;
+            min-width: 120px;
         }
+
         .form-field.full-width {
             flex-basis: 100%;
         }
+
         .form-field label {
             font-weight: bold;
             margin-bottom: 5px;
             color: #334466;
         }
+
         .form-field input[type="text"],
         .form-field input[type="number"],
-        .form-field select,
-        .form-field textarea {
+        .form-field input[type="date"], /* Adicionado para dataVencimento */
+        .form-field textarea,
+        .form-field select {
             padding: 10px;
             border: 1px solid #AABBDD;
             border-radius: 4px;
@@ -96,17 +168,29 @@
             width: 100%;
             box-sizing: border-box;
         }
+
+        /* Estilo para campos com erro (Reaproveitado do index.html) */
+        .form-field input.error,
+        .form-field textarea.error,
+        .form-field select.error {
+            border-color: #CC3333;
+            box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
+        }
+
+        /* Estilo para mensagens de erro (Reaproveitado do index.html) */
         .error-message {
             color: #CC3333;
             font-size: 0.85em;
             margin-top: 5px;
         }
+
+        /* Estilos dos botões de ação (Reaproveitados do index.html) */
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             width: 95%;
-            max-width: 1400px;
+            max-width: 1200px;
             margin-top: 20px;
             padding: 20px;
             background-color: white;
@@ -114,6 +198,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
         }
+
         button {
             padding: 10px 20px;
             margin: 5px;
@@ -125,79 +210,202 @@
             font-size: 1em;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #0F1D33;
         }
+
+        /* Estilo para botão de destaque (Reaproveitado do index.html) */
         button.highlight-button {
-            background-color: #28a745; /* Verde para salvar/adicionar */
+            background-color: #CC3333;
             font-weight: bold;
             padding: 12px 25px;
         }
+
         button.highlight-button:hover {
-            background-color: #218838;
+            background-color: #A02222;
         }
-        button.danger-button {
-            background-color: #dc3545; /* Vermelho para excluir */
+        
+        /* Estilo para botão de exclusão no formulário */
+        button.delete-item-form-btn {
+            background-color: #dc3545;
         }
-        button.danger-button:hover {
+        button.delete-item-form-btn:hover {
             background-color: #c82333;
         }
+
+
+        /* Estilos para a Tabela/Lista de Itens do Inventário */
         #inventoryList {
-            margin-top: 20px;
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
+
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            font-size: 0.9em; /* Ajuste para caber mais info */
+            vertical-align: top; /* Alinha o conteúdo ao topo */
         }
+
         #inventoryList th {
             background-color: #f2f2f2;
             color: #333;
         }
-        #inventoryList tr:nth-child(even){background-color: #f8f8f8;}
-        #inventoryList tr:hover {background-color: #ddd;}
 
-        .edit-btn, .delete-btn {
-            padding: 5px 10px;
-            margin-right: 5px;
-            font-size: 0.9em;
-            border-radius: 3px;
+        #inventoryList tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
-        .edit-btn { background-color: #007bff; }
-        .edit-btn:hover { background-color: #0056b3; }
-        .delete-btn { background-color: #dc3545; }
-        .delete-btn:hover { background-color: #c82333; }
 
-        #searchContainer {
-            margin-bottom: 20px;
+        #inventoryList tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #inventoryList .action-buttons {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            flex-direction: column; /* Botões um abaixo do outro */
+            gap: 5px;
+            min-width: 90px; /* Garante espaço para os botões */
         }
-        #searchContainer input, #searchContainer select {
-            flex: 1;
-            min-width: 150px;
+        #inventoryList .action-buttons button {
+            padding: 5px 10px;
+            font-size: 0.85em;
+            margin: 0; /* Remover margem extra */
+            width: 100%; /* Ocupa a largura total da célula */
+            box-sizing: border-box;
+        }
+        button.edit-btn { background-color: #5cb85c; } /* Verde para editar */
+        button.edit-btn:hover { background-color: #4cae4c; }
+        button.delete-btn { background-color: #d9534f; } /* Vermelho para deletar */
+        button.delete-btn:hover { background-color: #c9302c; }
+        button.view-log-btn { background-color: #007bff; } /* Azul para ver log */
+        button.view-log-btn:hover { background-color: #0069d9; }
+
+
+        /* Estilos para o campo de input de movimentação direta e botões */
+        .direct-movement-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Centraliza horizontalmente */
+            gap: 3px; /* Espaço entre input e botões */
+            flex-wrap: nowrap; /* Impede que quebre linha em telas pequenas */
+            min-width: 100px; /* Garante espaço para os controles */
+        }
+        .movement-input {
+            width: 45px; /* Largura menor */
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        /* Estilos para os botões de + e - */
+        .movement-button {
+            width: 28px; /* Botões menores */
+            height: 28px;
+            padding: 0;
+            font-size: 1.1em;
+            line-height: 1;
+            border-radius: 50%;
+            display: inline-flex; /* Para centralizar o texto */
+            justify-content: center;
+            align-items: center;
+            background-color: #1A2B4C;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0; /* Evita que o botão encolha */
+        }
+        .movement-button.plus { background-color: #28a745; } /* Verde para + */
+        .movement-button.plus:hover { background-color: #218838; }
+        .movement-button.minus { background-color: #dc3545; } /* Vermelho para - */
+        .movement-button.minus:hover { background-color: #c82333; }
+
+        /* Estilos para a seção de log de item */
+        #itemLogSection {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            width: 95%; /* Adapta-se à largura padrão */
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        #itemLogTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #itemLogTable th, #itemLogTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85em; /* Um pouco menor para caber mais info */
+            vertical-align: top;
+        }
+        #itemLogTable th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        #itemLogTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #itemLogTable tr:hover {
+            background-color: #f1f1f1;
+        }
+        /* Container para rolagem do log */
+        .item-log-scroll-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 1024px) {
-            .column.left, .column.right {
-                flex-basis: 100%; /* Empilha as colunas em telas médias */
-            }
+        /* Estilos para filtros de inventário */
+        .inventory-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            justify-content: flex-start;
+            align-items: center;
         }
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.8em;
-                padding: 5px 10px;
-            }
-            .main-header-container {
+        .inventory-filters .form-field {
+            margin-bottom: 0; /* Remover margem padrão do form-field se for usada aqui */
+        }
+        .inventory-filters button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin: 0;
+            background-color: #6c757d; /* Cinza para filtros */
+        }
+        .inventory-filters button.active-filter {
+            background-color: #1A2B4C; /* Azul escuro para filtro ativo */
+            font-weight: bold;
+        }
+        .inventory-filters input[type="number"] {
+            width: 60px; /* Largura para Qtd. Crítica */
+        }
+
+
+        /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
+        @media (max-width: 900px) {
+            .main-content-container {
                 flex-direction: column;
-                gap: 5px;
+                width: 95%;
             }
-            .column {
-                padding: 20px;
+            .column.item-form, .column.item-list {
+                flex-basis: 100%;
+                min-width: unset;
+            }
+            /* Ajuste para a coluna de Mov. Direta em telas pequenas */
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { /* Coluna Mov. Direta */
+                min-width: 120px; /* Garante espaço para os botões */
+            }
+            .inventory-filters .form-field {
+                flex-basis: 100%; /* Filtros empilham em telas pequenas */
             }
         }
     </style>
@@ -205,173 +413,177 @@
 <body>
 
     <div class="main-header-container">
-        <h1 class="main-title">SISLAB - Controle de Inventário</h1>
+        <div class="sislab-logo">
+            <div class="tube tube-1">
+                <div class="tube-cap"></div>
+            </div>
+            <div class="tube tube-2">
+                <div class="tube-cap"></div>
+            </div>
+            <div class="tube tube-3">
+                <div class="tube-cap"></div>
+            </div>
+        </div>
+        <h1 class="main-title">SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</h1>
     </div>
 
     <div class="main-content-container">
-        <div class="column left">
-            <h3>Cadastro/Edição de Item:</h3>
-            <form id="itemForm">
-                <input type="hidden" id="itemId"> <div class="form-row">
-                    <div class="form-field full-width">
-                        <label for="nomeItem">Nome do Item:</label>
-                        <input type="text" id="nomeItem" required>
-                        <div id="nomeItem-error" class="error-message"></div>
-                    </div>
+        <div class="column item-form">
+            <h3>Cadastro / Edição de Item:</h3>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemCod">Código do Item:</label>
+                    <input type="text" id="itemCod" readonly placeholder="Gerado Automaticamente">
                 </div>
-
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="sku">SKU/Código de Barras:</label>
-                        <input type="text" id="sku">
-                    </div>
-                    <div class="form-field">
-                        <label for="quantidade">Quantidade:</label>
-                        <input type="number" id="quantidade" min="0" value="0" required>
-                        <div id="quantidade-error" class="error-message"></div>
-                    </div>
+                <div class="form-field full-width">
+                    <label for="itemDescription">Descrição do Item:</label>
+                    <textarea id="itemDescription" rows="2"></textarea>
+                    <div id="itemDescription-error" class="error-message"></div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="unidadeMedida">Unidade de Medida:</label>
-                        <input type="text" id="unidadeMedida" placeholder="Ex: und, kg, L">
-                    </div>
-                    <div class="form-field">
-                        <label for="localizacao">Localização:</label>
-                        <input type="text" id="localizacao" placeholder="Ex: Prateleira A1, Armário 2">
-                    </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemQuantity">Quantidade:</label>
+                    <input type="number" id="itemQuantity" value="0" min="0">
+                    <div id="itemQuantity-error" class="error-message"></div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="precoCusto">Preço de Custo (R$):</label>
-                        <input type="number" id="precoCusto" step="0.01" min="0" value="0">
-                    </div>
-                    <div class="form-field">
-                        <label for="precoVenda">Preço de Venda (R$):</label>
-                        <input type="number" id="precoVenda" step="0.01" min="0" value="0">
-                    </div>
+                <div class="form-field">
+                    <label for="itemUnit">Unidade de Medida:</label>
+                    <select id="itemUnit">
+                        <option value="Unidade">Unidade</option>
+                        <option value="Caixa">Caixa</option>
+                        <option value="Kit">Kit</option>
+                    </select>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-field full-width">
-                        <label for="fornecedor">Fornecedor:</label>
-                        <input type="text" id="fornecedor">
-                    </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemCategory">Categoria:</label>
+                    <select id="itemCategory">
+                        <option value="Geral">Geral</option>
+                    </select>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-field full-width">
-                        <label for="categoria">Categoria:</label>
-                        <select id="categoria" required>
-                            <option value="">Selecione uma Categoria</option>
-                            </select>
-                        <div id="categoria-error" class="error-message"></div>
-                    </div>
+                <div class="form-field">
+                    <label for="itemLocation">Localização no Armazém:</label>
+                    <input type="text" id="itemLocation" placeholder="Ex: Prateleira A3">
                 </div>
-
-                <div class="form-row">
-                    <div class="form-field full-width">
-                        <label for="descricao">Descrição:</label>
-                        <textarea id="descricao" rows="3"></textarea>
-                    </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="itemDueDate">Data de Vencimento:</label>
+                    <input type="date" id="itemDueDate">
                 </div>
-
-                <button type="submit" class="highlight-button">Salvar Item</button>
-                <button type="button" onclick="limparFormulario()">Limpar Formulário</button>
-            </form>
+                 <div class="form-field">
+                    <label for="itemLastUpdate">Última Atualização:</label>
+                    <input type="text" id="itemLastUpdate" readonly placeholder="Preenchido Automaticamente">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="itemObservations">Observações Gerais:</label>
+                    <textarea id="itemObservations" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
+                <button id="saveItemBtn" class="highlight-button">Salvar Item</button>
+                <button id="clearItemFormBtn">Limpar Formulário</button>
+                <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;">Excluir Item</button> <input type="hidden" id="itemIdToEdit"> 
+            </div>
         </div>
 
-        <div class="column right">
-            <h3>Itens em Estoque:</h3>
-            <div id="searchContainer">
-                <input type="text" id="searchItem" placeholder="Pesquisar por nome, SKU, etc.">
-                <select id="filterCategory">
-                    <option value="">Todas as Categorias</option>
-                    </select>
-                <button onclick="carregarItensInventario()">Aplicar Filtros</button>
+        <div class="column item-list">
+            <h3>Itens Atuais em Estoque:</h3>
+            <div class="inventory-filters">
+                <div class="form-field" style="flex-grow: 1;">
+                    <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
+                </div>
+                <div class="form-field" style="flex-shrink: 0;">
+                    <select id="filterCategory">
+                        <option value="">Todas as Categorias</option>
+                        </select>
+                </div>
+                <div class="form-field" style="flex-shrink: 0; min-width: unset;">
+                    <label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
+                    <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
+                </div>
+                <button id="filterAllItemsBtn" class="active-filter">Todos</button>
+                <button id="filterCriticalItemsBtn">Críticos</button>
+                <button id="filterInStockItemsBtn">Com Estoque</button>
+                <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
             </div>
-            
-            <table id="inventoryList">
+
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table id="inventoryList">
+                    <thead>
+                        <tr>
+                            <th>Cód.</th>
+                            <th>Descrição</th>
+                            <th>Qtd.</th>
+                            <th>Unid.</th> <th>Categoria</th>
+                            <th>Localização</th> <th>Validade</th> <th>Últ. Atual.</th> <th>Últ. Operador</th> <th>Ações</th>
+                            <th>Mov. Rápida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="11">Carregando itens...</td></tr> </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="itemLogSection" class="column" style="display: none;">
+        <h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
+        <div class="item-log-scroll-container">
+            <table id="itemLogTable" style="width:100%; border-collapse: collapse;">
                 <thead>
                     <tr>
-                        <th>Nome</th>
-                        <th>SKU</th>
-                        <th>Categoria</th>
-                        <th>Qtd</th>
-                        <th>Ações</th>
+                        <th style="width: 15%;">Operação</th>
+                        <th style="width: 10%;">Qtd. Mov.</th>
+                        <th style="width: 10%;">Qtd. Final</th>
+                        <th style="width: 20%;">Data e Hora</th>
+                        <th style="width: 15%;">Operador</th>
+                        <th style="width: 30%;">Observações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="5">Nenhum item em estoque.</td></tr>
+                    <tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>
                 </tbody>
             </table>
-            </div>
-    </div>
-
-    <div class="action-buttons-container">
-        <button onclick="window.location.href='admin.html'">Acessar Painel Admin</button>
-        <button onclick="gerarRelatorioInventario()">Gerar Relatório de Inventário (PDF)</button>
-        <button onclick="abrirModalMovimentacao('entrada')">Registrar Entrada</button>
-        <button onclick="abrirModalMovimentacao('saida')">Registrar Saída</button>
-    </div>
-
-    <div id="movimentacaoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-        <div style="background:white; padding:20px; border-radius:8px; width:400px;">
-            <h3 id="modalTitle">Registrar Movimentação</h3>
-            <div class="form-row">
-                <div class="form-field full-width">
-                    <label for="movItemNome">Item:</label>
-                    <input type="text" id="movItemNome" readonly>
-                    <input type="hidden" id="movItemId">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-field">
-                    <label for="movQuantidade">Quantidade:</label>
-                    <input type="number" id="movQuantidade" min="1" required>
-                </div>
-                <div class="form-field">
-                    <label for="movTipo">Tipo:</label>
-                    <select id="movTipo" disabled>
-                        <option value="entrada">Entrada</option>
-                        <option value="saida">Saída</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-field full-width">
-                    <label for="movObservacoes">Observações:</label>
-                    <textarea id="movObservacoes" rows="2"></textarea>
-                </div>
-            </div>
-            <button onclick="salvarMovimentacao()">Salvar Movimentação</button>
-            <button onclick="fecharModalMovimentacao()">Cancelar</button>
+        </div>
+        <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
+            <button onclick="hideItemLog()">Fechar Histórico</button>
         </div>
     </div>
 
+    <div class="action-buttons-container">
+        <button id="printInventoryReportBtn">Imprimir Relatório de Estoque Atual</button>
+        <button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
+        <button id="generateConsumptionReportBtn">Gerar Relatório de Consumo</button>
+        <button id="generateDueDateReportBtn">Gerar Relatório de Itens Próximos do Vencimento</button>
+        <button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
+    </div>
 
     <script type="module">
-        // Configuração do Firebase
+        // Importa as funções do SDK do Firebase (as mesmas do index.html)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, writeBatch, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-        // Sua configuração do Firebase (a ser reconfigurada depois, como você mencionou)
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        
+        // Sua configuração do Firebase (a mesma do index.html)
         const firebaseConfig = {
-            apiKey: "SEU_API_KEY", // Substitua pelo seu API Key
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
         };
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = getFirestore(app); 
 
-        // Torna as funções do Firebase globalmente acessíveis para inventario_scripts.js
+        // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
+        // Isso permite que o inventario_scripts.js (que é um script 'clássico' ou 'module') as use
         window.firestoreDb = db;
         window.firebaseFirestoreCollection = collection;
         window.firebaseFirestoreAddDoc = addDoc;
@@ -381,13 +593,11 @@
         window.firebaseFirestoreLimit = limit;
         window.firebaseFirestoreDeleteDoc = deleteDoc;
         window.firebaseFirestoreDoc = doc;
-        window.firebaseFirestoreUpdateDoc = updateDoc;
-        window.firebaseFirestoreWriteBatch = writeBatch;
-        window.firebaseFirestoreWhere = where;
-        window.firebaseFirestoreServerTimestamp = serverTimestamp;
-
+        window.firebaseFirestoreUpdateDoc = updateDoc; 
+        window.firebaseFirestoreWhere = where; 
+        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreGetDoc = getDoc;
+        window.firebaseFirestoreRunTransaction = runTransaction; // Adicionado para operações de contador
     </script>
-    <script src="inventario_scripts.js"></script>
-
-</body>
+    <script src="inventario_scripts.js" type="module"></script> </body>
 </html>
