@@ -158,7 +158,8 @@
 
         .form-field input[type="text"],
         .form-field input[type="number"], /* Adicionado para campo de quantidade */
-        .form-field textarea {
+        .form-field textarea,
+        .form-field select { /* Adicionado para campo de categoria */
             padding: 10px;
             border: 1px solid #AABBDD;
             border-radius: 4px;
@@ -169,7 +170,8 @@
 
         /* Estilo para campos com erro (Reaproveitado do index.html) */
         .form-field input.error,
-        .form-field textarea.error {
+        .form-field textarea.error,
+        .form-field select.error { /* Adicionado para campo de categoria */
             border-color: #CC3333;
             box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
         }
@@ -263,6 +265,57 @@
         button.delete-btn { background-color: #d9534f; } /* Vermelho para deletar */
         button.delete-btn:hover { background-color: #c9302c; }
 
+        /* Estilos para o campo de input de movimentação direta */
+        .movement-input {
+            width: 50px; /* Largura menor */
+            padding: 5px;
+            text-align: center;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        /* Estilos para os botões de + e - */
+        .movement-button {
+            width: 30px; /* Botões menores */
+            height: 30px;
+            padding: 0;
+            margin: 0 2px;
+            font-size: 1.2em;
+            line-height: 1;
+            border-radius: 50%;
+            display: inline-flex; /* Para centralizar o texto */
+            justify-content: center;
+            align-items: center;
+            background-color: #1A2B4C;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .movement-button.plus { background-color: #28a745; } /* Verde para + */
+        .movement-button.plus:hover { background-color: #218838; }
+        .movement-button.minus { background-color: #dc3545; } /* Vermelho para - */
+        .movement-button.minus:hover { background-color: #c82333; }
+
+        /* Estilos para a seção de log de item */
+        #itemLogSection {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            width: 95%; /* Adapta-se à largura padrão */
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        #itemLogTable th, #itemLogTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #itemLogTable th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
 
         /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
         @media (max-width: 900px) {
@@ -298,6 +351,10 @@
         <div class="column item-form">
             <h3>Cadastro / Edição de Item:</h3>
             <div class="form-row">
+                <div class="form-field">
+                    <label for="itemCod">Código do Item:</label>
+                    <input type="text" id="itemCod" readonly placeholder="Gerado Automaticamente">
+                </div>
                 <div class="form-field full-width">
                     <label for="itemDescription">Descrição do Item:</label>
                     <textarea id="itemDescription" rows="2"></textarea>
@@ -310,42 +367,89 @@
                     <input type="number" id="itemQuantity" value="0" min="0">
                     <div id="itemQuantity-error" class="error-message"></div>
                 </div>
+                <div class="form-field">
+                    <label for="itemCategory">Categoria:</label>
+                    <select id="itemCategory">
+                        <option value="Geral">Geral</option>
+                    </select>
+                </div>
             </div>
-            <div class="action-buttons-container">
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="itemObservations">Observações Gerais:</label>
+                    <textarea id="itemObservations" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0;">
                 <button id="saveItemBtn" class="highlight-button">Salvar Item</button>
                 <button id="clearItemFormBtn">Limpar Formulário</button>
-                <input type="hidden" id="itemIdToEdit"> </div>
+                <input type="hidden" id="itemIdToEdit"> 
+            </div>
         </div>
 
         <div class="column item-list">
             <h3>Itens Atuais em Estoque:</h3>
-            <input type="text" id="searchInventory" placeholder="Pesquisar item..." style="width: calc(100% - 20px); padding: 8px; margin-bottom: 15px; border: 1px solid #AABBDD; border-radius: 4px;">
+            <div class="form-row" style="margin-bottom:10px;">
+                <div class="form-field" style="flex-basis: 60%; min-width: 150px;">
+                    <input type="text" id="searchInventory" placeholder="Pesquisar por Cód. ou Descrição...">
+                </div>
+                <div class="form-field" style="flex-basis: 30%; min-width: 100px;">
+                    <select id="filterCategory">
+                        <option value="">Todas as Categorias</option>
+                        </select>
+                </div>
+            </div>
             <div style="max-height: 400px; overflow-y: auto;">
                 <table id="inventoryList">
                     <thead>
                         <tr>
-                            <th>Descrição</th>
-                            <th>Quantidade</th>
-                            <th>Data Cadastro</th>
+                            <th>Cód.</th> <th>Descrição</th>
+                            <th>Qtd.</th>
+                            <th>Categoria</th> <th>Data Cadastro</th>
                             <th>Ações</th>
-                        </tr>
+                            <th>Mov. Direta</th> </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="4">Carregando itens...</td></tr>
-                    </tbody>
+                        <tr><td colspan="7">Carregando itens...</td></tr> </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <div id="itemLogSection" class="column" style="display: none;">
+        <h3 id="itemLogTitle">Histórico de Movimentações para: <span id="itemLogDescription"></span></h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+            <table id="itemLogTable" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Operação</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Qtd. Mov.</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Qtd. Final</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Data e Hora</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Operador</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; color: #333;">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" style="border: 1px solid #ddd; padding: 8px;">Selecione um item para ver o histórico.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
+            <button onclick="hideItemLog()">Fechar Histórico</button>
+        </div>
+    </div>
+
     <div class="action-buttons-container">
+        <button id="printInventoryReportBtn">Imprimir Relatório de Inventário</button>
+        <button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
         <button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
     </div>
 
     <script type="module">
         // Importa as funções do SDK do Firebase (as mesmas do index.html)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
         
         // Sua configuração do Firebase (a mesma do index.html)
         const firebaseConfig = {
@@ -376,6 +480,7 @@
         window.firebaseFirestoreWhere = where; 
         window.firebaseFirestoreServerTimestamp = serverTimestamp; 
         window.firebaseFirestoreGetDoc = getDoc;
+        window.firebaseFirestoreRunTransaction = runTransaction; // Adicionado para operações de contador
     </script>
     <script src="inventario_scripts.js" type="module"></script> </body>
 </html>
