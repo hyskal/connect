@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.2 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -300,6 +300,7 @@
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap; 
+            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
         }
         #inventoryList td:nth-child(2) { /* Descrição, permite quebra de linha */
             white-space: normal;
@@ -318,12 +319,12 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido novamente e com largura ajustada */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada */
 
-        /* Voltar a exibir a coluna Mov. Rápida (caso display:none tenha sido aplicado antes) */
+        /* Garantir que a coluna Mov. Rápida esteja visível */
         #inventoryList th:nth-child(11),
         #inventoryList td:nth-child(11) {
-            display: table-cell; /* Garante que a célula seja exibida como uma célula de tabela */
+            display: table-cell; 
         }
 
         #inventoryList th {
@@ -355,7 +356,7 @@
 
         #inventoryList .action-buttons button {
           padding: 3px 5px; /* Ajustado para dar mais espaço ao texto */
-          font-size: 0.8em; /* AUMENTADO para texto maior */
+          font-size: 0.85em; /* AUMENTADO para texto maior */
           width: auto; /* Adaptável ao conteúdo */
           white-space: nowrap; /* Impede quebra de linha do texto do botão */
           box-sizing: border-box; /* Garante que padding não adicione largura extra */
@@ -375,15 +376,17 @@
             width: 40px; /* Ajustado o width do input para layout horizontal */
             text-align: center; /* Centraliza o texto do input */
             margin-bottom: 0; /* Removida margem vertical para layout horizontal */
+            box-sizing: border-box;
         } 
         .movement-button { 
-            width: 22px; /* Reduzido o width dos botões */
-            height: 22px; /* Reduzido o height dos botões */
+            width: 22px; /* Ajustado o width dos botões */
+            height: 22px; /* Ajustado o height dos botões */
             /* Para garantir que o '+' e '-' fiquem centralizados */
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.8em; /* Ajustado o tamanho da fonte do +/- */
+            box-sizing: border-box;
         } 
 
 
@@ -469,7 +472,7 @@
         }
 
 
-        /* Media Query para telas menores: colunas empilham (ATUALIZADAS PARA EXIBIR MOV. RÁPIDA) */
+        /* Media Query para telas menores: colunas empilham (ATUALIZADAS) */
         @media (max-width: 900px) {
             /* Seções Superior e Inferior empilham */
             .top-section-container, .bottom-section-container {
@@ -503,7 +506,7 @@
             #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO para mobile */
             #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada para mobile */
             
-            /* Exibir a coluna 'Mov. Rápida' no mobile também */
+            /* Garantir que a coluna Mov. Rápida esteja visível no mobile */
             #inventoryList th:nth-child(11),
             #inventoryList td:nth-child(11) {
                 display: table-cell; 
@@ -541,7 +544,6 @@
                 font-size: 0.6em; /* Fonte menor para mobile */
             }
 
-            /* ... (o restante do seu CSS para mobile) ... */
         }
     </style>
 </head>
