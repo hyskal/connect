@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.3 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -293,14 +293,14 @@
 
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd;
-            padding: 4px; /* Reduzido para 4px */
+            padding: 4px; /* Default padding for all cells */
             text-align: left;
-            font-size: 0.75em; /* Reduzido para 0.75em */
+            font-size: 0.75em;
             vertical-align: top; 
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap; 
-            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+            box-sizing: border-box; 
         }
         #inventoryList td:nth-child(2) { /* Descrição, permite quebra de linha */
             white-space: normal;
@@ -308,7 +308,7 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS) */
+        /* Larguras específicas das colunas da tabela de inventário */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } /* Cód. */
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } /* Qtd. */
@@ -318,8 +318,8 @@
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida */
 
         /* Garantir que a coluna Mov. Rápida esteja visível */
         #inventoryList th:nth-child(11),
@@ -340,54 +340,73 @@
             background-color: #f1f1f1;
         }
 
-        /* Ações - Estilos para a célula e para o container interno dos botões (TEXTO MAIOR) */
-        #inventoryList .action-buttons {
-          display: flex;
-          align-items: center; /* Centraliza o inner-container */
-          justify-content: center; /* Centraliza o inner-container */
+        /* NOVO: Resetar padding para células com controles específicos */
+        #inventoryList td.action-buttons,
+        #inventoryList td.direct-movement-controls {
+            padding: 2px; /* Reduzir o padding da célula para dar mais espaço ao conteúdo */
         }
-        /* Container interno para os botões de ação (adicionado no JS) */
+
+        /* Ações - Estilos para o container interno dos botões (TEXTO MAIOR) */
         .action-buttons-inner-container {
             display: flex;
             flex-direction: column; /* Empilha os botões */
-            gap: 2px; /* Espaço entre os botões */
-            min-width: 105px; /* Largura mínima para o container de botões */
+            gap: 1px; /* Reduzir o espaço entre botões */
+            width: 100%; /* Ocupa toda a largura disponível da célula (menos padding da célula) */
+            align-items: stretch; /* Estica os botões para preencher a largura do container */
+            justify-content: center; /* Centraliza o grupo de botões verticalmente */
         }
 
         #inventoryList .action-buttons button {
-          padding: 3px 5px; /* Ajustado para dar mais espaço ao texto */
+          padding: 2px 4px; /* Ajustado para dar mais espaço ao texto no botão */
           font-size: 0.85em; /* AUMENTADO para texto maior */
-          width: auto; /* Adaptável ao conteúdo */
           white-space: nowrap; /* Impede quebra de linha do texto do botão */
-          box-sizing: border-box; /* Garante que padding não adicione largura extra */
+          flex-grow: 1; /* Permite que o botão ocupe o espaço disponível */
+          box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+          text-align: center; /* Centraliza o texto dentro do botão */
         }
+        button.edit-btn { background-color: #5cb85c; } 
+        button.edit-btn:hover { background-color: #4cae4c; }
+        button.delete-btn { background-color: #d9534f; } 
+        button.delete-btn:hover { background-color: #c9302c; }
+        button.view-log-btn { background-color: #007bff; } 
+        button.view-log-btn:hover { background-color: #0069d9; }
+
 
         /* Mov. Rápida - Layout horizontal (+ campo -) e botões menores */
         .direct-movement-controls {
-          display: flex; /* MUDANÇA PARA LAYOUT HORIZONTAL */
+          display: flex; 
           flex-direction: row; /* Elementos lado a lado */
           align-items: center; /* Alinha verticalmente o input e botões no centro */
-          justify-content: center; /* Centraliza horizontalmente o grupo */
-          gap: 2px; /* Espaço entre os elementos */
-          min-width: 90px; /* Ajustado para acomodar o layout horizontal */
+          justify-content: space-around; /* Distribui o espaço entre os elementos */
+          gap: 0; /* Remover gap aqui, o justify-content fará a distribuição */
+          width: 100%; /* Ocupa toda a largura disponível da célula */
         }
 
         .movement-input { 
-            width: 40px; /* Ajustado o width do input para layout horizontal */
+            width: 35px; /* Ajustado o width do input para layout horizontal */
             text-align: center; /* Centraliza o texto do input */
-            margin-bottom: 0; /* Removida margem vertical para layout horizontal */
+            margin: 0; /* Remover margens extras */
             box-sizing: border-box;
+            flex-shrink: 0; /* Impede o encolhimento */
+            flex-grow: 0; /* Não cresce */
         } 
         .movement-button { 
-            width: 22px; /* Ajustado o width dos botões */
-            height: 22px; /* Ajustado o height dos botões */
-            /* Para garantir que o '+' e '-' fiquem centralizados */
+            width: 20px; /* Reduzido o width dos botões */
+            height: 20px; /* Reduzido o height dos botões */
+            border-radius: 50%; /* Manter circular */
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.8em; /* Ajustado o tamanho da fonte do +/- */
             box-sizing: border-box;
+            flex-shrink: 0; /* Impede o encolhimento */
+            flex-grow: 0; /* Não cresce */
+            padding: 0; /* Sem padding interno para ser mais compacto */
         } 
+        .movement-button.plus { background-color: #28a745; } 
+        .movement-button.plus:hover { background-color: #218838; }
+        .movement-button.minus { background-color: #dc3545; } 
+        .movement-button.minus:hover { background-color: #c82333; }
 
 
         /* Estilos para a seção de log de item */
@@ -548,7 +567,7 @@
     </style>
 </head>
 <body>
-    <p style="display: none;">V3.0.4: Textos dos botões de ação maiores; layout da coluna 'Mov. Rápida' alterado para horizontal (+ campo -) com botões e input menores; rebalanceamento de larguras de colunas em CSS.</p>
+    <p style="display: none;">V3.0.5: Ajustes finos de CSS para layout de botões de Ações (texto maior, alinhamento) e Mov. Rápida (horizontal, botões/input menores); otimização de padding em células de controle.</p>
 
     <div class="main-header-container">
         <div class="sislab-logo">
