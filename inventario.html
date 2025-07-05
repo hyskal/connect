@@ -307,18 +307,18 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário */
-        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } /* Cód. */
+        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS CONFORME ESPECIALISTA) */
+        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } /* Cód. */
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
-        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 7%; } /* Unid. */
-        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } /* Categoria */
+        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } /* Qtd. */
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
+        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; } /* Categoria */
         #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
-        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 12%; } /* Ações - AUMENTADO */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 10%; } /* Mov. Rápida - REDUZIDO */
+        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - AJUSTADO */
 
 
         #inventoryList th {
@@ -334,63 +334,32 @@
             background-color: #f1f1f1;
         }
 
+        /* Ações - Garantir visibilidade e layout vertical (CONFORME ESPECIALISTA, SEM !IMPORTANT) */
         #inventoryList .action-buttons {
-            display: flex;
-            flex-direction: column; 
-            gap: 3px; 
-            min-width: unset; 
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 100px; /* Largura mínima aumentada */
         }
+
         #inventoryList .action-buttons button {
-            padding: 2px 4px; 
-            font-size: 0.65em; 
-            margin: 0; 
-            width: 100%; 
-            box-sizing: border-box;
+          padding: 4px 6px; /* Ajustado para dar mais espaço ao texto */
+          font-size: 0.75em; /* Ajustado para legibilidade */
+          width: auto; /* Adaptável ao conteúdo */
+          white-space: nowrap; /* Impede quebra de linha do texto do botão */
         }
-        button.edit-btn { background-color: #5cb85c; } 
-        button.edit-btn:hover { background-color: #4cae4c; }
-        button.delete-btn { background-color: #d9534f; } 
-        button.delete-btn:hover { background-color: #c9302c; }
-        button.view-log-btn { background-color: #007bff; } 
-        button.view-log-btn:hover { background-color: #0069d9; }
 
-
-        /* Estilos para o campo de input de movimentação direta e botões (AJUSTADO PARA IMAGEM) */
+        /* Mov. Rápida - Layout vertical (CONFORME ESPECIALISTA, SEM !IMPORTANT) */
         .direct-movement-controls {
-            display: flex;
-            flex-direction: column; /* Empilha input e botões */
-            align-items: center; /* Centraliza horizontalmente os elementos empilhados */
-            justify-content: center; 
-            gap: 2px; 
-            min-width: unset; 
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 80px;
         }
-        .movement-input {
-            width: 35px; 
-            padding: 2px; 
-            font-size: 0.75em; 
-            margin-bottom: 2px;
-        }
-        /* Estilos para os botões de + e - */
-        .movement-button {
-            width: 22px; 
-            height: 22px;
-            padding: 0;
-            font-size: 0.9em; 
-            line-height: 1;
-            border-radius: 50%;
-            display: inline-flex; 
-            justify-content: center;
-            align-items: center;
-            background-color: #1A2B4C;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            flex-shrink: 0; 
-        }
-        .movement-button.plus { background-color: #28a745; } 
-        button.movement-button.plus:hover { background-color: #218838; }
-        button.movement-button.minus { background-color: #dc3545; } 
-        button.movement-button.minus:hover { background-color: #c82333; }
+
+        .movement-input { width: 50px; } /* Ajustado o tamanho sem !important */
+        .movement-button { width: 25px; height: 25px; } /* Ajustado o tamanho sem !important */
+
 
         /* Estilos para a seção de log de item */
         #itemLogSection {
@@ -474,7 +443,7 @@
         }
 
 
-        /* Media Query para telas menores: colunas empilham (Reaproveitado do index.html) */
+        /* Media Query para telas menores: colunas empilham (ATUALIZADAS CONFORME ESPECIALISTA) */
         @media (max-width: 900px) {
             /* Seções Superior e Inferior empilham */
             .top-section-container, .bottom-section-container {
@@ -496,17 +465,21 @@
                 word-break: break-word; 
             }
             /* Larguras específicas para mobile, adaptando-se a 100% da coluna */
-            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } 
-            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 18%; } /* Descrição - AUMENTADO para mobile */
-            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } 
-            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } 
-            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } 
+            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } 
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } 
+            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } 
+            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 5%; } 
+            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; } 
             #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } 
             #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; } 
-            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; } /* Últ. Atual. - AUMENTADO para mobile */
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; } 
             #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } 
-            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 12%; } /* Ações - AUMENTADO para mobile */
-            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 10%; } 
+            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO para mobile */
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - AUMENTADO para mobile */
+            
+            /* Ajuste específico para botões de ação em mobile */
+            #inventoryList .action-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; } /* Botões em linha no mobile */
+            #inventoryList .action-buttons button { font-size: 0.6em; padding: 2px; margin: 1px; } /* Ajuste de tamanho para caber */
             
             .inventory-filters .form-field {
                 flex-basis: 100%; 
@@ -519,7 +492,7 @@
     </style>
 </head>
 <body>
-    <p style="display: none;">V3.0.1: ajuste de largura das colunas 'Ações' e 'Mov. Rápida' na tabela de inventário; split do código JS em módulos.</p>
+    <p style="display: none;">V3.0.2: Ajustes de CSS (larguras, min-width, font-size) para colunas 'Ações' e 'Mov. Rápida'; layout de botões de ação em linha para mobile.</p>
 
     <div class="main-header-container">
         <div class="sislab-logo">
@@ -730,4 +703,4 @@
     <script src="sislab_utils.js" type="module"></script>
     <script src="inventario_scripts.js" type="module"></script>
 </body>
-</html>
+            </html>
