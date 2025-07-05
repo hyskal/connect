@@ -5,6 +5,12 @@
     <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+/* Ocultar a coluna 'Mov. Rápida' no cabeçalho e nas células */
+#inventoryList th:nth-child(11),
+#inventoryList td:nth-child(11) {
+    display: none;
+}
+
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
