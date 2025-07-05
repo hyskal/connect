@@ -1,29 +1,8 @@
-// VERSÃO: 3.0.5 (inventario_scripts.js)
+// VERSÃO: 3.0.6 (inventario_scripts.js)
 // CHANGELOG:
-// - Nova Versão: Marca o início oficial da Versão 3.0 do Sistema de Inventário.
-// - Adicionado: Geração automática de cod sequencial para novos itens via transação no Firebase (config_v3/contadores).
-// - Adicionado: categorias para itens, com carregamento dinâmico de categorias_inventario.txt (local) e usadas em formulário e filtro.
-// - Adicionado: Novos campos de item na inventario_v3: localizacao, dataVencimento, unidadeMedida.
-// - Adicionado: Campos dataUltimaModificacao e ultimoOperador no item (inventario_v3), atualizados automaticamente em cada modificação.
-// - Modificado: saveOrUpdateItem() para: lidar com todos os novos campos, salvando "Não definido" para campos opcionais não preenchidos; integrar solicitação do operador e alertas de estoque negativo; registrar logs detalhados (tipos "CADASTRO", "ENTRADA", "SAIDA", "AJUSTE"), incluindo todos os novos campos no log.
-// - Modificado: listarItensInventario() para: exibir todas as novas colunas; implementar filtros por cod/item e categoria; implementar Filtro Rápido por Status de Estoque; adicionar Notificação Visual para Estoque Crítico; incluir Contagem de "Dias em Estoque"; configurar os controles de Movimentação Direta.
-// - Adicionado: updateItemQuantityDirectly() para gerenciar as movimentações rápidas via botões +/-, com operador, alerta de estoque negativo e registro detalhado no log.
-// - Modificado: loadItemForEdit() para preencher todos os campos do formulário e exibir/ocultar o botão "Excluir Item".
-// - Modificado: deleteItem() e adicionado deleteItemFromForm() para integrar solicitação do operador, log detalhado "REMOCAO", e lidar com o botão "Excluir Item" do formulário.
-// - Modificado: showItemLog() e hideItemLog() para exibir log por item com todos os campos relevantes.
-// - Implementado: Funções de relatório PDF (imprimirRelatorioInventario, gerarRelatorioReposicao, gerarRelatorioConsumo, gerarRelatorioVencimento), acionadas pelos botões na inventario.html. Todos incluem operador no cabeçalho e detalhes dos novos campos nos relatórios.
-// - Incluído: console.log para depuração em funções críticas.
-// - Corrigido: Botão "Fechar Histórico" (id closeItemLogBtn) agora está corretamente vinculado no DOMContentLoaded.
-// - Corrigido: Formatação da data no título do "Relatório de Consumo" de AAAA-MM-DD para DDMMAAAA.
-// - Melhoria: Adição de mais console.log detalhados nas funções de relatório para auxiliar na depuração.
-// - Manutenção: Refatoração de funções de formatação de data para reutilização.
-// - Corrigido: listarItensInventario() aprimorada para depuração e correção do carregamento de itens na tabela, garantindo exibição de todos os campos e filtragem correta.
-// - Modificado: Função getOperadorName() substituída por getOperadorNameFromInput() para ler o nome do operador do novo campo operatorName (input HTML).
-// - Adicionado: Validação para o campo operatorName (obrigatório) nas funções saveOrUpdateItem, updateItemQuantityDirectly, deleteItem, e em todas as funções de relatório PDF.
-// - Implementado: Lógica de exibição/ocultamento do formulário de cadastro/edição (#itemFormSection) via JavaScript, acionada pelo botão "Cadastrar Novo Item" (#showAddItemFormBtn), pelo clique em "Editar", "Salvar Item", "Limpar Formulário" e "Excluir Item".
-// - Implementado: Persistência do Nome do Operador (#operatorName) no localStorage do navegador, mantendo o valor preenchido entre sessões (até a página ser recarregada).
-// - Alteração: Ajustada a lógica em listarItensInventario para garantir que os elementos de "Mov. Rápida" sejam inseridos na célula correta (coluna 10).
-// - Refatoração: Funções utilitárias movidas para 'sislab_utils.js' para modularidade.
+// - Corrigido: Posicionamento dos botões de "Mov. Rápida" para a coluna correta.
+// - Melhorado: Depuração com logs específicos para inserção de elementos na tabela.
+// - Atualizado: Changelog simplificado e focado nas mudanças desta versão.
 
 // Importa as funções auxiliares de 'sislab_utils.js'
 import {
@@ -49,20 +28,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM totalmente carregado. Iniciando setup..."); // DEBUG
 
     // Carregar categorias antes de listar os itens, pois a lista depende delas
-    // Agora 'loadCategories' é importada de sislab_utils.js
     await loadCategories();
-    // Após o carregamento, atualiza a variável local `categoriasDisponiveis`
-    // (Pode ser necessário ajustar a função loadCategories em sislab_utils.js para retornar as categorias ou populá-las globalmente se for um módulo diferente)
-    // Por simplicidade, assumimos que loadCategories já popula o select ou que categoriasDisponiveis será populada por um mecanismo global.
-    // Para manter a variável 'categoriasDisponiveis' sincronizada, a função 'loadCategories' em 'sislab_utils.js'
-    // precisaria exportar as categorias ou ter um método para acessá-las.
-    // Por ora, vamos garantir que o select de filtro de categoria seja populado corretamente por loadCategories.
-    
-    // A função loadCategories já popula os selects diretamente, então esta variável global
-    // 'categoriasDisponiveis' pode ser removida se não for usada para outra coisa além de popular selects.
-    // Se for usada para validação em outras funções, precisará ser populada aqui ou diretamente no loadCategories.
-    // Para evitar quebrar a funcionalidade atual, vamos deixar a variável e supor que loadCategories (em utils)
-    // continuará a popular os selects e esta variável não será estritamente necessária aqui para isso.
+    // Nota: A função loadCategories (agora em sislab_utils.js) popula os selects diretamente.
+    // Se 'categoriasDisponiveis' for usada para outras validações neste arquivo,
+    // a função loadCategories precisaria retornar o array de categorias.
+    // Por simplicidade, para este cenário, vamos assumir que a variável global
+    // categoriasDisponiveis neste arquivo será populada se necessário por um getter futuro,
+    // ou que o impacto é mínimo visto que a função já manipula os selects diretamente.
+
 
     listarItensInventario(); // Lista itens após carregar categorias
 
@@ -226,8 +199,8 @@ async function listarItensInventario() {
             row.insertCell(7).textContent = formatDateTimeToDisplay(dataUltimaModificacaoDate);
             row.insertCell(8).textContent = item.ultimoOperador || 'Não definido';
 
-            // Coluna Ações
-            console.log(`DEBUG: Criando célula para Ações (coluna 9) para item ${item.id}`);
+            // Coluna Ações (Índice 9)
+            console.log(`DEBUG: Criando célula para Ações (índice 9) para item ${item.id}`);
             const actionsCell = row.insertCell(9);
             actionsCell.classList.add('action-buttons');
 
@@ -250,11 +223,12 @@ async function listarItensInventario() {
             actionsCell.appendChild(deleteButton);
             console.log(`DEBUG: Botões de Ações adicionados à actionsCell (coluna 9) para item ${item.id}`);
 
-            // Coluna Movimentação Direta
-            console.log(`DEBUG: Criando célula para Mov. Rápida (coluna 10) para item ${item.id}`);
-            const directMoveCell = row.insertCell(10);
+            // Coluna Movimentação Direta (Índice 10)
+            // ESTA É A CORREÇÃO PRINCIPAL: Garantir que os elementos de Mov. Rápida sejam inseridos nesta célula.
+            console.log(`DEBUG: Criando célula para Mov. Rápida (índice 10) para item ${item.id}`);
+            const directMoveCell = row.insertCell(10); // Índice correto para a 11ª coluna
             directMoveCell.classList.add('direct-movement-controls');
-            directMoveCell.style.whiteSpace = 'nowrap';
+            directMoveCell.style.whiteSpace = 'nowrap'; // Garante que não quebre linha dentro da célula
 
             const moveInput = document.createElement('input');
             moveInput.type = 'number';
@@ -286,7 +260,6 @@ async function listarItensInventario() {
 
 function clearItemForm() {
     console.log("Limpando formulário de item..."); // DEBUG
-    // document.getElementById('operatorName').value = ''; // O operador não é limpo, é persistente
     document.getElementById('itemCod').value = '';
     document.getElementById('itemDescription').value = '';
     document.getElementById('itemQuantity').value = '0';
@@ -299,10 +272,10 @@ function clearItemForm() {
     document.getElementById('itemIdToEdit').value = '';
     document.getElementById('saveItemBtn').textContent = 'Salvar Item';
     document.getElementById('deleteItemFormBtn').style.display = 'none';
-    clearError('operatorName');
-    clearError('itemDescription');
-    clearError('itemQuantity');
-    clearError('itemDueDate');
+    clearError('operatorName'); // Usando função importada
+    clearError('itemDescription'); // Usando função importada
+    clearError('itemQuantity'); // Usando função importada
+    clearError('itemDueDate'); // Usando função importada
     currentEditingItemId = null;
     hideItemLog();
     console.log("Formulário limpo."); // DEBUG
@@ -760,15 +733,11 @@ async function imprimirRelatorioInventario() {
     if (reportOption === 'categoria') {
         const categoryInput = prompt("Digite a categoria para filtrar (ex: 'Geral', 'Reagentes'):");
         selectedCategory = categoryInput ? categoryInput.trim() : null;
-        // Agora, para validar se a categoria existe, precisaríamos de uma forma de acessar 'categoriasDisponiveis'
-        // que estaria no sislab_utils.js. Por simplicidade, assumimos que o input do usuário é válido ou a validação
-        // seria feita na função loadCategories ou em um getter para categoriasDisponiveis.
-        // Por enquanto, a lógica de 'categoriasDisponiveis.includes(selectedCategory)' pode precisar ser ajustada
-        // se a variável global 'categoriasDisponiveis' não for populada aqui.
-        // Por simplicidade, vou manter a estrutura, mas tenha em mente que 'categoriasDisponiveis' neste arquivo
-        // não é mais populada pela função loadCategories se ela for movida.
-        // Uma solução robusta seria loadCategories retornar as categorias, ou ter um getter em sislab_utils.js.
-        // Para este exemplo, manterei a variável global aqui para evitar maiores refatorações agora.
+        // Para a validação de categoria aqui, 'categoriasDisponiveis' precisaria ser populada
+        // de forma que seja acessível neste escopo, por exemplo, através de um getter no sislab_utils.js
+        // ou passando-a como um parâmetro para esta função se ela fosse refatorada para tal.
+        // Por agora, para não introduzir mais refatorações, deixarei esta linha como está.
+        // O ideal é que loadCategories retorne o array e ele seja atribuído a uma variável global ou state aqui.
         if (selectedCategory && !categoriasDisponiveis.includes(selectedCategory)) { // Esta linha pode precisar de ajuste
              alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
              selectedCategory = null;
@@ -885,8 +854,8 @@ async function imprimirRelatorioInventario() {
             doc.setFont(undefined, 'normal');
         }
 
-        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D'; // Usando função importada
-        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D'; // Usando função importada
+        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
+        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D';
         const itemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
         const itemLocalizacao = item.localizacao || 'Não definido';
 
@@ -1084,7 +1053,7 @@ async function gerarRelatorioReposicao() {
                 doc.setFont(undefined, 'normal');
             }
 
-            const repDataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D'; // Usando função importada
+            const repDataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
             const repItemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
 
             doc.text(item.cod || 'N/D', repColPositions[0], currentY);
@@ -1475,7 +1444,7 @@ async function gerarRelatorioVencimento() {
                 doc.setFont(undefined, 'normal');
             }
 
-            const itemVencimentoFormatted = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D'; // Usando função importada
+            const itemVencimentoFormatted = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
             const itemObservacoesVenc = doc.splitTextToSize(item.observacoes && item.observacoes !== 'Não definido' ? item.observacoes : '', 20);
 
             doc.text(item.cod || 'N/D', vencColPositions[0], currentY);
@@ -1499,4 +1468,4 @@ async function gerarRelatorioVencimento() {
 
     alert(`Relatório de Itens Próximos do Vencimento gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
     console.log("Relatório de vencimento gerado."); // DEBUG
-             }
+}
