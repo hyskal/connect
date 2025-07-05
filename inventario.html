@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
+   <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
@@ -317,8 +317,8 @@
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - ligeiramente maior */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 12%; } /* Ações - AUMENTADO */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 10%; } /* Mov. Rápida - REDUZIDO */
 
 
         #inventoryList th {
@@ -388,9 +388,9 @@
             flex-shrink: 0; 
         }
         .movement-button.plus { background-color: #28a745; } 
-        .movement-button.plus:hover { background-color: #218838; }
-        .movement-button.minus { background-color: #dc3545; } 
-        .movement-button.minus:hover { background-color: #c82333; }
+        button.movement-button.plus:hover { background-color: #218838; }
+        button.movement-button.minus { background-color: #dc3545; } 
+        button.movement-button.minus:hover { background-color: #c82333; }
 
         /* Estilos para a seção de log de item */
         #itemLogSection {
@@ -497,15 +497,15 @@
             }
             /* Larguras específicas para mobile, adaptando-se a 100% da coluna */
             #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 5%; } 
-            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } 
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 18%; } /* Descrição - AUMENTADO para mobile */
             #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 5%; } 
             #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } 
             #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 9%; } 
             #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } 
             #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; } 
-            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } 
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; } /* Últ. Atual. - AUMENTADO para mobile */
             #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } 
-            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 9%; } 
+            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 12%; } /* Ações - AUMENTADO para mobile */
             #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 10%; } 
             
             .inventory-filters .form-field {
@@ -516,7 +516,7 @@
                 justify-content: space-around;
             }
         }
-    </style>
+   </style>
 </head>
 <body>
 
