@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.3 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.4 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -319,7 +319,7 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada */
 
         /* Garantir que a coluna Mov. Rápida esteja visível */
         #inventoryList th:nth-child(11),
@@ -358,7 +358,7 @@
 
         #inventoryList .action-buttons button {
           padding: 2px 4px; /* Ajustado para dar mais espaço ao texto no botão */
-          font-size: 0.85em; /* AUMENTADO para texto maior */
+          font-size: 0.88em; /* AUMENTADO NOVAMENTE para texto maior */
           white-space: nowrap; /* Impede quebra de linha do texto do botão */
           flex-grow: 1; /* Permite que o botão ocupe o espaço disponível */
           box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
@@ -378,12 +378,12 @@
           flex-direction: row; /* Elementos lado a lado */
           align-items: center; /* Alinha verticalmente o input e botões no centro */
           justify-content: space-around; /* Distribui o espaço entre os elementos */
-          gap: 0; /* Remover gap aqui, o justify-content fará a distribuição */
-          width: 100%; /* Ocupa toda a largura disponível da célula */
+          gap: 2px; /* Espaço entre os elementos */
+          min-width: 90px; /* Ajustado para acomodar o layout horizontal */
         }
 
         .movement-input { 
-            width: 35px; /* Ajustado o width do input para layout horizontal */
+            width: 40px; /* Ajustado o width do input para layout horizontal */
             text-align: center; /* Centraliza o texto do input */
             margin: 0; /* Remover margens extras */
             box-sizing: border-box;
@@ -391,8 +391,8 @@
             flex-grow: 0; /* Não cresce */
         } 
         .movement-button { 
-            width: 20px; /* Reduzido o width dos botões */
-            height: 20px; /* Reduzido o height dos botões */
+            width: 22px; /* Ajustado o width dos botões */
+            height: 22px; /* Ajustado o height dos botões */
             border-radius: 50%; /* Manter circular */
             display: flex;
             align-items: center;
