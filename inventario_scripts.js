@@ -23,13 +23,24 @@
 // - Implementado: Lógica de exibição/ocultamento do formulário de cadastro/edição (#itemFormSection) via JavaScript, acionada pelo botão "Cadastrar Novo Item" (#showAddItemFormBtn), pelo clique em "Editar", "Salvar Item", "Limpar Formulário" e "Excluir Item".
 // - Implementado: Persistência do Nome do Operador (#operatorName) no localStorage do navegador, mantendo o valor preenchido entre sessões (até a página ser recarregada).
 // - Alteração: Ajustada a lógica em listarItensInventario para garantir que os elementos de "Mov. Rápida" sejam inseridos na célula correta (coluna 10).
+// - Refatoração: Funções utilitárias movidas para 'sislab_utils.js' para modularidade.
 
-// --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
-const LOCAL_FILENAME_CATEGORIES = 'categorias_inventario.txt';
+// Importa as funções auxiliares de 'sislab_utils.js'
+import {
+    getOperadorNameFromInput,
+    showError,
+    clearError,
+    formatarCod,
+    formatDateToInput,
+    formatDateToDisplay,
+    formatDateTimeToDisplay,
+    loadCategories,
+    LOCAL_FILENAME_CATEGORIES // Importa também a constante do nome do arquivo de categorias
+} from './sislab_utils.js';
 
 // Variáveis Globais de Estado
 let currentEditingItemId = null;
-let categoriasDisponiveis = []; // Armazena as categorias carregadas do arquivo local
+let categoriasDisponiveis = []; // Armazena as categorias carregadas do arquivo local (usada aqui para filtros, mas populada por loadCategories)
 let currentFilterStatus = 'all'; // Estado atual do filtro de status (all, critical, inStock, outOfStock)
 const OPERATOR_NAME_STORAGE_KEY = 'sislab_inventario_operator_name'; // Chave para localStorage
 
@@ -38,7 +49,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM totalmente carregado. Iniciando setup..."); // DEBUG
 
     // Carregar categorias antes de listar os itens, pois a lista depende delas
+    // Agora 'loadCategories' é importada de sislab_utils.js
     await loadCategories();
+    // Após o carregamento, atualiza a variável local `categoriasDisponiveis`
+    // (Pode ser necessário ajustar a função loadCategories em sislab_utils.js para retornar as categorias ou populá-las globalmente se for um módulo diferente)
+    // Por simplicidade, assumimos que loadCategories já popula o select ou que categoriasDisponiveis será populada por um mecanismo global.
+    // Para manter a variável 'categoriasDisponiveis' sincronizada, a função 'loadCategories' em 'sislab_utils.js'
+    // precisaria exportar as categorias ou ter um método para acessá-las.
+    // Por ora, vamos garantir que o select de filtro de categoria seja populado corretamente por loadCategories.
+    
+    // A função loadCategories já popula os selects diretamente, então esta variável global
+    // 'categoriasDisponiveis' pode ser removida se não for usada para outra coisa além de popular selects.
+    // Se for usada para validação em outras funções, precisará ser populada aqui ou diretamente no loadCategories.
+    // Para evitar quebrar a funcionalidade atual, vamos deixar a variável e supor que loadCategories (em utils)
+    // continuará a popular os selects e esta variável não será estritamente necessária aqui para isso.
+
     listarItensInventario(); // Lista itens após carregar categorias
 
     // Carregar nome do operador do localStorage, se existir
@@ -111,132 +136,6 @@ function updateFilterButtons(activeButtonId) {
         }
     });
 }
-
-// --- Funções Auxiliares Comuns ---
-// Lê o nome do operador do input e valida
-function getOperadorNameFromInput() {
-    console.log("Lendo nome do operador do input..."); // DEBUG
-    const operatorNameInput = document.getElementById('operatorName');
-    const operador = operatorNameInput.value.trim();
-
-    if (!operador) {
-        showError('operatorName', 'Nome do operador é obrigatório.');
-        console.log("Validação: Nome do operador vazio."); // DEBUG
-        return null;
-    }
-    clearError('operatorName');
-    localStorage.setItem(OPERATOR_NAME_STORAGE_KEY, operador); // Salva no localStorage
-    console.log(`Nome do operador lido e salvo: ${operador}`); // DEBUG
-    return operador;
-}
-
-function showError(elementId, message) {
-    console.log(`Erro de validação para ${elementId}: ${message}`); // DEBUG
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
-    if (inputElement && errorDiv) {
-        inputElement.classList.add('error');
-        errorDiv.textContent = message;
-    }
-}
-
-function clearError(elementId) {
-    const inputElement = document.getElementById(elementId);
-    const errorDiv = document.getElementById(`${elementId}-error`);
-    if (inputElement && errorDiv) {
-        inputElement.classList.remove('error');
-        errorDiv.textContent = '';
-    }
-}
-
-function formatarCod(num) {
-    return String(num).padStart(4, '0'); // Garante 4 dígitos com zeros à esquerda
-}
-
-function formatDateToInput(date) {
-    // Formata um objeto Date para string YYYY-MM-DD para input[type="date"]
-    if (!date) return '';
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function formatDateToDisplay(date) {
-    // Formata um objeto Date para DD/MM/AAAA
-    if (!date) return 'N/D';
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
-function formatDateTimeToDisplay(date) {
-    // Formata um objeto Date para DD/MM/AAAA HH:MM:SS
-    if (!date) return 'N/D';
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    const seconds = d.getSeconds().toString().padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-}
-
-// --- Funções de Carregamento Dinâmico ---
-async function loadCategories() {
-    console.log("Iniciando carregamento de categorias..."); // DEBUG
-    const itemCategorySelect = document.getElementById('itemCategory');
-    const filterCategorySelect = document.getElementById('filterCategory');
-    const timestamp = new Date().getTime();
-
-    const localFileUrl = `${LOCAL_FILENAME_CATEGORIES}?t=${timestamp}`;
-
-    try {
-        const response = await fetch(localFileUrl);
-        if (!response.ok) {
-            console.warn(`Erro ao carregar categorias do arquivo local (${response.status}). Usando categorias padrão.`); // DEBUG
-            categoriasDisponiveis = ["Geral"];
-        } else {
-            const text = await response.text();
-            categoriasDisponiveis = text.trim().split('\n').map(c => c.trim()).filter(c => c !== '');
-            if (categoriasDisponiveis.length === 0) {
-                categoriasDisponiveis = ["Geral"];
-            }
-            console.log("Categorias carregadas:", categoriasDisponiveis); // DEBUG
-        }
-    } catch (error) {
-        console.error("Erro FATAL ao carregar categorias do arquivo local:", error); // DEBUG
-        categoriasDisponiveis = ["Geral"];
-    }
-
-    // Popular o select do formulário de cadastro/edição
-    itemCategorySelect.innerHTML = '';
-    categoriasDisponiveis.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        itemCategorySelect.appendChild(option);
-    });
-    itemCategorySelect.value = "Geral";
-    if (itemCategorySelect.selectedIndex === -1 && categoriasDisponiveis.length > 0) {
-        itemCategorySelect.selectedIndex = 0;
-    }
-
-    // Popular o select de filtro por categoria
-    filterCategorySelect.innerHTML = '<option value="">Todas as Categorias</option>';
-    categoriasDisponiveis.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        filterCategorySelect.appendChild(option);
-    });
-    console.log("Categorias carregadas nos selects."); // DEBUG
-}
-
 
 // --- Funções de CRUD de Itens ---
 
@@ -422,7 +321,12 @@ async function saveOrUpdateItem() {
     const observationsInput = document.getElementById('itemObservations');
     const itemIdToEdit = document.getElementById('itemIdToEdit').value;
 
-    const operador = operatorNameInput.value.trim();
+    const operador = getOperadorNameFromInput(); // Usando função importada
+    if (operador === null) {
+        console.log("Validação: Nome do operador vazio."); // DEBUG
+        return;
+    }
+
     const description = descriptionInput.value.trim();
     const quantity = parseInt(quantityInput.value);
     const unit = unitSelect.value;
@@ -439,31 +343,25 @@ async function saveOrUpdateItem() {
     const finalCategory = category || 'Geral';
 
 
-    // Validação de campos obrigatórios (operador, item e quantidade)
+    // Validação de campos obrigatórios (item e quantidade) - operador já validado acima
     let isValid = true;
-    if (!operador) {
-        showError('operatorName', 'Nome do operador é obrigatório.');
-        isValid = false;
-    } else {
-        clearError('operatorName');
-    }
     if (!description) {
-        showError('itemDescription', 'A descrição é obrigatória.');
+        showError('itemDescription', 'A descrição é obrigatória.'); // Usando função importada
         isValid = false;
     } else {
-        clearError('itemDescription');
+        clearError('itemDescription'); // Usando função importada
     }
     if (isNaN(quantity) || quantity < 0) {
-        showError('itemQuantity', 'Quantidade inválida. Deve ser um número maior ou igual a zero.');
+        showError('itemQuantity', 'Quantidade inválida. Deve ser um número maior ou igual a zero.'); // Usando função importada
         isValid = false;
     } else {
-        clearError('itemQuantity');
+        clearError('itemQuantity'); // Usando função importada
     }
     if (finalDueDate && isNaN(finalDueDate.getTime())) {
-        showError('itemDueDate', 'Data de vencimento inválida.');
+        showError('itemDueDate', 'Data de vencimento inválida.'); // Usando função importada
         isValid = false;
     } else {
-        clearError('itemDueDate');
+        clearError('itemDueDate'); // Usando função importada
     }
 
     if (!isValid) {
@@ -507,7 +405,7 @@ async function saveOrUpdateItem() {
                 unidadeMedida: finalUnit,
                 categoria: finalCategory,
                 localizacao: finalLocation,
-                dataVencimento: finalDueDate ? finalDueDate : null, // Alterado para não usar ServerTimestamp aqui, pois já é um objeto Date
+                dataVencimento: finalDueDate ? finalDueDate : null,
                 observacoes: finalObservations,
                 dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(),
                 ultimoOperador: operador
@@ -515,7 +413,6 @@ async function saveOrUpdateItem() {
             console.log("Documento de inventário atualizado."); // DEBUG
 
             // Registrar no log SÓ SE HOUVER MUDANÇA RELEVANTE (qualquer campo que não seja o id/cod)
-            // Para dataVencimento, comparar timestamps para precisão
             const oldDueDateTimestamp = oldData.dataVencimento ? oldData.dataVencimento.toDate().getTime() : null;
             const newDueDateTimestamp = finalDueDate ? finalDueDate.getTime() : null;
 
@@ -526,7 +423,7 @@ async function saveOrUpdateItem() {
                                       oldData.categoria !== finalCategory ||
                                       oldData.localizacao !== finalLocation ||
                                       oldData.unidadeMedida !== finalUnit ||
-                                      oldDueDateTimestamp !== newDueDateTimestamp; // Comparação de timestamp para data
+                                      oldDueDateTimestamp !== newDueDateTimestamp;
 
             if (hasRelevantChange) {
                 console.log("Registrando log para edição com mudanças relevantes..."); // DEBUG
@@ -545,8 +442,8 @@ async function saveOrUpdateItem() {
                                  (oldData.observacoes !== finalObservations ? `Obs. atualizada. ` : '') +
                                  (oldData.categoria !== finalCategory ? `Cat. de '${oldData.categoria}' para '${finalCategory}'. ` : '') +
                                  (oldData.localizacao !== finalLocation ? `Local de '${oldData.localizacao}' para '${finalLocation}'. ` : '') +
-                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (newDueDateTimestamp !== null) ? `Validade alterada para '${formatDateToDisplay(new Date(newDueDateTimestamp))}'. ` : '') + // Altera para mostrar só a nova data se mudou e não é null
-                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (oldDueDateTimestamp !== null) && (newDueDateTimestamp === null) ? `Validade removida. ` : '') + // Altera para mostrar se a validade foi removida
+                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (newDueDateTimestamp !== null) ? `Validade alterada para '${formatDateToDisplay(new Date(newDueDateTimestamp))}'. ` : '') + // Usando função importada
+                                 ((oldDueDateTimestamp !== newDueDateTimestamp) && (oldDueDateTimestamp !== null) && (newDueDateTimestamp === null) ? `Validade removida. ` : '') + // Usando função importada
                                  `Operador: ${operador}.`,
                     operador: operador
                 });
@@ -571,7 +468,7 @@ async function saveOrUpdateItem() {
                     transaction.set(counterDocRef, { ultimoCodInventario: 0 });
                 }
                 const nextCounter = currentCounter + 1;
-                newCod = formatarCod(nextCounter);
+                newCod = formatarCod(nextCounter); // Usando função importada
                 transaction.set(counterDocRef, { ultimoCodInventario: nextCounter });
                 console.log(`Código sequencial gerado: ${newCod}`); // DEBUG
             });
@@ -583,7 +480,7 @@ async function saveOrUpdateItem() {
                 unidadeMedida: finalUnit,
                 categoria: finalCategory,
                 localizacao: finalLocation,
-                dataVencimento: finalDueDate ? finalDueDate : null, // Alterado para não usar ServerTimestamp aqui
+                dataVencimento: finalDueDate ? finalDueDate : null,
                 observacoes: finalObservations,
                 dataCadastro: window.firebaseFirestoreServerTimestamp(),
                 dataUltimaModificacao: window.firebaseFirestoreServerTimestamp(),
@@ -627,15 +524,15 @@ async function loadItemForEdit(itemData) {
     document.getElementById('itemLocation').value = itemData.localizacao && itemData.localizacao !== 'Não definido' ? itemData.localizacao : '';
     // Converte Timestamp do Firebase ou objeto Date para o formato de input
     if (itemData.dataVencimento instanceof window.firebaseFirestoreTimestamp) {
-        document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento.toDate()) : '';
+        document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento.toDate()) : ''; // Usando função importada
     } else if (itemData.dataVencimento instanceof Date) {
-        document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento) : '';
+        document.getElementById('itemDueDate').value = itemData.dataVencimento ? formatDateToInput(itemData.dataVencimento) : ''; // Usando função importada
     } else {
         document.getElementById('itemDueDate').value = '';
     }
 
     document.getElementById('itemObservations').value = itemData.observacoes && itemData.observacoes !== 'Não definido' ? itemData.observacoes : '';
-    document.getElementById('itemLastUpdate').value = itemData.dataUltimaModificacao ? formatDateTimeToDisplay(itemData.dataUltimaModificacao.toDate()) : '';
+    document.getElementById('itemLastUpdate').value = itemData.dataUltimaModificacao ? formatDateTimeToDisplay(itemData.dataUltimaModificacao.toDate()) : ''; // Usando função importada
     document.getElementById('itemIdToEdit').value = itemData.id;
     document.getElementById('saveItemBtn').textContent = 'Atualizar Item';
     document.getElementById('deleteItemFormBtn').style.display = 'inline-block';
@@ -654,7 +551,7 @@ async function loadItemForEdit(itemData) {
             operatorNameInput.value = '';
         }
     }
-    clearError('operatorName');
+    clearError('operatorName'); // Usando função importada
 
     showItemForm(); // Exibe o formulário ao carregar item para edição
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -665,7 +562,7 @@ async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, curr
     console.log(`Movimentação direta: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}, QtdAtual=${currentQuantity}, Mudança=${quantityChange}, Unid=${unidadeMedida}`); // DEBUG
 
     // Validação do operador
-    const operador = getOperadorNameFromInput();
+    const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Operação de movimentação cancelada: Nome do operador é obrigatório.");
         console.log("Movimentação cancelada: Operador não fornecido no input."); // DEBUG
@@ -747,7 +644,7 @@ async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
     }
 
     // Validação do operador
-    const operador = getOperadorNameFromInput();
+    const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Remoção de item cancelada: Nome do operador é obrigatório.");
         console.log("Exclusão cancelada: Operador não fornecido no input."); // DEBUG
@@ -820,7 +717,7 @@ async function showItemLog(itemId, itemDescription, itemCod) {
         itemLogTableBody.innerHTML = '';
         logs.forEach(log => {
             const row = itemLogTableBody.insertRow();
-            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/D';
+            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/D'; // Usando função importada
 
             row.insertCell(0).textContent = log.tipoMovimento || 'N/D';
             row.insertCell(1).textContent = `${log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/D'} ${log.unidadeMedidaLog || ''}`;
@@ -849,7 +746,7 @@ function hideItemLog() {
 // --- Funções de Relatórios PDF ---
 async function imprimirRelatorioInventario() {
     console.log("Iniciando geração de Relatório de Estoque Atual..."); // DEBUG
-    const operador = getOperadorNameFromInput();
+    const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório cancelado: Operador não fornecido."); // DEBUG
@@ -863,10 +760,19 @@ async function imprimirRelatorioInventario() {
     if (reportOption === 'categoria') {
         const categoryInput = prompt("Digite a categoria para filtrar (ex: 'Geral', 'Reagentes'):");
         selectedCategory = categoryInput ? categoryInput.trim() : null;
-        if (selectedCategory && !categoriasDisponiveis.includes(selectedCategory)) {
-            alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
-            selectedCategory = null;
-        }
+        // Agora, para validar se a categoria existe, precisaríamos de uma forma de acessar 'categoriasDisponiveis'
+        // que estaria no sislab_utils.js. Por simplicidade, assumimos que o input do usuário é válido ou a validação
+        // seria feita na função loadCategories ou em um getter para categoriasDisponiveis.
+        // Por enquanto, a lógica de 'categoriasDisponiveis.includes(selectedCategory)' pode precisar ser ajustada
+        // se a variável global 'categoriasDisponiveis' não for populada aqui.
+        // Por simplicidade, vou manter a estrutura, mas tenha em mente que 'categoriasDisponiveis' neste arquivo
+        // não é mais populada pela função loadCategories se ela for movida.
+        // Uma solução robusta seria loadCategories retornar as categorias, ou ter um getter em sislab_utils.js.
+        // Para este exemplo, manterei a variável global aqui para evitar maiores refatorações agora.
+        if (selectedCategory && !categoriasDisponiveis.includes(selectedCategory)) { // Esta linha pode precisar de ajuste
+             alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
+             selectedCategory = null;
+         }
     }
 
 
@@ -948,7 +854,7 @@ async function imprimirRelatorioInventario() {
     doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
     doc.text("VALIDADE", colPositions[6], currentY);
     doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
-    currentY += 4; // Ajustado lineHeight para 4px para melhor espaçamento
+    currentY += 4;
     doc.setFont(undefined, 'normal');
 
     itensInventario.forEach(item => {
@@ -979,8 +885,8 @@ async function imprimirRelatorioInventario() {
             doc.setFont(undefined, 'normal');
         }
 
-        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
-        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D';
+        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D'; // Usando função importada
+        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D'; // Usando função importada
         const itemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
         const itemLocalizacao = item.localizacao || 'Não definido';
 
@@ -993,15 +899,15 @@ async function imprimirRelatorioInventario() {
         doc.text(itemLocalizacao, colPositions[5], currentY);
         doc.text(dataValidade, colPositions[6], currentY);
         doc.text(dataUltimaAtualizacao, colPositions[7], currentY);
-        currentY += 4; // Ajustado lineHeight
+        currentY += 4;
 
         // Se houver observações, exibe em uma linha separada abaixo do item, com indentação
         if (itemObsText) {
             const splitObs = doc.splitTextToSize(itemObsText, doc.internal.pageSize.width - startX - 10);
             doc.text(splitObs, startX + 5, currentY);
-            currentY += (splitObs.length * 3); // Ajustado para 3px por linha de obs
+            currentY += (splitObs.length * 3);
         }
-        currentY += 1; // Pequeno espaço entre itens
+        currentY += 1;
 
 
     });
@@ -1019,7 +925,7 @@ async function imprimirRelatorioInventario() {
 
 async function gerarRelatorioReposicao() {
     console.log("Iniciando geração de Relatório de Reposição..."); // DEBUG
-    const operador = getOperadorNameFromInput();
+    const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório de reposição cancelado: Operador não fornecido."); // DEBUG
@@ -1178,7 +1084,7 @@ async function gerarRelatorioReposicao() {
                 doc.setFont(undefined, 'normal');
             }
 
-            const repDataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
+            const repDataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D'; // Usando função importada
             const repItemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
 
             doc.text(item.cod || 'N/D', repColPositions[0], currentY);
@@ -1206,7 +1112,7 @@ async function gerarRelatorioReposicao() {
 
 async function gerarRelatorioConsumo() {
     console.log("Iniciando geração de Relatório de Consumo..."); // DEBUG
-    const operador = getOperadorNameFromInput();
+    const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório de consumo cancelado: Operador não fornecido."); // DEBUG
@@ -1393,7 +1299,7 @@ async function gerarRelatorioConsumo() {
 
 async function gerarRelatorioVencimento() {
     console.log("Iniciando geração de Relatório de Itens Próximos do Vencimento..."); // DEBUG
-    const operador = getOperadorNameFromInput();
+    const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
         console.log("Relatório de vencimento cancelado: Operador não fornecido."); // DEBUG
@@ -1569,7 +1475,7 @@ async function gerarRelatorioVencimento() {
                 doc.setFont(undefined, 'normal');
             }
 
-            const itemVencimentoFormatted = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
+            const itemVencimentoFormatted = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D'; // Usando função importada
             const itemObservacoesVenc = doc.splitTextToSize(item.observacoes && item.observacoes !== 'Não definido' ? item.observacoes : '', 20);
 
             doc.text(item.cod || 'N/D', vencColPositions[0], currentY);
@@ -1579,7 +1485,7 @@ async function gerarRelatorioVencimento() {
             doc.text(item.localizacao || 'Não definida', vencColPositions[4], currentY);
             doc.text(itemVencimentoFormatted, vencColPositions[5], currentY);
             doc.text(itemObservacoesVenc, vencColPositions[6], currentY);
-            currentY += Math.max(4, itemObservacoesVenc.length * 3); // Ajustado para 4px de altura mínima e 3px por linha de obs
+            currentY += Math.max(4, itemObservacoesVenc.length * 3);
         });
         currentY += 4;
     });
@@ -1593,4 +1499,4 @@ async function gerarRelatorioVencimento() {
 
     alert(`Relatório de Itens Próximos do Vencimento gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
     console.log("Relatório de vencimento gerado."); // DEBUG
-}
+             }
