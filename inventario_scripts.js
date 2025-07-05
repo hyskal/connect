@@ -123,13 +123,13 @@ async function listarItensInventario() {
             // Lógica do filtro de status
             let matchesStatus = true;
             if (currentFilterStatus === 'critical') {
-                matchesStatus = item.quantidade <= criticalQuantity && item.quantidade > 0; // Críticos, mas não sem estoque
+                matchesStatus = item.quantidade <= criticalQuantity && item.quantidade > 0;
             } else if (currentFilterStatus === 'inStock') {
                 matchesStatus = item.quantidade > 0;
             } else if (currentFilterStatus === 'outOfStock') {
                 matchesStatus = item.quantidade === 0;
             } else if (currentFilterStatus === 'all') {
-                matchesStatus = true; // Todos os itens
+                matchesStatus = true;
             }
 
             return matchesSearch && matchesCategory && matchesStatus;
@@ -141,16 +141,18 @@ async function listarItensInventario() {
             return;
         }
 
+        // Limpa o corpo da tabela antes de adicionar novos itens
         inventoryListBody.innerHTML = '';
+
         filteredItems.forEach(item => {
-            const row = inventoryListBody.insertRow();
+            const row = document.createElement('tr'); // Cria a linha explicitamente
             row.dataset.itemId = item.id;
 
             // Formatação de datas
             const dataVencimentoDate = item.dataVencimento ? item.dataVencimento.toDate() : null;
             const dataUltimaModificacaoDate = item.dataUltimaModificacao ? item.dataUltimaModificacao.toDate() : null;
 
-            // Contagem de "Dias em Estoque" (Sugestão 5)
+            // Contagem de "Dias em Estoque"
             let diasEmEstoque = 'N/D';
             if (item.dataCadastro) {
                 const dataCadastroOriginal = item.dataCadastro.toDate();
@@ -165,20 +167,56 @@ async function listarItensInventario() {
                 row.style.backgroundColor = '#f8d7da'; // Vermelho claro (perigo)
             }
 
-            // Colunas da tabela
-            row.insertCell(0).textContent = item.cod || 'N/D';
-            row.insertCell(1).textContent = item.item;
-            row.insertCell(2).textContent = item.quantidade;
-            row.insertCell(3).textContent = item.unidadeMedida || 'Não definida';
-            row.insertCell(4).textContent = item.categoria || 'Geral';
-            row.insertCell(5).textContent = item.localizacao || 'Não definida';
-            row.insertCell(6).textContent = formatDateToDisplay(dataVencimentoDate);
-            row.insertCell(7).textContent = formatDateTimeToDisplay(dataUltimaModificacaoDate);
-            row.insertCell(8).textContent = item.ultimoOperador || 'Não definido';
+            // --- Criação e Anexação das Células da Tabela ---
 
-            // Coluna Ações (Índice 9)
-            console.log(`DEBUG: Criando célula para Ações (índice 9) para item ${item.id}`);
-            const actionsCell = row.insertCell(9);
+            // Coluna Cód. (0)
+            const cellCod = document.createElement('td');
+            cellCod.textContent = item.cod || 'N/D';
+            row.appendChild(cellCod);
+
+            // Coluna Descrição (1)
+            const cellDescription = document.createElement('td');
+            cellDescription.textContent = item.item;
+            row.appendChild(cellDescription);
+
+            // Coluna Qtd. (2)
+            const cellQuantity = document.createElement('td');
+            cellQuantity.textContent = item.quantidade;
+            row.appendChild(cellQuantity);
+
+            // Coluna Unid. (3)
+            const cellUnit = document.createElement('td');
+            cellUnit.textContent = item.unidadeMedida || 'Não definida';
+            row.appendChild(cellUnit);
+
+            // Coluna Categoria (4)
+            const cellCategory = document.createElement('td');
+            cellCategory.textContent = item.categoria || 'Geral';
+            row.appendChild(cellCategory);
+
+            // Coluna Localização (5)
+            const cellLocation = document.createElement('td');
+            cellLocation.textContent = item.localizacao || 'Não definida';
+            row.appendChild(cellLocation);
+
+            // Coluna Validade (6)
+            const cellDueDate = document.createElement('td');
+            cellDueDate.textContent = formatDateToDisplay(dataVencimentoDate);
+            row.appendChild(cellDueDate);
+
+            // Coluna Últ. Atual. (7)
+            const cellLastUpdate = document.createElement('td');
+            cellLastUpdate.textContent = formatDateTimeToDisplay(dataUltimaModificacaoDate);
+            row.appendChild(cellLastUpdate);
+
+            // Coluna Últ. Operador (8)
+            const cellLastOperator = document.createElement('td');
+            cellLastOperator.textContent = item.ultimoOperador || 'Não definido';
+            row.appendChild(cellLastOperator);
+
+            // Coluna Ações (9)
+            console.log(`DEBUG: Criando célula para Ações (coluna 9) para item ${item.id}`);
+            const actionsCell = document.createElement('td');
             actionsCell.classList.add('action-buttons');
 
             const editButton = document.createElement('button');
@@ -198,11 +236,12 @@ async function listarItensInventario() {
             deleteButton.classList.add('delete-btn');
             deleteButton.onclick = () => deleteItem(item.id, item.item, item.cod, item.quantidade);
             actionsCell.appendChild(deleteButton);
-            console.log(`DEBUG: Botões de Ações adicionados à actionsCell (coluna 9) para item ${item.id}`);
+            row.appendChild(actionsCell); // ANEXA A CÉLULA À LINHA
+            console.log(`DEBUG: Botões de Ações adicionados à actionsCell (coluna 9) para item ${item.id}. HTML da célula: ${actionsCell.outerHTML}`);
 
-            // Coluna Movimentação Direta (Índice 10)
-            console.log(`DEBUG: Criando célula para Mov. Rápida (índice 10) para item ${item.id}`);
-            const directMoveCell = row.insertCell(10); // Índice correto para a 11ª coluna
+            // Coluna Movimentação Direta (10)
+            console.log(`DEBUG: Criando célula para Mov. Rápida (coluna 10) para item ${item.id}`);
+            const directMoveCell = document.createElement('td');
             directMoveCell.classList.add('direct-movement-controls');
             directMoveCell.style.whiteSpace = 'nowrap'; // Garante que não quebre linha dentro da célula
 
@@ -211,20 +250,24 @@ async function listarItensInventario() {
             moveInput.value = '1';
             moveInput.min = '1';
             moveInput.classList.add('movement-input');
-            directMoveCell.appendChild(moveInput); // ANEXAR AQUI!
+            directMoveCell.appendChild(moveInput);
 
             const plusButton = document.createElement('button');
             plusButton.textContent = '+';
             plusButton.classList.add('movement-button', 'plus');
             plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value), item.unidadeMedida || 'Unidade');
-            directMoveCell.appendChild(plusButton); // ANEXAR AQUI!
+            directMoveCell.appendChild(plusButton);
 
             const minusButton = document.createElement('button');
             minusButton.textContent = '-';
             minusButton.classList.add('movement-button', 'minus');
             minusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value), item.unidadeMedida || 'Unidade');
-            directMoveCell.appendChild(minusButton); // ANEXAR AQUI!
-            console.log(`DEBUG: Controles de Mov. Rápida adicionados à directMoveCell (coluna 10) para item ${item.id}`);
+            directMoveCell.appendChild(minusButton);
+            row.appendChild(directMoveCell); // ANEXA A CÉLULA À LINHA
+            console.log(`DEBUG: Controles de Mov. Rápida adicionados à directMoveCell (coluna 10) para item ${item.id}. HTML da célula: ${directMoveCell.outerHTML}`);
+
+            // Anexa a linha completa ao corpo da tabela
+            inventoryListBody.appendChild(row);
         });
         console.log("DEBUG: Listagem de itens concluída com sucesso."); // DEBUG
 
