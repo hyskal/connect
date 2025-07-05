@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.1 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -307,7 +307,7 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS) */
+        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS CONFORME ESPECIALISTA) */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } /* Cód. */
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } /* Qtd. */
@@ -317,8 +317,8 @@
         #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 16%; } /* Ações - AUMENTADO */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 11%; } /* Mov. Rápida - AJUSTADO */
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - AJUSTADO */
 
 
         #inventoryList th {
@@ -334,52 +334,31 @@
             background-color: #f1f1f1;
         }
 
-        /* Ações - Estilos para a célula e para o container interno dos botões */
+        /* Ações - Garantir visibilidade e layout vertical (CONFORME ESPECIALISTA, SEM !IMPORTANT) */
         #inventoryList .action-buttons {
           display: flex;
-          align-items: center; /* Centraliza o inner-container */
-          justify-content: center; /* Centraliza o inner-container */
-        }
-        /* Container interno para os botões de ação (adicionado no JS) */
-        .action-buttons-inner-container {
-            display: flex;
-            flex-direction: column; /* Empilha os botões */
-            gap: 2px; /* Espaço entre os botões */
-            min-width: 105px; /* Largura mínima para o container de botões */
-            /* align-items: center; -> isso pode ser ajustado para 'stretch' se quiser botões da mesma largura */
+          flex-direction: column;
+          gap: 3px;
+          min-width: 100px; /* Largura mínima aumentada */
         }
 
         #inventoryList .action-buttons button {
-          padding: 3px 5px; /* Ajustado para dar mais espaço ao texto */
-          font-size: 0.7em; /* Reduzido ligeiramente para tentar caber o texto completo */
+          padding: 4px 6px; /* Ajustado para dar mais espaço ao texto */
+          font-size: 0.75em; /* Ajustado para legibilidade */
           width: auto; /* Adaptável ao conteúdo */
           white-space: nowrap; /* Impede quebra de linha do texto do botão */
-          box-sizing: border-box; /* Garante que padding não adicione largura extra */
         }
 
-        /* Mov. Rápida - Layout vertical */
+        /* Mov. Rápida - Layout vertical (CONFORME ESPECIALISTA, SEM !IMPORTANT) */
         .direct-movement-controls {
           display: flex;
           flex-direction: column;
-          align-items: center; /* Centraliza verticalmente o input e botões */
-          justify-content: center; /* Centraliza horizontalmente o grupo */
+          align-items: center;
           min-width: 80px;
         }
 
-        .movement-input { 
-            width: 50px; 
-            text-align: center; /* Centraliza o texto do input */
-            margin-bottom: 2px; /* Espaço abaixo do input */
-        } 
-        .movement-button { 
-            width: 25px; 
-            height: 25px; 
-            /* Para garantir que o '+' e '-' fiquem centralizados */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em; /* Ajusta o tamanho da fonte do +/- */
-        } 
+        .movement-input { width: 50px; } /* Ajustado o tamanho sem !important */
+        .movement-button { width: 25px; height: 25px; } /* Ajustado o tamanho sem !important */
 
 
         /* Estilos para a seção de log de item */
@@ -464,7 +443,7 @@
         }
 
 
-        /* Media Query para telas menores: colunas empilham (ATUALIZADAS) */
+        /* Media Query para telas menores: colunas empilham (ATUALIZADAS CONFORME ESPECIALISTA) */
         @media (max-width: 900px) {
             /* Seções Superior e Inferior empilham */
             .top-section-container, .bottom-section-container {
@@ -499,20 +478,8 @@
             #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - AUMENTADO para mobile */
             
             /* Ajuste específico para botões de ação em mobile */
-            #inventoryList .action-buttons-inner-container { 
-                flex-direction: row; /* Botões em linha no mobile */
-                flex-wrap: wrap; /* Permite quebrar linha se necessário */
-                justify-content: center; 
-                align-items: center;
-                gap: 1px; /* Espaço mínimo entre botões */
-                min-width: unset; /* Remove min-width fixo para mobile */
-            }
-            #inventoryList .action-buttons button { 
-                font-size: 0.6em; /* Ajuste de tamanho para caber */
-                padding: 2px; 
-                margin: 1px; 
-                flex-shrink: 0; /* Impede encolhimento */
-            }
+            #inventoryList .action-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; } /* Botões em linha no mobile */
+            #inventoryList .action-buttons button { font-size: 0.6em; padding: 2px; margin: 1px; } /* Ajuste de tamanho para caber */
             
             .inventory-filters .form-field {
                 flex-basis: 100%; 
@@ -525,7 +492,7 @@
     </style>
 </head>
 <body>
-    <p style="display: none;">V3.0.2: Ajustes de CSS (larguras, min-width, font-size) para colunas 'Ações' e 'Mov. Rápida'; layout de botões de ação em linha para mobile; adicionada classe 'action-buttons-inner-container'.</p>
+    <p style="display: none;">V3.0.2: Ajustes de CSS (larguras, min-width, font-size) para colunas 'Ações' e 'Mov. Rápida'; layout de botões de ação em linha para mobile.</p>
 
     <div class="main-header-container">
         <div class="sislab-logo">
