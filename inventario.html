@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.1 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.2 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -307,7 +307,7 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS PARA EXIBIR MOV. RÁPIDA E AJUSTAR BOTÕES) */
+        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS) */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } /* Cód. */
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } /* Qtd. */
@@ -339,7 +339,7 @@
             background-color: #f1f1f1;
         }
 
-        /* Ações - Estilos para a célula e para o container interno dos botões */
+        /* Ações - Estilos para a célula e para o container interno dos botões (TEXTO MAIOR) */
         #inventoryList .action-buttons {
           display: flex;
           align-items: center; /* Centraliza o inner-container */
@@ -355,34 +355,35 @@
 
         #inventoryList .action-buttons button {
           padding: 3px 5px; /* Ajustado para dar mais espaço ao texto */
-          font-size: 0.7em; /* Reduzido ligeiramente para tentar caber o texto completo */
+          font-size: 0.8em; /* AUMENTADO para texto maior */
           width: auto; /* Adaptável ao conteúdo */
           white-space: nowrap; /* Impede quebra de linha do texto do botão */
           box-sizing: border-box; /* Garante que padding não adicione largura extra */
         }
 
-        /* Mov. Rápida - Layout vertical (AJUSTADO PARA BOTÕES MENORES) */
+        /* Mov. Rápida - Layout horizontal (+ campo -) e botões menores */
         .direct-movement-controls {
-          display: flex;
-          flex-direction: column;
-          align-items: center; /* Centraliza verticalmente o input e botões */
+          display: flex; /* MUDANÇA PARA LAYOUT HORIZONTAL */
+          flex-direction: row; /* Elementos lado a lado */
+          align-items: center; /* Alinha verticalmente o input e botões no centro */
           justify-content: center; /* Centraliza horizontalmente o grupo */
-          min-width: 70px; /* Reduzido ligeiramente o min-width da célula para acomodar tudo */
+          gap: 2px; /* Espaço entre os elementos */
+          min-width: 90px; /* Ajustado para acomodar o layout horizontal */
         }
 
         .movement-input { 
-            width: 35px; /* Reduzido o width do input */
+            width: 40px; /* Ajustado o width do input para layout horizontal */
             text-align: center; /* Centraliza o texto do input */
-            margin-bottom: 2px; /* Espaço abaixo do input */
+            margin-bottom: 0; /* Removida margem vertical para layout horizontal */
         } 
         .movement-button { 
-            width: 20px; /* Reduzido o width dos botões */
-            height: 20px; /* Reduzido o height dos botões */
+            width: 22px; /* Reduzido o width dos botões */
+            height: 22px; /* Reduzido o height dos botões */
             /* Para garantir que o '+' e '-' fiquem centralizados */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7em; /* Reduzido o tamanho da fonte do +/- */
+            font-size: 0.8em; /* Ajustado o tamanho da fonte do +/- */
         } 
 
 
@@ -527,6 +528,8 @@
             /* Ajuste específico para controles de movimentação rápida em mobile */
             .direct-movement-controls {
                 min-width: unset; /* Remove min-width fixo para mobile */
+                flex-direction: row; /* Manter layout horizontal no mobile */
+                gap: 1px; /* Espaço menor no mobile */
             }
             .movement-input {
                 width: 30px; /* Ainda menor para mobile */
@@ -543,7 +546,7 @@
     </style>
 </head>
 <body>
-    <p style="display: none;">V3.0.3: Reexibição da coluna 'Mov. Rápida'; ajustes de largura dos botões +/- e input numérico; rebalanceamento de larguras de colunas em CSS.</p>
+    <p style="display: none;">V3.0.4: Textos dos botões de ação maiores; layout da coluna 'Mov. Rápida' alterado para horizontal (+ campo -) com botões e input menores; rebalanceamento de larguras de colunas em CSS.</p>
 
     <div class="main-header-container">
         <div class="sislab-logo">
