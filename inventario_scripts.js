@@ -1,7 +1,9 @@
-// VERSÃO: 3.0.7 (inventario_scripts.js)
+// VERSÃO: 3.0.8 (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
+// - Refatorado: Implementada a função createActionButtons para modularizar a criação de botões de ação.
+// - Otimizado: Adicionado uso de DocumentFragment para melhor performance na listagem de itens.
 // - Atualizado: Changelog simplificado e focado nas mudanças desta versão.
 
 // --- SEÇÃO 1: Importações e Constantes Globais ---
@@ -18,7 +20,11 @@ import {
 } from './sislab_utils.js';
 
 let currentEditingItemId = null;
-let categoriasDisponiveis = []; // Armazena as categorias carregadas do arquivo local (usada aqui para filtros, mas populada por loadCategories)
+// A variável categoriasDisponiveis não é mais estritamente necessária aqui,
+// pois loadCategories em sislab_utils.js já popula os selects diretamente,
+// e a validação de categoria em relatórios agora usa as opções do select.
+// Mantida por compatibilidade ou se houver outro uso futuro.
+let categoriasDisponiveis = [];
 let currentFilterStatus = 'all'; // Estado atual do filtro de status (all, critical, inStock, outOfStock)
 const OPERATOR_NAME_STORAGE_KEY = 'sislab_inventario_operator_name'; // Chave para localStorage
 
@@ -27,9 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM totalmente carregado. Iniciando setup..."); // DEBUG
 
     // Carregar categorias antes de listar os itens, pois a lista depende delas
-    // loadCategories() já popula os selects. Se a variável 'categoriasDisponiveis'
-    // for necessária para validações ou lógica aqui, a função em utils deve retorná-las
-    // e essa variável deve ser populada com o retorno.
     await loadCategories();
 
     listarItensInventario(); // Lista itens após carregar categorias
@@ -66,12 +69,8 @@ function hideItemForm() {
     console.log("Formulário de item ocultado."); // DEBUG
 }
 
-// --- SEÇÃO 4: Funções de Filtros de Tabela e Pesquisa ---
-// Event listeners para filtros e pesquisa são configurados no DOMContentLoaded (SEÇÃO 2)
-// A lógica de filtragem é aplicada dentro de listarItensInventario (SEÇÃO 5)
-// A função updateFilterButtons auxilia na atualização visual dos botões de filtro.
-
-document.addEventListener('DOMContentLoaded', () => { // Adicionado aqui para manter os listeners agrupados com a lógica de filtros
+// --- SEÇÃO 4: Funções de Filtros de Tabela e Pesquisa (Listeners) ---
+document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchInventory').addEventListener('input', listarItensInventario);
     document.getElementById('filterCategory').addEventListener('change', listarItensInventario);
     document.getElementById('criticalQuantityInput').addEventListener('input', () => {
@@ -86,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => { // Adicionado aqui para ma
     document.getElementById('filterInStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'inStock'; updateFilterButtons('filterInStockItemsBtn'); listarItensInventario(); });
     document.getElementById('filterOutOfStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'outOfStock'; updateFilterButtons('filterOutOfStockItemsBtn'); listarItensInventario(); });
 });
-
 
 // --- SEÇÃO 5: Lógica de Listagem de Itens (listarItensInventario) ---
 async function listarItensInventario() {
@@ -141,8 +139,8 @@ async function listarItensInventario() {
             return;
         }
 
-        // Limpa o corpo da tabela antes de adicionar novos itens
-        inventoryListBody.innerHTML = '';
+        // Usando DocumentFragment para otimização de performance
+        const fragment = document.createDocumentFragment();
 
         filteredItems.forEach(item => {
             const row = document.createElement('tr'); // Cria a linha explicitamente
@@ -214,28 +212,15 @@ async function listarItensInventario() {
             cellLastOperator.textContent = item.ultimoOperador || 'Não definido';
             row.appendChild(cellLastOperator);
 
-            // Coluna Ações (9)
+            // Coluna Ações (9) - Usando a função refatorada
             console.log(`DEBUG: Criando célula para Ações (coluna 9) para item ${item.id}`);
             const actionsCell = document.createElement('td');
             actionsCell.classList.add('action-buttons');
+            
+            // Adiciona os botões criados pela função modularizada
+            const actionButtonsContainer = createActionButtons(item);
+            actionsCell.appendChild(actionButtonsContainer);
 
-            const editButton = document.createElement('button');
-            editButton.textContent = 'Editar';
-            editButton.classList.add('edit-btn');
-            editButton.onclick = () => loadItemForEdit(item);
-            actionsCell.appendChild(editButton);
-
-            const viewLogButton = document.createElement('button');
-            viewLogButton.textContent = 'Ver Log';
-            viewLogButton.classList.add('view-log-btn');
-            viewLogButton.onclick = () => showItemLog(item.id, item.item, item.cod);
-            actionsCell.appendChild(viewLogButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Remover';
-            deleteButton.classList.add('delete-btn');
-            deleteButton.onclick = () => deleteItem(item.id, item.item, item.cod, item.quantidade);
-            actionsCell.appendChild(deleteButton);
             row.appendChild(actionsCell); // ANEXA A CÉLULA À LINHA
             console.log(`DEBUG: Botões de Ações adicionados à actionsCell (coluna 9) para item ${item.id}. HTML da célula: ${actionsCell.outerHTML}`);
 
@@ -266,9 +251,12 @@ async function listarItensInventario() {
             row.appendChild(directMoveCell); // ANEXA A CÉLULA À LINHA
             console.log(`DEBUG: Controles de Mov. Rápida adicionados à directMoveCell (coluna 10) para item ${item.id}. HTML da célula: ${directMoveCell.outerHTML}`);
 
-            // Anexa a linha completa ao corpo da tabela
-            inventoryListBody.appendChild(row);
+            // Anexa a linha completa ao fragmento
+            fragment.appendChild(row);
         });
+
+        // Anexa o fragmento completo ao corpo da tabela (otimização de performance)
+        inventoryListBody.appendChild(fragment);
         console.log("DEBUG: Listagem de itens concluída com sucesso."); // DEBUG
 
     } catch (error) {
@@ -291,7 +279,35 @@ function updateFilterButtons(activeButtonId) {
     });
 }
 
-// --- SEÇÃO 7: Limpeza do Formulário (clearItemForm) ---
+// --- SEÇÃO 7: Criação Modular de Botões de Ação (createActionButtons) ---
+// Função para criar e retornar um container com os botões de ação para um item
+function createActionButtons(item) {
+    const container = document.createElement('div');
+    container.className = 'action-buttons-inner-container'; // Nova classe para container interno de botões
+    
+    // Removido actionsCell.classList.add('action-buttons'); daqui e colocado direto na td na seção 5.
+    // O container principal da célula já terá a classe action-buttons.
+    // Este container é para os botões dentro da célula.
+
+    const buttonsData = [
+        { text: 'Editar', className: 'edit-btn', onClick: () => loadItemForEdit(item) },
+        { text: 'Ver Log', className: 'view-log-btn', onClick: () => showItemLog(item.id, item.item, item.cod) },
+        { text: 'Remover', className: 'delete-btn', onClick: () => deleteItem(item.id, item.item, item.cod, item.quantidade) }
+    ];
+    
+    buttonsData.forEach(btn => {
+        const button = document.createElement('button');
+        button.textContent = btn.text;
+        button.className = btn.className; // A classe action-buttons-inner-container já lida com o layout flex
+        button.onclick = btn.onClick;
+        container.appendChild(button);
+    });
+    
+    return container;
+}
+
+
+// --- SEÇÃO 8: Limpeza do Formulário (clearItemForm) ---
 function clearItemForm() {
     console.log("Limpando formulário de item..."); // DEBUG
     document.getElementById('itemCod').value = '';
@@ -315,7 +331,7 @@ function clearItemForm() {
     console.log("Formulário limpo."); // DEBUG
 }
 
-// --- SEÇÃO 8: Salvar ou Atualizar Item (saveOrUpdateItem) ---
+// --- SEÇÃO 9: Salvar ou Atualizar Item (saveOrUpdateItem) ---
 async function saveOrUpdateItem() {
     console.log("Iniciando saveOrUpdateItem..."); // DEBUG
     const operatorNameInput = document.getElementById('operatorName');
@@ -522,7 +538,7 @@ async function saveOrUpdateItem() {
     }
 }
 
-// --- SEÇÃO 9: Carregar Item para Edição (loadItemForEdit) ---
+// --- SEÇÃO 10: Carregar Item para Edição (loadItemForEdit) ---
 async function loadItemForEdit(itemData) {
     console.log("Carregando item para edição:", itemData); // DEBUG
     document.getElementById('itemCod').value = itemData.cod || '';
@@ -567,7 +583,7 @@ async function loadItemForEdit(itemData) {
     console.log("Item carregado no formulário."); // DEBUG
 }
 
-// --- SEÇÃO 10: Atualizar Quantidade Diretamente (updateItemQuantityDirectly) ---
+// --- SEÇÃO 11: Atualizar Quantidade Diretamente (updateItemQuantityDirectly) ---
 async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, currentQuantity, quantityChange, unidadeMedida) {
     console.log(`Movimentação direta: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}, QtdAtual=${currentQuantity}, Mudança=${quantityChange}, Unid=${unidadeMedida}`); // DEBUG
 
@@ -633,7 +649,7 @@ async function updateItemQuantityDirectly(itemId, itemDescription, itemCod, curr
     }
 }
 
-// --- SEÇÃO 11: Deletar Item a partir do Formulário (deleteItemFromForm) ---
+// --- SEÇÃO 12: Deletar Item a partir do Formulário (deleteItemFromForm) ---
 async function deleteItemFromForm() {
     console.log("Botão 'Excluir Item' do formulário clicado."); // DEBUG
     const itemId = document.getElementById('itemIdToEdit').value;
@@ -645,7 +661,7 @@ async function deleteItemFromForm() {
     await deleteItem(itemId, itemNome, itemCod, quantidadeAtual);
 }
 
-// --- SEÇÃO 12: Deletar Item (deleteItem) ---
+// --- SEÇÃO 13: Deletar Item (deleteItem) ---
 async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
     console.log(`Iniciando exclusão de item: ID=${id}, Nome=${itemNome}, Cod=${itemCod}`); // DEBUG
     if (!confirm(`Tem certeza que deseja remover o item "${itemNome}" (Cód: ${itemCod})? Esta ação não pode ser desfeita.`)) {
@@ -691,7 +707,7 @@ async function deleteItem(id, itemNome, itemCod, quantidadeAtual) {
     }
 }
 
-// --- SEÇÃO 13: Exibir Log de Item (showItemLog) ---
+// --- SEÇÃO 14: Exibir Log de Item (showItemLog) ---
 async function showItemLog(itemId, itemDescription, itemCod) {
     console.log(`Exibindo log para item: ID=${itemId}, Desc=${itemDescription}, Cod=${itemCod}`); // DEBUG
     const itemLogSection = document.getElementById('itemLogSection');
@@ -746,7 +762,7 @@ async function showItemLog(itemId, itemDescription, itemCod) {
     }
 }
 
-// --- SEÇÃO 14: Ocultar Log de Item (hideItemLog) ---
+// --- SEÇÃO 15: Ocultar Log de Item (hideItemLog) ---
 function hideItemLog() {
     console.log("Ocultando seção de log de item."); // DEBUG
     document.getElementById('itemLogSection').style.display = 'none';
@@ -754,7 +770,7 @@ function hideItemLog() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- SEÇÃO 15: Imprimir Relatório de Estoque Atual (imprimirRelatorioInventario) ---
+// --- SEÇÃO 16: Imprimir Relatório de Estoque Atual (imprimirRelatorioInventario) ---
 async function imprimirRelatorioInventario() {
     console.log("Iniciando geração de Relatório de Estoque Atual..."); // DEBUG
     const operador = getOperadorNameFromInput(); // Usando função importada
@@ -771,27 +787,12 @@ async function imprimirRelatorioInventario() {
     if (reportOption === 'categoria') {
         const categoryInput = prompt("Digite a categoria para filtrar (ex: 'Geral', 'Reagentes'):");
         selectedCategory = categoryInput ? categoryInput.trim() : null;
-        // Nota: A variável 'categoriasDisponiveis' neste arquivo não é populada
-        // diretamente por loadCategories após a refatoração.
-        // Se a validação abaixo for estritamente necessária,
-        // loadCategories em 'sislab_utils.js' precisaria retornar o array de categorias
-        // e ele deveria ser atribuído à 'categoriasDisponiveis' aqui.
-        // Por ora, a funcionalidade base de filtro no listarItensInventario já funciona sem isso.
-        // Se precisar de validação de categorias aqui, considere buscar o array de categorias ativas.
-        // Exemplo: const todasCategorias = await loadCategories(); // loadCategories em sislab_utils.js deve retornar o array
-        // if (selectedCategory && !todasCategorias.includes(selectedCategory)) { ... }
-        // Ou, uma solução mais simples seria:
-        // document.getElementById('filterCategory').options para obter as categorias já carregadas no select.
-        // Para a versão atual, se a validação for crítica, o usuário precisaria digitar a categoria exatamente como está no select.
-
-         // Temporariamente, para evitar erro se categoriasDisponiveis não estiver populada:
-         // Se você não for usar categoriasDisponiveis aqui para validação, remova esta linha.
-         // Se for usar, precisará garantir que 'categoriasDisponiveis' seja populada.
-         // Uma maneira seria fazer loadCategories retornar as categorias e atribuir a 'categoriasDisponiveis' globalmente.
-         // Ou buscar as opções do select de filtro:
-         const filterCategorySelect = document.getElementById('filterCategory');
-         let categoriasDoSelect = Array.from(filterCategorySelect.options).map(opt => opt.value).filter(val => val !== '');
-         if (selectedCategory && !categoriasDoSelect.includes(selectedCategory)) {
+        // Para a validação de categoria aqui, 'categoriasDisponiveis' não é populada diretamente
+        // por loadCategories após a refatoração.
+        // A validação abaixo agora busca as categorias diretamente do <select> de filtro.
+        const filterCategorySelect = document.getElementById('filterCategory');
+        let categoriasDoSelect = Array.from(filterCategorySelect.options).map(opt => opt.value).filter(val => val !== '');
+        if (selectedCategory && !categoriasDoSelect.includes(selectedCategory)) {
              alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
              selectedCategory = null;
          }
@@ -944,7 +945,7 @@ async function imprimirRelatorioInventario() {
     console.log("Relatório de inventário geral gerado."); // DEBUG
 }
 
-// --- SEÇÃO 16: Gerar Relatório de Reposição (gerarRelatorioReposicao) ---
+// --- SEÇÃO 17: Gerar Relatório de Reposição (gerarRelatorioReposicao) ---
 async function gerarRelatorioReposicao() {
     console.log("Iniciando geração de Relatório de Reposição..."); // DEBUG
     const operador = getOperadorNameFromInput(); // Usando função importada
@@ -1132,7 +1133,7 @@ async function gerarRelatorioReposicao() {
     console.log("Relatório de reposição gerado."); // DEBUG
 }
 
-// --- SEÇÃO 17: Gerar Relatório de Consumo (gerarRelatorioConsumo) ---
+// --- SEÇÃO 18: Gerar Relatório de Consumo (gerarRelatorioConsumo) ---
 async function gerarRelatorioConsumo() {
     console.log("Iniciando geração de Relatório de Consumo..."); // DEBUG
     const operador = getOperadorNameFromInput(); // Usando função importada
@@ -1170,7 +1171,6 @@ async function gerarRelatorioConsumo() {
     let logsConsumo = [];
     try {
         const logRef = window.firebaseFirestoreCollection(window.firestoreDb, 'log_inventario_v3');
-        // Consulta todos os logs no período
         const q = window.firebaseFirestoreQuery(
             logRef,
             window.firebaseFirestoreWhere('dataHoraMovimento', '>=', startDate),
@@ -1327,7 +1327,7 @@ async function gerarRelatorioConsumo() {
     console.log("Relatório de consumo gerado."); // DEBUG
 }
 
-// --- SEÇÃO 18: Gerar Relatório de Vencimento (gerarRelatorioVencimento) ---
+// --- SEÇÃO 19: Gerar Relatório de Vencimento (gerarRelatorioVencimento) ---
 async function gerarRelatorioVencimento() {
     console.log("Iniciando geração de Relatório de Itens Próximos do Vencimento..."); // DEBUG
     const operador = getOperadorNameFromInput(); // Usando função importada
@@ -1532,14 +1532,8 @@ async function gerarRelatorioVencimento() {
     console.log("Relatório de vencimento gerado."); // DEBUG
 }
 
-// --- SEÇÃO 19: Lógica de Exibição/Ocultação de Histórico (showItemLog, closeItemLogBtn) ---
-// (Esta seção já está implementada nas seções 13 e 14 e foi movida para um agrupamento lógico)
+// --- SEÇÃO 20: Lógica de Exibição/Ocultação de Histórico (showItemLog, closeItemLogBtn) ---
+// (Esta seção já está implementada nas seções 14 e 15 e foi movida para um agrupamento lógico)
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeItemLogBtn').addEventListener('click', hideItemLog);
 });
-
-
-// --- SEÇÃO 20: Outras Funções e Considerações Finais ---
-// (Esta seção pode ser usada para futuras extensões ou funções que não se encaixam nas categorias acima)
-// Por exemplo, funções de inicialização de Firebase (que atualmente estão no HTML) poderiam vir para cá,
-// ou outras lógicas de interface que não se enquadram em CRUD ou Relatórios.
