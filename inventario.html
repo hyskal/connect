@@ -2,15 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.1 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-/* Ocultar a coluna 'Mov. Rápida' no cabeçalho e nas células */
-#inventoryList th:nth-child(11),
-#inventoryList td:nth-child(11) {
-    display: none;
-}
-
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
@@ -248,7 +242,7 @@
             margin-top: 20px;
             padding: 20px;
             background-color: white;
-            border-radius: 8px; 
+            border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
         }
@@ -313,7 +307,7 @@
         }
 
 
-        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS CONFORME ESPECIALISTA) */
+        /* Larguras específicas das colunas da tabela de inventário (ATUALIZADAS PARA EXIBIR MOV. RÁPIDA E AJUSTAR BOTÕES) */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } /* Cód. */
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } /* Qtd. */
@@ -324,8 +318,13 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - AJUSTADO */
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido novamente e com largura ajustada */
 
+        /* Voltar a exibir a coluna Mov. Rápida (caso display:none tenha sido aplicado antes) */
+        #inventoryList th:nth-child(11),
+        #inventoryList td:nth-child(11) {
+            display: table-cell; /* Garante que a célula seja exibida como uma célula de tabela */
+        }
 
         #inventoryList th {
             background-color: #f2f2f2;
@@ -340,31 +339,51 @@
             background-color: #f1f1f1;
         }
 
-        /* Ações - Garantir visibilidade e layout vertical (CONFORME ESPECIALISTA, SEM !IMPORTANT) */
+        /* Ações - Estilos para a célula e para o container interno dos botões */
         #inventoryList .action-buttons {
           display: flex;
-          flex-direction: column;
-          gap: 3px;
-          min-width: 100px; /* Largura mínima aumentada */
+          align-items: center; /* Centraliza o inner-container */
+          justify-content: center; /* Centraliza o inner-container */
+        }
+        /* Container interno para os botões de ação (adicionado no JS) */
+        .action-buttons-inner-container {
+            display: flex;
+            flex-direction: column; /* Empilha os botões */
+            gap: 2px; /* Espaço entre os botões */
+            min-width: 105px; /* Largura mínima para o container de botões */
         }
 
         #inventoryList .action-buttons button {
-          padding: 4px 6px; /* Ajustado para dar mais espaço ao texto */
-          font-size: 0.75em; /* Ajustado para legibilidade */
+          padding: 3px 5px; /* Ajustado para dar mais espaço ao texto */
+          font-size: 0.7em; /* Reduzido ligeiramente para tentar caber o texto completo */
           width: auto; /* Adaptável ao conteúdo */
           white-space: nowrap; /* Impede quebra de linha do texto do botão */
+          box-sizing: border-box; /* Garante que padding não adicione largura extra */
         }
 
-        /* Mov. Rápida - Layout vertical (CONFORME ESPECIALISTA, SEM !IMPORTANT) */
+        /* Mov. Rápida - Layout vertical (AJUSTADO PARA BOTÕES MENORES) */
         .direct-movement-controls {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          min-width: 80px;
+          align-items: center; /* Centraliza verticalmente o input e botões */
+          justify-content: center; /* Centraliza horizontalmente o grupo */
+          min-width: 70px; /* Reduzido ligeiramente o min-width da célula para acomodar tudo */
         }
 
-        .movement-input { width: 50px; } /* Ajustado o tamanho sem !important */
-        .movement-button { width: 25px; height: 25px; } /* Ajustado o tamanho sem !important */
+        .movement-input { 
+            width: 35px; /* Reduzido o width do input */
+            text-align: center; /* Centraliza o texto do input */
+            margin-bottom: 2px; /* Espaço abaixo do input */
+        } 
+        .movement-button { 
+            width: 20px; /* Reduzido o width dos botões */
+            height: 20px; /* Reduzido o height dos botões */
+            /* Para garantir que o '+' e '-' fiquem centralizados */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em; /* Reduzido o tamanho da fonte do +/- */
+        } 
 
 
         /* Estilos para a seção de log de item */
@@ -449,7 +468,7 @@
         }
 
 
-        /* Media Query para telas menores: colunas empilham (ATUALIZADAS CONFORME ESPECIALISTA) */
+        /* Media Query para telas menores: colunas empilham (ATUALIZADAS PARA EXIBIR MOV. RÁPIDA) */
         @media (max-width: 900px) {
             /* Seções Superior e Inferior empilham */
             .top-section-container, .bottom-section-container {
@@ -481,24 +500,50 @@
             #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; } 
             #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } 
             #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO para mobile */
-            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - AUMENTADO para mobile */
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada para mobile */
             
+            /* Exibir a coluna 'Mov. Rápida' no mobile também */
+            #inventoryList th:nth-child(11),
+            #inventoryList td:nth-child(11) {
+                display: table-cell; 
+            }
+
             /* Ajuste específico para botões de ação em mobile */
-            #inventoryList .action-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; } /* Botões em linha no mobile */
-            #inventoryList .action-buttons button { font-size: 0.6em; padding: 2px; margin: 1px; } /* Ajuste de tamanho para caber */
+            #inventoryList .action-buttons-inner-container { 
+                flex-direction: row; /* Botões em linha no mobile */
+                flex-wrap: wrap; /* Permite quebrar linha se necessário */
+                justify-content: center; 
+                align-items: center;
+                gap: 1px; /* Espaço mínimo entre botões */
+                min-width: unset; /* Remove min-width fixo para mobile */
+            }
+            #inventoryList .action-buttons button { 
+                font-size: 0.6em; /* Ajuste de tamanho para caber */
+                padding: 2px; 
+                margin: 1px; 
+                flex-shrink: 0; /* Impede encolhimento */
+            }
             
-            .inventory-filters .form-field {
-                flex-basis: 100%; 
+            /* Ajuste específico para controles de movimentação rápida em mobile */
+            .direct-movement-controls {
+                min-width: unset; /* Remove min-width fixo para mobile */
             }
-            .inventory-filters .filter-buttons-group {
-                width: 100%;
-                justify-content: space-around;
+            .movement-input {
+                width: 30px; /* Ainda menor para mobile */
+                font-size: 0.65em; /* Fonte menor para mobile */
             }
+            .movement-button {
+                width: 18px; /* Ainda menor para mobile */
+                height: 18px;
+                font-size: 0.6em; /* Fonte menor para mobile */
+            }
+
+            /* ... (o restante do seu CSS para mobile) ... */
         }
     </style>
 </head>
 <body>
-    <p style="display: none;">V3.0.2: Ajustes de CSS (larguras, min-width, font-size) para colunas 'Ações' e 'Mov. Rápida'; layout de botões de ação em linha para mobile.</p>
+    <p style="display: none;">V3.0.3: Reexibição da coluna 'Mov. Rápida'; ajustes de largura dos botões +/- e input numérico; rebalanceamento de larguras de colunas em CSS.</p>
 
     <div class="main-header-container">
         <div class="sislab-logo">
