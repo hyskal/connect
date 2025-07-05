@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>SISLAB 3.0.0 - Controle de Inventário (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
+    <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
         body {
             font-family: Arial, sans-serif;
@@ -516,9 +516,10 @@
                 justify-content: space-around;
             }
         }
-</style>
+    </style>
 </head>
 <body>
+    <p style="display: none;">V3.0.1: ajuste de largura das colunas 'Ações' e 'Mov. Rápida' na tabela de inventário; split do código JS em módulos.</p>
 
     <div class="main-header-container">
         <div class="sislab-logo">
@@ -690,11 +691,11 @@
     </div>
 
     <script type="module">
-        // Importa as funções do SDK do Firebase (as mesmas do index.html)
+        // Importa as funções do SDK do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-        
-        // Sua configuração do Firebase (a mesma do index.html)
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+        // Sua configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
             authDomain: "sislab-cetep.firebaseapp.com",
@@ -706,10 +707,10 @@
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app); 
+        const db = getFirestore(app);
 
         // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
-        // Isso permite que o inventario_scripts.js (que é um script 'clássico' ou 'module') as use
+        // Isso permite que os outros scripts as utilizem.
         window.firestoreDb = db;
         window.firebaseFirestoreCollection = collection;
         window.firebaseFirestoreAddDoc = addDoc;
@@ -719,11 +720,14 @@
         window.firebaseFirestoreLimit = limit;
         window.firebaseFirestoreDeleteDoc = deleteDoc;
         window.firebaseFirestoreDoc = doc;
-        window.firebaseFirestoreUpdateDoc = updateDoc; 
-        window.firebaseFirestoreWhere = where; 
-        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreUpdateDoc = updateDoc;
+        window.firebaseFirestoreWhere = where;
+        window.firebaseFirestoreServerTimestamp = serverTimestamp;
         window.firebaseFirestoreGetDoc = getDoc;
-        window.firebaseFirestoreRunTransaction = runTransaction; 
+        window.firebaseFirestoreRunTransaction = runTransaction;
+        window.firebaseFirestoreTimestamp = Timestamp; // Exportar Timestamp para verificação em loadItemForEdit
     </script>
-    <script src="inventario_scripts.js" type="module"></script> </body>
+    <script src="sislab_utils.js" type="module"></script>
+    <script src="inventario_scripts.js" type="module"></script>
+</body>
 </html>
