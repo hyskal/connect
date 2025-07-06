@@ -143,6 +143,28 @@
             background-color: #0F1D33;
         }
 
+        /* Estilos para o contêiner de filtros */
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .filter-container label {
+            font-weight: bold;
+            color: #334466;
+        }
+
+        .filter-container select {
+            padding: 8px 10px;
+            border: 1px solid #AABBDD;
+            border-radius: 4px;
+            font-size: 0.95em;
+            background-color: #f9f9f9;
+        }
+
         /* Estilos para a Tabela de Log */
         #inventoryLogTable {
             width: 100%;
@@ -162,7 +184,7 @@
             white-space: normal; /* Permite quebra de linha por padrão */
         }
 
-        /* Definição das larguras das colunas do log (AJUSTADAS) */
+        /* Definição das larguras das colunas do log */
         #inventoryLogTable th:nth-child(1), #inventoryLogTable td:nth-child(1) { width: 8%; }  /* Cód. Item */
         #inventoryLogTable th:nth-child(2), #inventoryLogTable td:nth-child(2) { width: 20%; } /* Descrição Item */
         #inventoryLogTable th:nth-child(3), #inventoryLogTable td:nth-child(3) { width: 12%; white-space: nowrap; } /* Operação - AUMENTADO, impede quebra */
@@ -215,6 +237,18 @@
     <div class="page-content-container">
         <h3>Registro de Todas as Movimentações do Inventário:</h3>
         
+        <div class="filter-container">
+            <label for="filterOperationType">Filtrar por Operação:</label>
+            <select id="filterOperationType">
+                <option value="all">Todas as Operações</option>
+                <option value="CADASTRO">CADASTRO</option>
+                <option value="ENTRADA">ENTRADA</option>
+                <option value="SAIDA">SAIDA</option>
+                <option value="REMOCAO">REMOCAO</option>
+                <option value="AJUSTE">AJUSTE</option>
+            </select>
+        </div>
+
         <div class="table-scroll-container">
             <table id="inventoryLogTable">
                 <thead>
@@ -238,13 +272,15 @@
     </div>
 
     <div class="action-buttons-container">
+        <button onclick="window.location.href='inventario.html'">Voltar para Controle de Estoque</button>
         <button onclick="window.location.href='admin.html'">Voltar para Área Administrativa</button>
     </div>
 
     <script type="module">
         // Importa as funções do SDK do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        // Adicionando 'where' para a funcionalidade de filtro
+        import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
         
         // Importa as funções de formatação de data de sislab_utils.js
         import { formatDateTimeToDisplay } from './sislab_utils.js'; // Ajuste o caminho conforme necessário
@@ -262,9 +298,20 @@
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
+        // Variável de estado para o filtro de operação
+        let currentLogFilterOperation = 'all'; // 'all' para todas as operações por padrão
 
         // Função principal para carregar e exibir o log
-        document.addEventListener('DOMContentLoaded', listarLogGeralInventario);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Vincula o event listener do filtro
+            document.getElementById('filterOperationType').addEventListener('change', (event) => {
+                currentLogFilterOperation = event.target.value;
+                listarLogGeralInventario(); // Recarrega a tabela com o novo filtro
+            });
+
+            listarLogGeralInventario(); // Carrega o log inicialmente
+        });
 
         async function listarLogGeralInventario() {
             const logTableBody = document.querySelector('#inventoryLogTable tbody');
@@ -277,15 +324,25 @@
             }
 
             try {
-                // Certifique-se de que o nome da coleção está correto ('log_inventario_v3')
-                const logRef = collection(db, 'log_inventario_v3'); 
-                // Ordena por data e hora da movimentação (mais recente primeiro)
-                const q = query(logRef, orderBy('dataHoraMovimento', 'desc')); 
+                const logRef = collection(db, 'log_inventario_v3');
+                let q;
+
+                // Constrói a query com base no filtro de operação
+                if (currentLogFilterOperation === 'all') {
+                    q = query(logRef, orderBy('dataHoraMovimento', 'desc'));
+                } else {
+                    q = query(logRef, where('tipoMovimento', '==', currentLogFilterOperation), orderBy('dataHoraMovimento', 'desc'));
+                }
+                
                 const querySnapshot = await getDocs(q);
                 const logs = querySnapshot.docs.map(doc => doc.data());
 
                 if (logs.length === 0) {
-                    logTableBody.innerHTML = '<tr><td colspan="9">Nenhum registro de movimentação encontrado.</td></tr>';
+                    let noRecordsMessage = "Nenhum registro de movimentação encontrado.";
+                    if (currentLogFilterOperation !== 'all') {
+                        noRecordsMessage = `Nenhum registro de '${currentLogFilterOperation}' encontrado.`;
+                    }
+                    logTableBody.innerHTML = `<tr><td colspan="9">${noRecordsMessage}</td></tr>`;
                     return;
                 }
 
