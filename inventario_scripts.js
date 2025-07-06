@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8h (inventario_scripts.js)
+// VERSÃO: 3.0.8g (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -879,60 +879,38 @@ async function imprimirRelatorioInventario() {
     console.log("DEBUG(Relatorio): Cabeçalho do PDF gerado. Gerando título."); // DEBUG 13
 
     // --- Título do Relatório ---
-    const pageLeftMargin = 20; // Margem esquerda da página
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const tableWidth = pageWidth - (2 * pageLeftMargin); // Largura total da tabela
-    const tableRightBoundary = pageLeftMargin + tableWidth;
-
     doc.setFontSize(14);
     let reportTitle = "RELATÓRIO DE INVENTÁRIO ATUAL (GERAL)";
-    doc.text(reportTitle, pageWidth / 2, currentY, null, null, "center"); // Centraliza título
+    doc.text(reportTitle, 105, currentY, null, null, "center");
     currentY += 8;
     doc.setLineWidth(0.2);
-    doc.line(pageLeftMargin, currentY, tableRightBoundary, currentY); // Linha delimitadora da largura da tabela
+    doc.line(20, currentY, 190, currentY);
     currentY += 10;
     console.log("DEBUG(Relatorio): Título do PDF gerado. Adicionando conteúdo da tabela."); // DEBUG 14
 
     // --- Conteúdo: Itens do Inventário ---
     doc.setFontSize(8);
+    const startX = 5;
     // Larguras das colunas do relatório
-    // Cód (15), Descrição+Obs (60), Qtd (15), Unid (15), Categoria (25), Localização (25), Validade (25), Últ. Atualização (20)
-    // Total de 205. Largura da tabela é 190. Precisa ajustar!
-    // A soma deve ser igual à tableWidth (170)
-    const totalContentWidth = 170; // 190 (largura da página) - 2 * 20 (margens laterais) = 150.
-    // Vamos redefinir as larguras para somarem 170
-    const colWidths = [
-        15, // Cód.
-        60, // Descrição + Obs (aumentado para comportar mais texto e obs)
-        10, // Qtd. (reduzido)
-        15, // Unid.
-        20, // Categoria (reduzido)
-        20, // Localização (reduzido)
-        25, // Validade
-        5,  // Últ. Operador (MUITO REDUZIDO, será apenas data/hora, alinhado com a direita da coluna)
-        // Últ. Atualização - será quebrada em duas linhas.
-    ];
-    // A soma acima é 15+60+10+15+20+20+25+5 = 170
-    
-    // As colunas no forEach são 0 a 7
-    // colPositions = [0: Cód, 1: Descrição, 2: Qtd, 3: Unid, 4: Categoria, 5: Localização, 6: Validade, 7: Últ. Atualização]
+    // Cód (15), Descrição (40), Qtd (15), Unid (15), Categoria (25), Localização (25), Validade (25), Últ. Atualização (25)
+    const colWidths = [15, 40, 15, 15, 25, 25, 25, 25]; 
     const colPositions = [];
-    let currentColumnX = pageLeftMargin; // Começa na margem esquerda da página
-    colWidths.forEach((width, index) => {
-        colPositions.push(currentColumnX);
-        currentColumnX += width;
+    let currentX = startX;
+    colWidths.forEach(width => {
+        colPositions.push(currentX);
+        currentX += width;
     });
 
     // Títulos das colunas
     doc.setFont(undefined, 'bold');
     doc.text("CÓD.", colPositions[0], currentY);
-    doc.text("DESCRIÇÃO", colPositions[1], currentY); // Descrição alinhada com a coluna 1
+    doc.text("DESCRIÇÃO", colPositions[1], currentY);
     doc.text("QTD.", colPositions[2], currentY);
     doc.text("UNID.", colPositions[3], currentY);
     doc.text("CATEGORIA", colPositions[4], currentY);
     doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
     doc.text("VALIDADE", colPositions[6], currentY);
-    doc.text("ÚLT. ATUAL.", colPositions[7], currentY); // Título abreviado
+    doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
     currentY += 4; // Espaço após os títulos das colunas
     doc.setFont(undefined, 'normal');
     console.log("DEBUG(Relatorio): Títulos das colunas do relatório gerados."); // DEBUG 15
@@ -940,53 +918,42 @@ async function imprimirRelatorioInventario() {
     itensInventario.forEach((item, index) => { // Adicionado 'index' para debug de loop
         console.log(`DEBUG(Relatorio): Processando item para PDF: ${item.item} (Índice: ${index})`); // DEBUG 16
         
-        let initialYForThisRow = currentY; // Salva o Y inicial da linha para desenhar todos os textos
-        let maxHeightCalculatedForThisRow = 4; // Altura mínima de uma linha de texto (p.ex., para o código)
+        let initialY = currentY; // Salva o Y inicial da linha para desenhar todos os textos
+        let maxHeightInRow = 4; // Altura mínima de uma linha de texto (p.ex., para a descrição ou outros campos)
 
-        // --- Alinhamento da Descrição com o Código e Observações Juntas ---
+        // Processar Descrição (pode ter várias linhas)
         doc.setFontSize(8); // Tamanho normal da fonte para dados
-        doc.setTextColor(0); // Cor normal
+        const descriptionText = item.item || 'N/D';
+        const splitDescription = doc.splitTextToSize(descriptionText, colWidths[1] - 2); // colWidths[1] = 40
+        doc.text(splitDescription, colPositions[1], initialY);
+        maxHeightInRow = Math.max(maxHeightInRow, splitDescription.length * 4); // Altura da descrição, 4px por linha
 
-        let combinedDescriptionText = item.item || 'N/D';
-        const itemObsText = item.observacoes && item.observacoes !== 'Não definido' && item.observacoes.trim() !== '' ? `\nObs: ${item.observacoes}` : '';
-        combinedDescriptionText += itemObsText;
-
-        // Quebrar o texto combinado dentro da largura da coluna de Descrição (colWidths[1])
-        const splitCombinedDescription = doc.splitTextToSize(combinedDescriptionText, colWidths[1] - 2); // 2 para um pequeno padding
-        doc.text(splitCombinedDescription, colPositions[1], initialYForThisRow); // Alinhamento da descrição na sua própria coluna
-        
-        // Calcular a altura que a descrição/observação ocupa
-        maxHeightCalculatedForThisRow = Math.max(maxHeightCalculatedForThisRow, splitCombinedDescription.length * 4); // 4px por linha de texto normal (pode ser ajustado se a fonte da obs for menor)
-
-        // --- Processar Última Atualização (Data e Hora Quebradas) ---
-        const dataUltimaAtualizacaoDate = item.dataUltimaModificacao ? item.dataUltimaModificacao.toDate() : null;
-        let lastUpdateHeight = 4;
-        if (dataUltimaAtualizacaoDate) {
-            const datePart = formatDateToDisplay(dataUltimaAtualizacaoDate);
-            const timePart = formatDateTimeToDisplay(dataUltimaAtualizacaoDate).substring(11); // Pega só a parte da hora "HH:MM:SS"
-            
-            const lastUpdateText = `${datePart}\n${timePart}`;
-            // Quebra a data e a hora na largura da coluna (colWidths[7] = 20)
-            const splitDateTime = doc.splitTextToSize(lastUpdateText, colWidths[7] - 2); 
-            doc.text(splitDateTime, colPositions[7], initialYForThisRow); // Alinha na coluna de Últ. Atualização
-            lastUpdateHeight = splitDateTime.length * 4; // 4px por linha
+        // Processar Observações (se existirem e se encaixarem na largura da descrição)
+        let itemObsText = '';
+        let splitObs = [];
+        if (item.observacoes && item.observacoes !== 'Não definido' && item.observacoes.trim() !== '') {
+            itemObsText = `Obs: ${item.observacoes}`;
+            doc.setFontSize(7); // Fonte menor para observação
+            doc.setTextColor(100); // Cor mais suave para observação
+            // colWidths[1] = 40, usar uma largura ligeiramente menor para observações para evitar invasão
+            splitObs = doc.splitTextToSize(itemObsText, colWidths[1] - 5); 
+            doc.text(splitObs, colPositions[1] + 2, initialY + maxHeightInRow); // Alinha com a descrição, um pouco indentado
+            maxHeightInRow += (splitObs.length * 3); // 3px por linha de observação
+            doc.setFontSize(8); // Volta ao tamanho da fonte normal
+            doc.setTextColor(0); // Volta à cor preta normal
         }
-        maxHeightCalculatedForThisRow = Math.max(maxHeightCalculatedForThisRow, lastUpdateHeight);
-
-
-        // --- Processar Outras Colunas (Alinhamento Vertical com o Conteúdo mais Alto) ---
-        // Desenha todos os outros campos na mesma initialYForThisRow
-        doc.text(item.cod || 'N/D', colPositions[0], initialYForThisRow); // CÓDIGO ALINHADO COM A POSIÇÃO 0
-        // Descrição e Obs já tratadas
-        doc.text(item.quantidade.toString() || 'N/D', colPositions[2], initialYForThisRow);
-        doc.text(item.unidadeMedida || 'Não definida', colPositions[3], initialYForThisRow);
-        doc.text(item.categoria || 'Geral', colPositions[4], initialYForThisRow);
-        doc.text(item.localizacao || 'Não definido', colPositions[5], initialYForThisRow);
-        doc.text(formatDateToDisplay(item.dataVencimento ? item.dataVencimento.toDate() : null) || 'N/D', colPositions[6], initialYForThisRow);
-        // Últ. Atualização já tratada
         
-        // Atualiza currentY para a próxima linha do PDF, considerando a altura máxima calculada
-        currentY = initialYForThisRow + maxHeightCalculatedForThisRow + 2; // +2 para um pequeno espaço extra entre itens
+        // Colunas com texto único, sempre na mesma linha Y inicial da linha do item
+        doc.text(item.cod || 'N/D', colPositions[0], initialY);
+        doc.text(item.quantidade.toString() || 'N/D', colPositions[2], initialY);
+        doc.text(item.unidadeMedida || 'Não definida', colPositions[3], initialY);
+        doc.text(item.categoria || 'Geral', colPositions[4], initialY);
+        doc.text(item.localizacao || 'Não definido', colPositions[5], initialY);
+        doc.text(formatDateToDisplay(item.dataVencimento ? item.dataVencimento.toDate() : null) || 'N/D', colPositions[6], initialY);
+        doc.text(formatDateTimeToDisplay(item.dataUltimaModificacao ? item.dataUltimaModificacao.toDate() : null) || 'N/D', colPositions[7], initialY);
+        
+        // Atualiza currentY para a próxima linha do PDF, considerando a altura máxima do item recém-adicionado
+        currentY = initialY + maxHeightInRow + 2; // +2 para um pequeno espaço extra
 
         // --- Verificação de Quebra de Página ---
         if (currentY > 280) { // 280 é a margem inferior aproximada da página
@@ -999,11 +966,9 @@ async function imprimirRelatorioInventario() {
             doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
             doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
             doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
-            doc.setLineWidth(0.5); doc.line(pageLeftMargin, currentY, tableRightBoundary, currentY); // Linha delimitadora
-            currentY += 10;
-            doc.setFontSize(14); doc.text(`${reportTitle} (Continuação)`, pageWidth / 2, currentY, null, null, "center"); currentY += 8;
-            doc.setLineWidth(0.2); doc.line(pageLeftMargin, currentY, tableRightBoundary, currentY); // Linha delimitadora
-            currentY += 10;
+            doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
+            doc.setFontSize(14); doc.text(`${reportTitle} (Continuação)`, 105, currentY, null, null, "center"); currentY += 8;
+            doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
 
             doc.setFontSize(8); // Resetando font size após o título
             doc.setFont(undefined, 'bold');
@@ -1014,7 +979,7 @@ async function imprimirRelatorioInventario() {
             doc.text("CATEGORIA", colPositions[4], currentY);
             doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
             doc.text("VALIDADE", colPositions[6], currentY);
-            doc.text("ÚLT. ATUAL.", colPositions[7], currentY);
+            doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
             currentY += 4; // Espaço após os títulos das colunas na nova página
             doc.setFont(undefined, 'normal'); // Resetar fonte para normal
         }
@@ -1022,7 +987,7 @@ async function imprimirRelatorioInventario() {
         // --- Adicionar linha separadora após cada item (exceto o último) ---
         if (index < itensInventario.length - 1) { 
             doc.setLineWidth(0.1);
-            doc.line(pageLeftMargin, currentY, tableRightBoundary, currentY); // Desenha a linha na largura da tabela
+            doc.line(colPositions[0], currentY, colPositions[0] + colWidths.reduce((a, b) => a + b, 0), currentY); // Desenha a linha
             currentY += 3; // Espaço após a linha separadora para o próximo item
         }
     });
@@ -1031,7 +996,8 @@ async function imprimirRelatorioInventario() {
     // --- Rodapé do PDF ---
     doc.setPage(doc.internal.getNumberOfPages());
     doc.setFontSize(9);
-    doc.text(`Documento gerado automaticamente pelo SISLAB. Operador: ${operador}`, pageWidth / 2, 280, null, null, "center"); // Centraliza rodapé
+    doc.text(`Documento gerado automaticamente pelo SISLAB. Operador: ${operador}`, 105, 280, null, null, "center"); // Inclui o nome do operador no rodapé
+
     console.log("DEBUG(Relatorio): Rodapé do PDF gerado. Tentando abrir o PDF."); // DEBUG 19
     try {
         doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
@@ -1044,6 +1010,7 @@ async function imprimirRelatorioInventario() {
 
     console.log("DEBUG(Relatorio): Geração de relatório geral concluída."); // DEBUG 22
 }
+
 // --- SEÇÃO 17: Gerar Relatório de Reposição (gerarRelatorioReposicao) ---
 async function gerarRelatorioReposicao() {
     console.log("Iniciando geração de Relatório de Reposição..."); // DEBUG
