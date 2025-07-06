@@ -216,7 +216,7 @@ async function listarItensInventario() {
             console.log(`DEBUG: Criando célula para Ações (coluna 9) para item ${item.id}`);
             const actionsCell = document.createElement('td');
             actionsCell.classList.add('action-buttons');
-            
+
             // Adiciona os botões criados pela função modularizada
             const actionButtonsContainer = createActionButtons(item);
             actionsCell.appendChild(actionButtonsContainer);
@@ -230,24 +230,27 @@ async function listarItensInventario() {
             directMoveCell.classList.add('direct-movement-controls');
             directMoveCell.style.whiteSpace = 'nowrap'; // Garante que não quebre linha dentro da célula
 
+            // --- MUDANÇA AQUI: Ordem dos elementos para + (quantidade) - ---
+            const plusButton = document.createElement('button');
+            plusButton.textContent = '+';
+            plusButton.classList.add('movement-button', 'plus');
+            plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value), item.unidadeMedida || 'Unidade');
+            directMoveCell.appendChild(plusButton); // ANEXA O BOTÃO '+' PRIMEIRO
+
             const moveInput = document.createElement('input');
             moveInput.type = 'number';
             moveInput.value = '1';
             moveInput.min = '1';
             moveInput.classList.add('movement-input');
-            directMoveCell.appendChild(moveInput);
-
-            const plusButton = document.createElement('button');
-            plusButton.textContent = '+';
-            plusButton.classList.add('movement-button', 'plus');
-            plusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, parseInt(moveInput.value), item.unidadeMedida || 'Unidade');
-            directMoveCell.appendChild(plusButton);
+            directMoveCell.appendChild(moveInput); // ANEXA O CAMPO DE QUANTIDADE
 
             const minusButton = document.createElement('button');
             minusButton.textContent = '-';
             minusButton.classList.add('movement-button', 'minus');
             minusButton.onclick = () => updateItemQuantityDirectly(item.id, item.item, item.cod, item.quantidade, -parseInt(moveInput.value), item.unidadeMedida || 'Unidade');
-            directMoveCell.appendChild(minusButton);
+            directMoveCell.appendChild(minusButton); // ANEXA O BOTÃO '-' POR ÚLTIMO
+            // --- FIM DA MUDANÇA DE ORDEM ---
+
             row.appendChild(directMoveCell); // ANEXA A CÉLULA À LINHA
             console.log(`DEBUG: Controles de Mov. Rápida adicionados à directMoveCell (coluna 10) para item ${item.id}. HTML da célula: ${directMoveCell.outerHTML}`);
 
