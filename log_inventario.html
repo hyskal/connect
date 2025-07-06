@@ -54,7 +54,7 @@
             top: -7px; /* Posiciona la tampa acima do tubo */
             left: -1px; /* Ajusta a posição lateral para centralizar */
             border-radius: 4px 4px 0 0;
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para a tampa */
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tampa */
         }
 
         /* Cores das tampas (Reaproveitadas do index.html) */
@@ -155,22 +155,23 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            font-size: 0.9em;
+            font-size: 0.9em; /* Um pouco menor para caber mais info */
             vertical-align: top;
             box-sizing: border-box; /* Inclui padding e borda na largura total */
             word-wrap: break-word; /* Permite quebra de palavra em colunas estreitas */
+            white-space: normal; /* Permite quebra de linha por padrão */
         }
 
-        /* Definição das larguras das colunas do log */
+        /* Definição das larguras das colunas do log (AJUSTADAS) */
         #inventoryLogTable th:nth-child(1), #inventoryLogTable td:nth-child(1) { width: 8%; }  /* Cód. Item */
         #inventoryLogTable th:nth-child(2), #inventoryLogTable td:nth-child(2) { width: 20%; } /* Descrição Item */
-        #inventoryLogTable th:nth-child(3), #inventoryLogTable td:nth-child(3) { width: 10%; } /* Operação */
+        #inventoryLogTable th:nth-child(3), #inventoryLogTable td:nth-child(3) { width: 12%; white-space: nowrap; } /* Operação - AUMENTADO, impede quebra */
         #inventoryLogTable th:nth-child(4), #inventoryLogTable td:nth-child(4) { width: 8%; }  /* Qtd. Mov. */
         #inventoryLogTable th:nth-child(5), #inventoryLogTable td:nth-child(5) { width: 8%; }  /* Qtd. Antes */
         #inventoryLogTable th:nth-child(6), #inventoryLogTable td:nth-child(6) { width: 8%; }  /* Qtd. Depois */
         #inventoryLogTable th:nth-child(7), #inventoryLogTable td:nth-child(7) { width: 12%; } /* Operador */
         #inventoryLogTable th:nth-child(8), #inventoryLogTable td:nth-child(8) { width: 15%; } /* Data e Hora */
-        #inventoryLogTable th:nth-child(9), #inventoryLogTable td:nth-child(9) { width: 15%; } /* Observações */
+        #inventoryLogTable th:nth-child(9), #inventoryLogTable td:nth-child(9) { width: 9%; } /* Observações - REDUZIDO */
 
 
         #inventoryLogTable th {
