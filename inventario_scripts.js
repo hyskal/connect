@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8c (inventario_scripts.js)
+// VERSÃO: 3.0.8d (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -798,54 +798,58 @@ function hideItemLog() {
 
 // --- SEÇÃO 16: Imprimir Relatório de Estoque Atual (imprimirRelatorioInventario) ---
 async function imprimirRelatorioInventario() {
-    console.log("Iniciando geração de Relatório de Estoque Atual..."); // DEBUG
+    console.log("DEBUG(Relatorio): Botão 'Imprimir Relatório de Estoque Atual' clicado. Iniciando geração."); // DEBUG 1
     const operador = getOperadorNameFromInput(); // Usando função importada
     if (operador === null) {
         alert("Operação cancelada: Nome do operador é obrigatório.");
-        console.log("Relatório cancelado: Operador não fornecido."); // DEBUG
+        console.log("DEBUG(Relatorio): Operação cancelada: Nome do operador vazio."); // DEBUG 2
         return;
     }
+    console.log(`DEBUG(Relatorio): Operador identificado: ${operador}. Prosseguindo.`); // DEBUG 3
 
-    // REMOVIDO: Solicitação do tipo de relatório e categoria.
     let orderByField = 'item'; // Sempre ordena por item para o relatório geral
     let selectedCategory = null; // Sempre null para imprimir o relatório completo
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Banco de dados não inicializado. Não é possível imprimir o relatório de inventário.");
-        console.error("Firestore DB não inicializado para relatório de inventário."); // DEBUG
+        console.error("DEBUG(Relatorio): Erro: Firestore DB não inicializado."); // DEBUG 4
         return;
     }
+    console.log("DEBUG(Relatorio): Firestore DB inicializado. Buscando itens."); // DEBUG 5
 
     let itensInventario = [];
     try {
         const inventarioRef = window.firebaseFirestoreCollection(window.firestoreDb, 'inventario_v3');
         let q = window.firebaseFirestoreQuery(inventarioRef, window.firebaseFirestoreOrderBy(orderByField, 'asc'));
+        console.log("DEBUG(Relatorio): Query Firestore construída."); // DEBUG 6
 
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
         itensInventario = querySnapshot.docs.map(doc => doc.data());
-        console.log(`Itens carregados para relatório: ${itensInventario.length}`); // DEBUG
-
-        // REMOVIDA: Lógica de filtragem por categoria, pois sempre será relatório geral
-        // if (selectedCategory) {
-        //     itensInventario = itensInventario.filter(item => item.categoria === selectedCategory);
-        //     console.log(`Itens filtrados por categoria '${selectedCategory}': ${itensInventario.length}`); // DEBUG
-        // }
+        console.log(`DEBUG(Relatorio): Itens carregados do Firestore: ${itensInventario.length} itens.`); // DEBUG 7
 
     }
     catch (error) {
-        console.error("Erro ao carregar itens para o relatório de inventário:", error); // DEBUG
+        console.error("DEBUG(Relatorio): Erro ao carregar itens para o relatório de inventário:", error); // DEBUG 8
         alert("Erro ao carregar itens para o relatório. Verifique o console.");
         return;
     }
 
     if (itensInventario.length === 0) {
         alert("Não há itens no inventário para imprimir o relatório com os filtros aplicados.");
+        console.log("DEBUG(Relatorio): Nenhum item encontrado para o relatório."); // DEBUG 9
         return;
     }
+    console.log("DEBUG(Relatorio): Itens disponíveis para geração do relatório. Iniciando jsPDF."); // DEBUG 10
 
     const { jsPDF } = window.jspdf;
+    if (typeof jsPDF === 'undefined') {
+        console.error("DEBUG(Relatorio): Erro: jsPDF não está definido. Verifique a importação no HTML."); // DEBUG 11
+        alert("A biblioteca de PDF não foi carregada. Não é possível gerar o relatório.");
+        return;
+    }
     const doc = new jsPDF();
     let currentY = 15;
+    console.log("DEBUG(Relatorio): jsPDF inicializado. Gerando cabeçalho."); // DEBUG 12
 
     // --- Cabeçalho do PDF ---
     doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
@@ -854,16 +858,17 @@ async function imprimirRelatorioInventario() {
     doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
     doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center"); currentY += 6;
     doc.setLineWidth(0.5); doc.line(20, currentY, 190, currentY); currentY += 10;
+    console.log("DEBUG(Relatorio): Cabeçalho do PDF gerado. Gerando título."); // DEBUG 13
 
     // --- Título do Relatório ---
     doc.setFontSize(14);
-    // Título fixo para Relatório de Inventário Atual Geral
     let reportTitle = "RELATÓRIO DE INVENTÁRIO ATUAL (GERAL)";
     doc.text(reportTitle, 105, currentY, null, null, "center");
     currentY += 8;
     doc.setLineWidth(0.2);
     doc.line(20, currentY, 190, currentY);
     currentY += 10;
+    console.log("DEBUG(Relatorio): Título do PDF gerado. Adicionando conteúdo da tabela."); // DEBUG 14
 
     // --- Conteúdo: Itens do Inventário ---
     doc.setFontSize(8);
@@ -888,11 +893,14 @@ async function imprimirRelatorioInventario() {
     doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
     currentY += 4;
     doc.setFont(undefined, 'normal');
+    console.log("DEBUG(Relatorio): Títulos das colunas do relatório gerados."); // DEBUG 15
 
-    itensInventario.forEach(item => {
+    itensInventario.forEach((item, index) => { // Adicionado 'index' para debug de loop
+        console.log(`DEBUG(Relatorio): Processando item para PDF: ${item.item} (Índice: ${index})`); // DEBUG 16
         if (currentY > 280) {
             doc.addPage();
             currentY = 15;
+            console.log("DEBUG(Relatorio): Nova página adicionada ao PDF."); // DEBUG 17
 
             // Cabeçalho e Título em nova página
             doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
@@ -943,16 +951,24 @@ async function imprimirRelatorioInventario() {
 
 
     });
+    console.log("DEBUG(Relatorio): Conteúdo da tabela do relatório adicionado. Gerando rodapé."); // DEBUG 18
 
     // --- Rodapé do PDF ---
     doc.setPage(doc.internal.getNumberOfPages());
     doc.setFontSize(9);
     doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
 
-    doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
+    console.log("DEBUG(Relatorio): Rodapé do PDF gerado. Tentando abrir o PDF."); // DEBUG 19
+    try {
+        doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
+        console.log("DEBUG(Relatorio): Chamada doc.output() bem-sucedida."); // DEBUG 20
+        alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
+    } catch (outputError) {
+        console.error("DEBUG(Relatorio): Erro ao gerar ou abrir o PDF (doc.output):", outputError); // DEBUG 21
+        alert("Erro ao gerar ou exibir o PDF. Verifique o console para detalhes.");
+    }
 
-    alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de inventário gerado."); // DEBUG
+    console.log("DEBUG(Relatorio): Geração de relatório geral concluída."); // DEBUG 22
 }
 
 // --- SEÇÃO 17: Gerar Relatório de Reposição (gerarRelatorioReposicao) ---
