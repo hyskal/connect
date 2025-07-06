@@ -1002,7 +1002,7 @@ async function imprimirRelatorioInventario() {
     try {
         doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
         console.log("DEBUG(Relatorio): Chamada doc.output() bem-sucedida."); // DEBUG 20
-        alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
+        //alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
     } catch (outputError) {
         console.error("DEBUG(Relatorio): Erro ao gerar ou abrir o PDF (doc.output):", outputError); // DEBUG 21
         alert("Erro ao gerar ou exibir o PDF. Verifique o console para detalhes.");
