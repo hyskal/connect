@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8f (inventario_scripts.js)
+// VERSÃO: 3.0.8g (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -891,9 +891,9 @@ async function imprimirRelatorioInventario() {
     // --- Conteúdo: Itens do Inventário ---
     doc.setFontSize(8);
     const startX = 5;
-    // Larguras das colunas do relatório (ajustado para caber o novo layout)
-    // Cód, Descrição, Qtd, Unid, Categoria, Localização, Validade, Últ. Atualização
-    const colWidths = [15, 40, 15, 15, 25, 25, 25, 25]; // Ajustada Descrição (de 50 para 40) e Unid (de 20 para 15) para dar espaço
+    // Larguras das colunas do relatório
+    // Cód (15), Descrição (40), Qtd (15), Unid (15), Categoria (25), Localização (25), Validade (25), Últ. Atualização (25)
+    const colWidths = [15, 40, 15, 15, 25, 25, 25, 25]; 
     const colPositions = [];
     let currentX = startX;
     colWidths.forEach(width => {
@@ -911,33 +911,57 @@ async function imprimirRelatorioInventario() {
     doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
     doc.text("VALIDADE", colPositions[6], currentY);
     doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
-    currentY += 4;
+    currentY += 4; // Espaço após os títulos das colunas
     doc.setFont(undefined, 'normal');
     console.log("DEBUG(Relatorio): Títulos das colunas do relatório gerados."); // DEBUG 15
 
     itensInventario.forEach((item, index) => { // Adicionado 'index' para debug de loop
         console.log(`DEBUG(Relatorio): Processando item para PDF: ${item.item} (Índice: ${index})`); // DEBUG 16
         
-        // Verifica se precisa de nova página antes de desenhar o item
-        let itemHeight = 4; // Altura mínima para a descrição
+        let initialY = currentY; // Salva o Y inicial da linha para desenhar todos os textos
+        let maxHeightInRow = 4; // Altura mínima de uma linha de texto (p.ex., para a descrição ou outros campos)
+
+        // Processar Descrição (pode ter várias linhas)
+        doc.setFontSize(8); // Tamanho normal da fonte para dados
+        const descriptionText = item.item || 'N/D';
+        const splitDescription = doc.splitTextToSize(descriptionText, colWidths[1] - 2); // colWidths[1] = 40
+        doc.text(splitDescription, colPositions[1], initialY);
+        maxHeightInRow = Math.max(maxHeightInRow, splitDescription.length * 4); // Altura da descrição, 4px por linha
+
+        // Processar Observações (se existirem e se encaixarem na largura da descrição)
         let itemObsText = '';
         let splitObs = [];
         if (item.observacoes && item.observacoes !== 'Não definido' && item.observacoes.trim() !== '') {
-            itemObsText = `Obs: ${item.observacoes}`; // Adiciona "Obs:"
-            // A largura para quebrar o texto será a largura da coluna de descrição (colWidths[1]) menos algum padding
-            splitObs = doc.splitTextToSize(itemObsText, colWidths[1] - 5); // 5 para padding interno
-            itemHeight += (splitObs.length * 3); // 3px por linha de observação
+            itemObsText = `Obs: ${item.observacoes}`;
+            doc.setFontSize(7); // Fonte menor para observação
+            doc.setTextColor(100); // Cor mais suave para observação
+            // colWidths[1] = 40, usar uma largura ligeiramente menor para observações para evitar invasão
+            splitObs = doc.splitTextToSize(itemObsText, colWidths[1] - 5); 
+            doc.text(splitObs, colPositions[1] + 2, initialY + maxHeightInRow); // Alinha com a descrição, um pouco indentado
+            maxHeightInRow += (splitObs.length * 3); // 3px por linha de observação
+            doc.setFontSize(8); // Volta ao tamanho da fonte normal
+            doc.setTextColor(0); // Volta à cor preta normal
         }
+        
+        // Colunas com texto único, sempre na mesma linha Y inicial da linha do item
+        doc.text(item.cod || 'N/D', colPositions[0], initialY);
+        doc.text(item.quantidade.toString() || 'N/D', colPositions[2], initialY);
+        doc.text(item.unidadeMedida || 'Não definida', colPositions[3], initialY);
+        doc.text(item.categoria || 'Geral', colPositions[4], initialY);
+        doc.text(item.localizacao || 'Não definido', colPositions[5], initialY);
+        doc.text(formatDateToDisplay(item.dataVencimento ? item.dataVencimento.toDate() : null) || 'N/D', colPositions[6], initialY);
+        doc.text(formatDateTimeToDisplay(item.dataUltimaModificacao ? item.dataUltimaModificacao.toDate() : null) || 'N/D', colPositions[7], initialY);
+        
+        // Atualiza currentY para a próxima linha do PDF, considerando a altura máxima do item recém-adicionado
+        currentY = initialY + maxHeightInRow + 2; // +2 para um pequeno espaço extra
 
-        // Adiciona um pouco de margem inferior para o item + linha separadora
-        let totalItemSpace = itemHeight + 3; // Item content height + small gap before line
-
-        if (currentY + totalItemSpace > 280) { // 280 é a margem inferior aproximada da página
+        // --- Verificação de Quebra de Página ---
+        if (currentY > 280) { // 280 é a margem inferior aproximada da página
             doc.addPage();
-            currentY = 15;
+            currentY = 15; // Reset Y para a nova página
             console.log("DEBUG(Relatorio): Nova página adicionada ao PDF."); // DEBUG 17
 
-            // Cabeçalho e Título em nova página
+            // Cabeçalho e Título em nova página (refeito)
             doc.setFontSize(18); doc.text("Laboratório de Análises Clínicas CETEP/LNAB", 105, currentY, null, null, "center"); currentY += 10;
             doc.setFontSize(10); doc.text(`Data: ${formattedDate} - Hora: ${formattedTime} - Operador: ${operador}`, 105, currentY, null, null, "center"); currentY += 5;
             doc.setFontSize(8); doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center"); currentY += 4;
@@ -946,7 +970,7 @@ async function imprimirRelatorioInventario() {
             doc.setFontSize(14); doc.text(`${reportTitle} (Continuação)`, 105, currentY, null, null, "center"); currentY += 8;
             doc.setLineWidth(0.2); doc.line(20, currentY, 190, currentY); currentY += 10;
 
-            doc.setFontSize(8);
+            doc.setFontSize(8); // Resetando font size após o título
             doc.setFont(undefined, 'bold');
             doc.text("CÓD.", colPositions[0], currentY);
             doc.text("DESCRIÇÃO", colPositions[1], currentY);
@@ -956,51 +980,23 @@ async function imprimirRelatorioInventario() {
             doc.text("LOCALIZAÇÃO", colPositions[5], currentY);
             doc.text("VALIDADE", colPositions[6], currentY);
             doc.text("ÚLT. ATUALIZAÇÃO", colPositions[7], currentY);
-            currentY += 4;
-            doc.setFont(undefined, 'normal');
+            currentY += 4; // Espaço após os títulos das colunas na nova página
+            doc.setFont(undefined, 'normal'); // Resetar fonte para normal
         }
-
-        const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
-        const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D';
-        const itemLocalizacao = item.localizacao || 'Não definido';
-
-        // Linha 1 do item (descrição principal)
-        doc.text(item.cod || 'N/D', colPositions[0], currentY);
-        doc.text(item.item, colPositions[1], currentY);
-        doc.text(item.quantidade.toString(), colPositions[2], currentY);
-        doc.text(item.unidadeMedida || 'Não definida', colPositions[3], currentY);
-        doc.text(item.categoria || 'Geral', colPositions[4], currentY);
-        doc.text(itemLocalizacao, colPositions[5], currentY);
-        doc.text(dataValidade, colPositions[6], currentY);
-        doc.text(dataUltimaAtualizacao, colPositions[7], currentY);
-        currentY += 4; // Avança para a próxima linha
-
-        // Se houver observações, exibe em uma linha separada abaixo da descrição, com indentação
-        if (itemObsText) {
-            doc.setFontSize(7); // Fonte menor para observação
-            doc.setTextColor(100); // Cor mais suave para observação
-            doc.text(splitObs, colPositions[1] + 2, currentY); // Alinha com a descrição, um pouco indentado
-            currentY += (splitObs.length * 3); // Avança conforme o número de linhas da observação
-            doc.setFontSize(8); // Volta ao tamanho da fonte normal para o próximo item
-            doc.setTextColor(0); // Volta à cor preta normal
-        }
-        currentY += 2; // Pequeno espaço entre o conteúdo do item e a linha separadora
-
-        // --- Adicionar linha separadora após cada item ---
-        if (index < itensInventario.length - 1) { // Não desenha a linha para o último item
+        
+        // --- Adicionar linha separadora após cada item (exceto o último) ---
+        if (index < itensInventario.length - 1) { 
             doc.setLineWidth(0.1);
-            doc.line(colPositions[0], currentY, colPositions[0] + colWidths.reduce((a, b) => a + b, 0) - startX, currentY); // Desenha a linha
+            doc.line(colPositions[0], currentY, colPositions[0] + colWidths.reduce((a, b) => a + b, 0), currentY); // Desenha a linha
             currentY += 3; // Espaço após a linha separadora para o próximo item
         }
-
-
     });
     console.log("DEBUG(Relatorio): Conteúdo da tabela do relatório adicionado. Gerando rodapé."); // DEBUG 18
 
     // --- Rodapé do PDF ---
     doc.setPage(doc.internal.getNumberOfPages());
     doc.setFontSize(9);
-    doc.text("Documento gerado automaticamente pelo SISLAB.", 105, 280, null, null, "center");
+    doc.text(`Documento gerado automaticamente pelo SISLAB. Operador: ${operador}`, 105, 280, null, null, "center"); // Inclui o nome do operador no rodapé
 
     console.log("DEBUG(Relatorio): Rodapé do PDF gerado. Tentando abrir o PDF."); // DEBUG 19
     try {
