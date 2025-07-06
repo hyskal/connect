@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8 (inventario_scripts.js)
+// VERSÃO: 3.0.8a (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -90,7 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
 async function listarItensInventario() {
     console.log("DEBUG: Iniciando listagem de itens do inventário..."); // DEBUG
     const inventoryListBody = document.querySelector('#inventoryList tbody');
-    inventoryListBody.innerHTML = '<tr><td colspan="11">Carregando itens...</td></tr>';
+    // Mantenha a mensagem inicial de carregamento para feedback rápido ao usuário
+    inventoryListBody.innerHTML = '<tr><td colspan="11">Carregando itens...</td></tr>'; 
 
     const searchTerm = document.getElementById('searchInventory').value.toLowerCase();
     const filterCategory = document.getElementById('filterCategory').value;
@@ -135,10 +136,14 @@ async function listarItensInventario() {
         console.log(`DEBUG: Total de itens filtrados: ${filteredItems.length}`); // DEBUG
 
         if (filteredItems.length === 0) {
+            // Se nenhum item for encontrado, limpa a tabela e mostra a mensagem de "nenhum item"
             inventoryListBody.innerHTML = '<tr><td colspan="11">Nenhum item encontrado com os filtros aplicados.</td></tr>';
             return;
         }
 
+        // LIMPAR A TABELA ANTES DE ADICIONAR OS NOVOS ITENS. ESTE É O PONTO CRÍTICO PARA REMOVER "Carregando itens..."
+        inventoryListBody.innerHTML = ''; 
+        
         // Usando DocumentFragment para otimização de performance
         const fragment = document.createDocumentFragment();
 
@@ -216,7 +221,7 @@ async function listarItensInventario() {
             console.log(`DEBUG: Criando célula para Ações (coluna 9) para item ${item.id}`);
             const actionsCell = document.createElement('td');
             actionsCell.classList.add('action-buttons');
-
+            
             // Adiciona os botões criados pela função modularizada
             const actionButtonsContainer = createActionButtons(item);
             actionsCell.appendChild(actionButtonsContainer);
@@ -230,7 +235,7 @@ async function listarItensInventario() {
             directMoveCell.classList.add('direct-movement-controls');
             directMoveCell.style.whiteSpace = 'nowrap'; // Garante que não quebre linha dentro da célula
 
-            // --- MUDANÇA AQUI: Ordem dos elementos para + (quantidade) - ---
+            // --- MUDANÇA CRÍTICA AQUI: Ordem dos elementos para + (quantidade) - ---
             const plusButton = document.createElement('button');
             plusButton.textContent = '+';
             plusButton.classList.add('movement-button', 'plus');
@@ -264,7 +269,8 @@ async function listarItensInventario() {
 
     } catch (error) {
         console.error("DEBUG: Erro ao listar itens do inventário:", error); // DEBUG
-        inventoryListBody.innerHTML = '<tr><td colspan="11">Erro ao carregar itens.</td></tr>';
+        // Se houver um erro grave no carregamento, limpa a tabela e exibe uma mensagem de erro
+        inventoryListBody.innerHTML = '<tr><td colspan="11">Erro ao carregar itens. Verifique o console.</td></tr>';
     }
 }
 
