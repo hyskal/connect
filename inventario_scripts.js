@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8b (inventario_scripts.js)
+// VERSÃO: 3.0.8c (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -806,24 +806,9 @@ async function imprimirRelatorioInventario() {
         return;
     }
 
-    const reportOption = prompt("Digite 'completo' para relatório em ordem alfabética ou 'categoria' para relatório por categoria (padrão: completo):").toLowerCase();
-    let orderByField = 'item';
-    let selectedCategory = null;
-
-    if (reportOption === 'categoria') {
-        const categoryInput = prompt("Digite a categoria para filtrar (ex: 'Geral', 'Reagentes'):");
-        selectedCategory = categoryInput ? categoryInput.trim() : null;
-        // Para a validação de categoria aqui, 'categoriasDisponiveis' não é populada diretamente
-        // por loadCategories após a refatoração.
-        // A validação abaixo agora busca as categorias diretamente do <select> de filtro.
-        const filterCategorySelect = document.getElementById('filterCategory');
-        let categoriasDoSelect = Array.from(filterCategorySelect.options).map(opt => opt.value).filter(val => val !== '');
-        if (selectedCategory && !categoriasDoSelect.includes(selectedCategory)) {
-             alert(`Categoria "${selectedCategory}" não encontrada na lista. Gerando relatório completo.`);
-             selectedCategory = null;
-         }
-    }
-
+    // REMOVIDO: Solicitação do tipo de relatório e categoria.
+    let orderByField = 'item'; // Sempre ordena por item para o relatório geral
+    let selectedCategory = null; // Sempre null para imprimir o relatório completo
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Banco de dados não inicializado. Não é possível imprimir o relatório de inventário.");
@@ -840,10 +825,11 @@ async function imprimirRelatorioInventario() {
         itensInventario = querySnapshot.docs.map(doc => doc.data());
         console.log(`Itens carregados para relatório: ${itensInventario.length}`); // DEBUG
 
-        if (selectedCategory) {
-            itensInventario = itensInventario.filter(item => item.categoria === selectedCategory);
-            console.log(`Itens filtrados por categoria '${selectedCategory}': ${itensInventario.length}`); // DEBUG
-        }
+        // REMOVIDA: Lógica de filtragem por categoria, pois sempre será relatório geral
+        // if (selectedCategory) {
+        //     itensInventario = itensInventario.filter(item => item.categoria === selectedCategory);
+        //     console.log(`Itens filtrados por categoria '${selectedCategory}': ${itensInventario.length}`); // DEBUG
+        // }
 
     }
     catch (error) {
@@ -871,10 +857,8 @@ async function imprimirRelatorioInventario() {
 
     // --- Título do Relatório ---
     doc.setFontSize(14);
-    let reportTitle = "RELATÓRIO DE INVENTÁRIO ATUAL";
-    if (selectedCategory) {
-        reportTitle += ` (Categoria: ${selectedCategory})`;
-    }
+    // Título fixo para Relatório de Inventário Atual Geral
+    let reportTitle = "RELATÓRIO DE INVENTÁRIO ATUAL (GERAL)";
     doc.text(reportTitle, 105, currentY, null, null, "center");
     currentY += 8;
     doc.setLineWidth(0.2);
@@ -968,7 +952,7 @@ async function imprimirRelatorioInventario() {
     doc.output('dataurlnewwindow', { filename: `Relatorio_Inventario_${formattedDate}.pdf` });
 
     alert(`Relatório de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
-    console.log("Relatório de inventário geral gerado."); // DEBUG
+    console.log("Relatório de inventário gerado."); // DEBUG
 }
 
 // --- SEÇÃO 17: Gerar Relatório de Reposição (gerarRelatorioReposicao) ---
