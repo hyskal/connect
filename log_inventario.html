@@ -51,7 +51,7 @@
             width: 17px; /* Ligeiramente mais largo que o tubo para sobrepor */
             height: 7px; /* Altura da tampa */
             position: absolute;
-            top: -7px; /* Posiciona a tampa acima do tubo */
+            top: -7px; /* Posiciona la tampa acima do tubo */
             left: -1px; /* Ajusta a posição lateral para centralizar */
             border-radius: 4px 4px 0 0;
             box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para a tampa */
@@ -148,15 +148,30 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
+            table-layout: fixed; /* Adicionado para controle de largura de coluna */
         }
 
         #inventoryLogTable th, #inventoryLogTable td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            font-size: 0.9em; /* Um pouco menor para caber mais info */
+            font-size: 0.9em;
             vertical-align: top;
+            box-sizing: border-box; /* Inclui padding e borda na largura total */
+            word-wrap: break-word; /* Permite quebra de palavra em colunas estreitas */
         }
+
+        /* Definição das larguras das colunas do log */
+        #inventoryLogTable th:nth-child(1), #inventoryLogTable td:nth-child(1) { width: 8%; }  /* Cód. Item */
+        #inventoryLogTable th:nth-child(2), #inventoryLogTable td:nth-child(2) { width: 20%; } /* Descrição Item */
+        #inventoryLogTable th:nth-child(3), #inventoryLogTable td:nth-child(3) { width: 10%; } /* Operação */
+        #inventoryLogTable th:nth-child(4), #inventoryLogTable td:nth-child(4) { width: 8%; }  /* Qtd. Mov. */
+        #inventoryLogTable th:nth-child(5), #inventoryLogTable td:nth-child(5) { width: 8%; }  /* Qtd. Antes */
+        #inventoryLogTable th:nth-child(6), #inventoryLogTable td:nth-child(6) { width: 8%; }  /* Qtd. Depois */
+        #inventoryLogTable th:nth-child(7), #inventoryLogTable td:nth-child(7) { width: 12%; } /* Operador */
+        #inventoryLogTable th:nth-child(8), #inventoryLogTable td:nth-child(8) { width: 15%; } /* Data e Hora */
+        #inventoryLogTable th:nth-child(9), #inventoryLogTable td:nth-child(9) { width: 15%; } /* Observações */
+
 
         #inventoryLogTable th {
             background-color: #f2f2f2;
@@ -193,7 +208,7 @@
                 <div class="tube-cap"></div>
             </div>
         </div>
-        <h1 class="main-title">SISLAB 2.0.4 - Log Geral de Inventário (CETEP/LNAB)</h1>
+        <h1 class="main-title">SISLAB - Log Geral de Inventário (CETEP/LNAB)</h1>
     </div>
 
     <div class="page-content-container">
@@ -230,6 +245,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
         
+        // Importa as funções de formatação de data de sislab_utils.js
+        import { formatDateTimeToDisplay } from './sislab_utils.js'; // Ajuste o caminho conforme necessário
+
         // Sua configuração do Firebase (a mesma do index.html e inventario.html)
         const firebaseConfig = {
             apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
@@ -242,7 +260,7 @@
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app); 
+        const db = getFirestore(app);
 
         // Função principal para carregar e exibir o log
         document.addEventListener('DOMContentLoaded', listarLogGeralInventario);
@@ -252,12 +270,14 @@
             logTableBody.innerHTML = '<tr><td colspan="9">Carregando logs...</td></tr>';
 
             if (typeof db === 'undefined' || !db) {
+                console.error("DEBUG(LogGeral): Banco de dados não inicializado.");
                 logTableBody.innerHTML = '<tr><td colspan="9">Banco de dados não inicializado.</td></tr>';
                 return;
             }
 
             try {
-                const logRef = collection(db, 'inventario_log');
+                // Certifique-se de que o nome da coleção está correto ('log_inventario_v3')
+                const logRef = collection(db, 'log_inventario_v3'); 
                 // Ordena por data e hora da movimentação (mais recente primeiro)
                 const q = query(logRef, orderBy('dataHoraMovimento', 'desc')); 
                 const querySnapshot = await getDocs(q);
@@ -271,12 +291,13 @@
                 logTableBody.innerHTML = ''; // Limpa antes de preencher
                 logs.forEach(log => {
                     const row = logTableBody.insertRow();
-                    const dataHoraFormatada = log.dataHoraMovimento ? new Date(log.dataHoraMovimento.toDate()).toLocaleString('pt-BR') : 'N/A';
+                    // Usando a função formatDateTimeToDisplay importada
+                    const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/A'; 
 
                     row.insertCell(0).textContent = log.itemCod || 'N/A';
                     row.insertCell(1).textContent = log.itemNome || 'N/A';
                     row.insertCell(2).textContent = log.tipoMovimento || 'N/A';
-                    row.insertCell(3).textContent = log.quantidadeMovimentada !== undefined ? log.quantidadeMovimentada.toString() : 'N/A';
+                    row.insertCell(3).textContent = log.quantidadeMovimentada !== undefined ? `${log.quantidadeMovimentada.toString()} ${log.unidadeMedidaLog || ''}` : 'N/A'; // Inclui unidade de medida
                     row.insertCell(4).textContent = log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A';
                     row.insertCell(5).textContent = log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A';
                     row.insertCell(6).textContent = log.operador || 'Desconhecido';
@@ -285,7 +306,7 @@
                 });
 
             } catch (error) {
-                console.error("Erro ao carregar log geral de inventário:", error);
+                console.error("DEBUG(LogGeral): Erro ao carregar log geral de inventário:", error);
                 logTableBody.innerHTML = '<tr><td colspan="9">Erro ao carregar log. Verifique o console.</td></tr>';
             }
         }
