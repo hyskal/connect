@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8d (inventario_scripts.js)
+// VERSÃO: 3.0.8e (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -55,8 +55,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o topo
     });
 
+    // --- CONSOLIDAÇÃO DOS LISTENERS DE FILTROS E RELATÓRIOS AQUI ---
+    // Event listeners para filtros e pesquisa
+    document.getElementById('searchInventory').addEventListener('input', listarItensInventario);
+    document.getElementById('filterCategory').addEventListener('change', listarItensInventario);
+    document.getElementById('criticalQuantityInput').addEventListener('input', () => {
+        if (currentFilterStatus === 'critical') {
+            listarItensInventario();
+        }
+    });
+
+    // Event listeners para botões de filtro de status
+    document.getElementById('filterAllItemsBtn').addEventListener('click', () => { currentFilterStatus = 'all'; updateFilterButtons('filterAllItemsBtn'); listarItensInventario(); });
+    document.getElementById('filterCriticalItemsBtn').addEventListener('click', () => { currentFilterStatus = 'critical'; updateFilterButtons('filterCriticalItemsBtn'); listarItensInventario(); });
+    document.getElementById('filterInStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'inStock'; updateFilterButtons('filterInStockItemsBtn'); listarItensInventario(); });
+    document.getElementById('filterOutOfStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'outOfStock'; updateFilterButtons('filterOutOfStockItemsBtn'); listarItensInventario(); });
+
+    // Event listener para o botão de RELATÓRIO DE ESTOQUE ATUAL
+    document.getElementById('printInventoryReportBtn').addEventListener('click', imprimirRelatorioInventario); // MUDANÇA: CONSOLIDADO AQUI
+
+    // Event listeners para os outros botões de relatório (mantidos aqui)
+    document.getElementById('generateReplenishmentReportBtn').addEventListener('click', gerarRelatorioReposicao);
+    document.getElementById('generateConsumptionReportBtn').addEventListener('click', gerarRelatorioConsumo);
+    document.getElementById('generateDueDateReportBtn').addEventListener('click', gerarRelatorioVencimento);
+    
+    // Event listener para fechar histórico
+    document.getElementById('closeItemLogBtn').addEventListener('click', hideItemLog);
+
+
     console.log("Setup inicial concluído."); // DEBUG
 });
+
+// --- SEÇÃO 3: Funções de Exibição/Ocultação do Formulário ---
+// (Esta seção permanece inalterada)
+function showItemForm() {
+    document.getElementById('itemFormSection').style.display = 'flex'; // Altera para flex para manter layout
+    console.log("Formulário de item exibido."); // DEBUG
+}
+
+function hideItemForm() {
+    document.getElementById('itemFormSection').style.display = 'none';
+    console.log("Formulário de item ocultado."); // DEBUG
+}
+
+// --- SEÇÃO 4: Funções de Filtros de Tabela e Pesquisa (Listeners) ---
+// ESTA SEÇÃO AGORA ESTÁ VAZIA, POIS SEUS LISTENERS FORAM CONSOLIDADOS NA SEÇÃO 2.
+// NÃO DEVE HAVER MAIS UM document.addEventListener('DOMContentLoaded', ...) AQUI.
 
 // --- SEÇÃO 3: Funções de Exibição/Ocultação do Formulário ---
 function showItemForm() {
