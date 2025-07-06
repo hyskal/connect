@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8a (inventario_scripts.js)
+// VERSÃO: 3.0.8b (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -91,7 +91,7 @@ async function listarItensInventario() {
     console.log("DEBUG: Iniciando listagem de itens do inventário..."); // DEBUG
     const inventoryListBody = document.querySelector('#inventoryList tbody');
     // Mantenha a mensagem inicial de carregamento para feedback rápido ao usuário
-    inventoryListBody.innerHTML = '<tr><td colspan="11">Carregando itens...</td></tr>'; 
+    inventoryListBody.innerHTML = '<tr><td colspan="11">Carregando itens...</td></tr>';
 
     const searchTerm = document.getElementById('searchInventory').value.toLowerCase();
     const filterCategory = document.getElementById('filterCategory').value;
@@ -177,10 +177,27 @@ async function listarItensInventario() {
             cellCod.textContent = item.cod || 'N/D';
             row.appendChild(cellCod);
 
-            // Coluna Descrição (1)
+            // Coluna Descrição (1) - AGORA COM OBSERVAÇÕES
             const cellDescription = document.createElement('td');
-            cellDescription.textContent = item.item;
+            
+            const descriptionSpan = document.createElement('span');
+            descriptionSpan.textContent = item.item;
+            descriptionSpan.style.display = 'block'; // Garante que a descrição ocupe uma linha
+            cellDescription.appendChild(descriptionSpan);
+
+            // Adiciona a observação se ela existe e não é "Não definido" ou vazia
+            if (item.observacoes && item.observacoes !== 'Não definido' && item.observacoes.trim() !== '') {
+                const observationsSpan = document.createElement('span');
+                // Adiciona "Obs: " antes do conteúdo da observação
+                observationsSpan.textContent = `Obs: ${item.observacoes}`; 
+                observationsSpan.style.fontSize = '0.7em'; // Um pouco menor para diferenciar
+                observationsSpan.style.color = '#555'; // Cor mais suave
+                observationsSpan.style.display = 'block'; // Garante que a observação ocupe uma nova linha
+                observationsSpan.style.marginTop = '2px'; // Pequena margem para separar da descrição
+                cellDescription.appendChild(observationsSpan);
+            }
             row.appendChild(cellDescription);
+
 
             // Coluna Qtd. (2)
             const cellQuantity = document.createElement('td');
