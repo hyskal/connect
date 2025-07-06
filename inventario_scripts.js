@@ -1,4 +1,4 @@
-// VERSÃO: 3.0.8e (inventario_scripts.js)
+// VERSÃO: 3.0.8f (inventario_scripts.js)
 // CHANGELOG:
 // - Corrigido: Posicionamento definitivo dos botões de "Mov. Rápida" para a coluna correta, confirmando a lógica de anexação.
 // - Melhorado: Estrutura do código refatorada em 20 seções para facilitar manutenção e edições futuras.
@@ -891,7 +891,9 @@ async function imprimirRelatorioInventario() {
     // --- Conteúdo: Itens do Inventário ---
     doc.setFontSize(8);
     const startX = 5;
-    const colWidths = [15, 50, 15, 20, 25, 25, 25, 25];
+    // Larguras das colunas do relatório (ajustado para caber o novo layout)
+    // Cód, Descrição, Qtd, Unid, Categoria, Localização, Validade, Últ. Atualização
+    const colWidths = [15, 40, 15, 15, 25, 25, 25, 25]; // Ajustada Descrição (de 50 para 40) e Unid (de 20 para 15) para dar espaço
     const colPositions = [];
     let currentX = startX;
     colWidths.forEach(width => {
@@ -915,7 +917,22 @@ async function imprimirRelatorioInventario() {
 
     itensInventario.forEach((item, index) => { // Adicionado 'index' para debug de loop
         console.log(`DEBUG(Relatorio): Processando item para PDF: ${item.item} (Índice: ${index})`); // DEBUG 16
-        if (currentY > 280) {
+        
+        // Verifica se precisa de nova página antes de desenhar o item
+        let itemHeight = 4; // Altura mínima para a descrição
+        let itemObsText = '';
+        let splitObs = [];
+        if (item.observacoes && item.observacoes !== 'Não definido' && item.observacoes.trim() !== '') {
+            itemObsText = `Obs: ${item.observacoes}`; // Adiciona "Obs:"
+            // A largura para quebrar o texto será a largura da coluna de descrição (colWidths[1]) menos algum padding
+            splitObs = doc.splitTextToSize(itemObsText, colWidths[1] - 5); // 5 para padding interno
+            itemHeight += (splitObs.length * 3); // 3px por linha de observação
+        }
+
+        // Adiciona um pouco de margem inferior para o item + linha separadora
+        let totalItemSpace = itemHeight + 3; // Item content height + small gap before line
+
+        if (currentY + totalItemSpace > 280) { // 280 é a margem inferior aproximada da página
             doc.addPage();
             currentY = 15;
             console.log("DEBUG(Relatorio): Nova página adicionada ao PDF."); // DEBUG 17
@@ -945,10 +962,9 @@ async function imprimirRelatorioInventario() {
 
         const dataValidade = item.dataVencimento ? formatDateToDisplay(item.dataVencimento.toDate()) : 'N/D';
         const dataUltimaAtualizacao = item.dataUltimaModificacao ? formatDateToDisplay(item.dataUltimaModificacao.toDate()) : 'N/D';
-        const itemObsText = item.observacoes && item.observacoes !== 'Não definido' ? `Obs: ${item.observacoes}` : '';
         const itemLocalizacao = item.localizacao || 'Não definido';
 
-        // Linha 1 do item
+        // Linha 1 do item (descrição principal)
         doc.text(item.cod || 'N/D', colPositions[0], currentY);
         doc.text(item.item, colPositions[1], currentY);
         doc.text(item.quantidade.toString(), colPositions[2], currentY);
@@ -957,15 +973,25 @@ async function imprimirRelatorioInventario() {
         doc.text(itemLocalizacao, colPositions[5], currentY);
         doc.text(dataValidade, colPositions[6], currentY);
         doc.text(dataUltimaAtualizacao, colPositions[7], currentY);
-        currentY += 4;
+        currentY += 4; // Avança para a próxima linha
 
-        // Se houver observações, exibe em uma linha separada abaixo do item, com indentação
+        // Se houver observações, exibe em uma linha separada abaixo da descrição, com indentação
         if (itemObsText) {
-            const splitObs = doc.splitTextToSize(itemObsText, doc.internal.pageSize.width - startX - 10);
-            doc.text(splitObs, startX + 5, currentY);
-            currentY += (splitObs.length * 3);
+            doc.setFontSize(7); // Fonte menor para observação
+            doc.setTextColor(100); // Cor mais suave para observação
+            doc.text(splitObs, colPositions[1] + 2, currentY); // Alinha com a descrição, um pouco indentado
+            currentY += (splitObs.length * 3); // Avança conforme o número de linhas da observação
+            doc.setFontSize(8); // Volta ao tamanho da fonte normal para o próximo item
+            doc.setTextColor(0); // Volta à cor preta normal
         }
-        currentY += 1;
+        currentY += 2; // Pequeno espaço entre o conteúdo do item e a linha separadora
+
+        // --- Adicionar linha separadora após cada item ---
+        if (index < itensInventario.length - 1) { // Não desenha a linha para o último item
+            doc.setLineWidth(0.1);
+            doc.line(colPositions[0], currentY, colPositions[0] + colWidths.reduce((a, b) => a + b, 0) - startX, currentY); // Desenha a linha
+            currentY += 3; // Espaço após a linha separadora para o próximo item
+        }
 
 
     });
