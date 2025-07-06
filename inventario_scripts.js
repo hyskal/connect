@@ -102,33 +102,7 @@ function hideItemForm() {
 // ESTA SEÇÃO AGORA ESTÁ VAZIA, POIS SEUS LISTENERS FORAM CONSOLIDADOS NA SEÇÃO 2.
 // NÃO DEVE HAVER MAIS UM document.addEventListener('DOMContentLoaded', ...) AQUI.
 
-// --- SEÇÃO 3: Funções de Exibição/Ocultação do Formulário ---
-function showItemForm() {
-    document.getElementById('itemFormSection').style.display = 'flex'; // Altera para flex para manter layout
-    console.log("Formulário de item exibido."); // DEBUG
-}
 
-function hideItemForm() {
-    document.getElementById('itemFormSection').style.display = 'none';
-    console.log("Formulário de item ocultado."); // DEBUG
-}
-
-// --- SEÇÃO 4: Funções de Filtros de Tabela e Pesquisa (Listeners) ---
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('searchInventory').addEventListener('input', listarItensInventario);
-    document.getElementById('filterCategory').addEventListener('change', listarItensInventario);
-    document.getElementById('criticalQuantityInput').addEventListener('input', () => {
-        if (currentFilterStatus === 'critical') {
-            listarItensInventario();
-        }
-    });
-
-    // Event listeners para botões de filtro de status
-    document.getElementById('filterAllItemsBtn').addEventListener('click', () => { currentFilterStatus = 'all'; updateFilterButtons('filterAllItemsBtn'); listarItensInventario(); });
-    document.getElementById('filterCriticalItemsBtn').addEventListener('click', () => { currentFilterStatus = 'critical'; updateFilterButtons('filterCriticalItemsBtn'); listarItensInventario(); });
-    document.getElementById('filterInStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'inStock'; updateFilterButtons('filterInStockItemsBtn'); listarItensInventario(); });
-    document.getElementById('filterOutOfStockItemsBtn').addEventListener('click', () => { currentFilterStatus = 'outOfStock'; updateFilterButtons('filterOutOfStockItemsBtn'); listarItensInventario(); });
-});
 
 // --- SEÇÃO 5: Lógica de Listagem de Itens (listarItensInventario) ---
 async function listarItensInventario() {
