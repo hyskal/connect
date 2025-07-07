@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7 - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7a - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
@@ -128,11 +128,6 @@
         .top-action-bar-container .form-field input {
             padding: 8px; /* Padding menor */
             font-size: 0.9em; /* Fonte menor */
-        }
-        .top-action-bar-container button {
-            flex-shrink: 0; /* Impede que o botão encolha */
-            padding: 8px 15px; /* Ajusta padding */
-            font-size: 0.9em; /* Ajusta fonte */
             margin: 0; /* Remove margens extras */
         }
 
@@ -288,7 +283,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            table-layout: fixed; 
+            table-layout: fixed;  
         }
 
         #inventoryList th, #inventoryList td {
@@ -296,11 +291,11 @@
             padding: 4px; /* Default padding for all cells */
             text-align: left;
             font-size: 0.75em;
-            vertical-align: top; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
-            box-sizing: border-box; 
+            vertical-align: top;  
+            overflow: hidden;  
+            text-overflow: ellipsis;  
+            white-space: nowrap;  
+            box-sizing: border-box;  
         }
         #inventoryList td:nth-child(2) { /* Descrição, permite quebra de linha */
             white-space: normal;
@@ -324,7 +319,7 @@
         /* Garantir que a coluna Mov. Rápida esteja visível */
         #inventoryList th:nth-child(11),
         #inventoryList td:nth-child(11) {
-            display: table-cell; 
+            display: table-cell;  
         }
 
         #inventoryList th {
@@ -357,40 +352,40 @@
         }
 
         #inventoryList .action-buttons button {
-          padding: 2px 4px; /* Ajustado para dar mais espaço ao texto no botão */
-          font-size: 0.95em; /* AUMENTADO MAIS para texto maior */
-          white-space: nowrap; /* Impede quebra de linha do texto do botão */
-          flex-grow: 1; /* Permite que o botão ocupe o espaço disponível */
-          box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
-          text-align: center; /* Centraliza o texto dentro do botão */
+            padding: 2px 4px; /* Ajustado para dar mais espaço ao texto no botão */
+            font-size: 0.95em; /* AUMENTADO MAIS para texto maior */
+            white-space: nowrap; /* Impede quebra de linha do texto do botão */
+            flex-grow: 1; /* Permite que o botão ocupe o espaço disponível */
+            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+            text-align: center; /* Centraliza o texto dentro do botão */
         }
-        button.edit-btn { background-color: #5cb85c; } 
+        button.edit-btn { background-color: #5cb85c; }  
         button.edit-btn:hover { background-color: #4cae4c; }
-        button.delete-btn { background-color: #d9534f; } 
+        button.delete-btn { background-color: #d9534f; }  
         button.delete-btn:hover { background-color: #c9302c; }
-        button.view-log-btn { background-color: #007bff; } 
+        button.view-log-btn { background-color: #007bff; }  
         button.view-log-btn:hover { background-color: #0069d9; }
 
 
         /* Mov. Rápida - Layout horizontal (+ campo -) e botões menores */
         .direct-movement-controls {
-          display: flex; 
-          flex-direction: row; /* Elementos lado a lado */
-          align-items: center; /* Alinha verticalmente o input e botões no centro */
-          justify-content: center; /* MUDANÇA AQUI: Centraliza horizontalmente os elementos */
-          gap: 5px; /* Aumente o gap para espaçamento entre os elementos centralizados */
-          min-width: 90px; /* Ajustado para acomodar o layout horizontal */
+            display: flex;  
+            flex-direction: row; /* Elementos lado a lado */
+            align-items: center; /* Alinha verticalmente o input e botões no centro */
+            justify-content: center; /* MUDANÇA AQUI: Centraliza horizontalmente os elementos */
+            gap: 5px; /* Aumente o gap para espaçamento entre os elementos centralizados */
+            min-width: 90px; /* Ajustado para acomodar o layout horizontal */
         }
 
-        .movement-input { 
+        .movement-input {  
             width: 40px; /* Ajustado o width do input para layout horizontal */
             text-align: center; /* Centraliza o texto do input */
             margin: 0; /* Remover margens extras */
             box-sizing: border-box;
             flex-shrink: 0; /* Impede o encolhimento */
             flex-grow: 0; /* Não cresce */
-        } 
-        .movement-button { 
+        }  
+        .movement-button {  
             width: 22px; /* Ajustado o width dos botões */
             height: 22px; /* Ajustado o height dos botões */
             border-radius: 50%; /* Manter circular */
@@ -402,10 +397,10 @@
             flex-shrink: 0; /* Impede o encolhimento */
             flex-grow: 0; /* Não cresce */
             padding: 0; /* Sem padding interno para ser mais compacto */
-        } 
-        .movement-button.plus { background-color: #28a745; } 
+        }  
+        .movement-button.plus { background-color: #28a745; }  
         .movement-button.plus:hover { background-color: #218838; }
-        .movement-button.minus { background-color: #dc3545; } 
+        .movement-button.minus { background-color: #dc3545; }  
         .movement-button.minus:hover { background-color: #c82333; }
 
 
@@ -416,7 +411,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
-            width: 95%; 
+            width: 95%;  
             max-width: 1200px;
             margin-top: 20px;
         }
@@ -428,7 +423,7 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            font-size: 0.85em; 
+            font-size: 0.85em;  
             vertical-align: top;
         }
         #itemLogTable th {
@@ -459,31 +454,31 @@
             align-items: center;
         }
         .inventory-filters .form-field {
-            margin-bottom: 0; 
-            flex-grow: 1; 
-            min-width: 120px; 
+            margin-bottom: 0;  
+            flex-grow: 1;  
+            min-width: 120px;  
         }
         .inventory-filters .form-field:last-child {
-            flex-grow: 0; 
+            flex-grow: 0;  
         }
         .inventory-filters .filter-buttons-group {
             display: flex;
             gap: 5px;
-            flex-wrap: wrap; 
+            flex-wrap: wrap;  
         }
         .inventory-filters button {
             padding: 8px 15px;
             font-size: 0.9em;
             margin: 0;
-            background-color: #6c757d; 
-            flex-shrink: 0; 
+            background-color: #6c757d;  
+            flex-shrink: 0;  
         }
         .inventory-filters button.active-filter {
-            background-color: #1A2B4C; 
+            background-color: #1A2B4C;  
             font-weight: bold;
         }
         .inventory-filters input[type="number"]#criticalQuantityInput {
-            width: 60px; 
+            width: 60px;  
             min-width: 60px;
         }
         .inventory-filters #filterCategory {
@@ -501,49 +496,49 @@
             /* Colunas dentro da seção superior empilham */
             .top-section-container .column.operator-info,
             .top-section-container .column.item-form {
-                flex-basis: 100%; 
-                max-width: 100%; 
-                min-width: unset; 
+                flex-basis: 100%;  
+                max-width: 100%;  
+                min-width: unset;  
             }
             /* Ajuste para as colunas da tabela em telas pequenas */
             #inventoryList th, #inventoryList td {
                 font-size: 0.6em; /* Fonte ainda menor em mobile para tentar caber */
                 padding: 2px;
-                white-space: normal; 
-                word-break: break-word; 
+                white-space: normal;  
+                word-break: break-word;  
             }
             /* Larguras específicas para mobile, adaptando-se a 100% da coluna */
-            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } 
-            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } 
-            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } 
-            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 5%; } 
-            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; } 
-            #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } 
-            #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; } 
-            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; } 
-            #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; } 
+            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; }  
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }  
+            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; }  
+            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 5%; }  
+            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; }  
+            #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; }  
+            #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; }  
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; }  
+            #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; }  
             #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO para mobile */
             #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada para mobile */
             
             /* Garantir que a coluna Mov. Rápida esteja visível no mobile */
             #inventoryList th:nth-child(11),
             #inventoryList td:nth-child(11) {
-                display: table-cell; 
+                display: table-cell;  
             }
 
             /* Ajuste específico para botões de ação em mobile */
-            #inventoryList .action-buttons-inner-container { 
+            #inventoryList .action-buttons-inner-container {  
                 flex-direction: row; /* Botões em linha no mobile */
                 flex-wrap: wrap; /* Permite quebrar linha se necessário */
-                justify-content: center; 
+                justify-content: center;  
                 align-items: center;
                 gap: 1px; /* Espaço mínimo entre botões */
                 min-width: unset; /* Remove min-width fixo para mobile */
             }
-            #inventoryList .action-buttons button { 
+            #inventoryList .action-buttons button {  
                 font-size: 0.6em; /* Ajuste de tamanho para caber */
-                padding: 2px; 
-                margin: 1px; 
+                padding: 2px;  
+                margin: 1px;  
                 flex-shrink: 0; /* Impede encolhimento */
             }
             
@@ -590,7 +585,7 @@
             <input type="text" id="operatorName" placeholder="Seu nome completo">
             <div id="operatorName-error" class="error-message"></div>
         </div>
-        <button id="showAddItemFormBtn">Cadastrar Novo Item</button> </div>
+        <button id="showAddItemFormBtn" onclick="showAlert('Cadastrar Novo Item')">Cadastrar Novo Item</button> </div>
 
     <div class="main-content-area-container">
         <div id="itemFormSection" class="column">
@@ -638,7 +633,7 @@
                     <label for="itemDueDate">Data de Vencimento:</label>
                     <input type="date" id="itemDueDate">
                 </div>
-                 <div class="form-field">
+                <div class="form-field">
                     <label for="itemLastUpdate">Última Atualização:</label>
                     <input type="text" id="itemLastUpdate" readonly placeholder="Preenchido Automaticamente">
                 </div>
@@ -650,13 +645,13 @@
                 </div>
             </div>
             <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
-                <button id="saveItemBtn" class="highlight-button">Salvar Item</button>
-                <button id="clearItemFormBtn">Limpar Formulário</button>
-                <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;">Excluir Item</button> <input type="hidden" id="itemIdToEdit"> 
+                <button id="saveItemBtn" class="highlight-button" onclick="showAlert('Salvar Item')">Salvar Item</button>
+                <button id="clearItemFormBtn" onclick="showAlert('Limpar Formulário')">Limpar Formulário</button>
+                <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;" onclick="showAlert('Excluir Item')">Excluir Item</button> <input type="hidden" id="itemIdToEdit">  
             </div>
         </div>
 
-        <div class="column item-list"> 
+        <div class="column item-list">  
             <h3>Itens Atuais em Estoque:</h3>
             <div class="inventory-filters">
                 <div class="form-field" style="flex-grow: 1;">
@@ -674,26 +669,26 @@
                     <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
                 </div>
                 <div class="filter-buttons-group">
-                    <button id="filterAllItemsBtn" class="active-filter">Todos</button>
-                    <button id="filterCriticalItemsBtn">Críticos</button>
-                    <button id="filterInStockItemsBtn">Com Estoque</button>
-                    <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
+                    <button id="filterAllItemsBtn" class="active-filter" onclick="showAlert('Filtrar Todos os Itens')">Todos</button>
+                    <button id="filterCriticalItemsBtn" onclick="showAlert('Filtrar Itens Críticos')">Críticos</button>
+                    <button id="filterInStockItemsBtn" onclick="showAlert('Filtrar Itens Com Estoque')">Com Estoque</button>
+                    <button id="filterOutOfStockItemsBtn" onclick="showAlert('Filtrar Itens Sem Estoque')">Sem Estoque</button>
                 </div>
             </div>
 
-            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;"> 
+            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;">  
                 <table id="inventoryList">
                     <thead>
                         <tr>
                             <th>Cód.</th>
                             <th>Descrição</th>
                             <th>Qtd.</th>
-                            <th>Unid.</th> 
+                            <th>Unid.</th>  
                             <th>Categoria</th>
-                            <th>Localização</th> 
-                            <th>Validade</th> 
-                            <th>Últ. Atual.</th> 
-                            <th>Últ. Operador</th> 
+                            <th>Localização</th>  
+                            <th>Validade</th>  
+                            <th>Últ. Atual.</th>  
+                            <th>Últ. Operador</th>  
                             <th>Ações</th>
                             <th>Mov. Rápida</th>
                         </tr>
@@ -726,7 +721,7 @@
             </table>
         </div>
         <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
-            <button id="closeItemLogBtn">Fechar Histórico</button>
+            <button id="closeItemLogBtn" onclick="showAlert('Fechar Histórico')">Fechar Histórico</button>
         </div>
     </div>
 
@@ -735,10 +730,20 @@
         <button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
         <button id="generateConsumptionReportBtn">Gerar Relatório de Consumo</button>
         <button id="generateDueDateReportBtn">Gerar Relatório de Itens Próximos do Vencimento</button>
-        <button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
+        <button onclick="showAlert('Voltar para Cadastro de Exames'); return false;">Voltar para Cadastro de Exames</button>
     </div>
 
     <script type="module">
+        // Função para exibir o alerta de "Função indisponível no momento"
+        function showAlert(buttonName) {
+            alert("Função indisponível no momento");
+            // Adicione console.log para depuração (opcional)
+            console.log(`Botão '${buttonName}' clicado. Função bloqueada.`);
+        }
+
+        // Torna a função showAlert globalmente acessível
+        window.showAlert = showAlert;
+
         // Importa as funções do SDK do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
