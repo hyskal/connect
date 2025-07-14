@@ -1,9 +1,8 @@
-// VERSÃO: 2.0.9
+// VERSÃO: 2.0.9a
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
 // - Removido: Mensagens de console.log de depuração da função checkCpfInHistory (temporárias da v2.0.3-debug).
-// - NOVO: Implementação de senha dinâmica (sislab + HHMM) para ações sensíveis.
 // - MODIFICADO: Lógica de "Gerar Paciente Aleatório" movida para index.html.
 //   - O botão em admin.html agora apenas abre index.html com um parâmetro.
 //   - O script.js do index.html agora sorteia e carrega o paciente aleatório a cada recarga com o parâmetro.
@@ -1122,7 +1121,7 @@ function editarListaExamesComSenha() {
     const minute = now.getMinutes().toString().padStart(2, '0');
     const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute;
 
-    const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
+    const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha.`);
     if (senhaDigitada === null) {
         console.log("editarListaExamesComSenha: Usuário cancelou a entrada da senha.");
         return;
