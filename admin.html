@@ -1,76 +1,18 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>SISLAB - Administração 1.1</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
-        .admin-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            text-align: center;
-        }
-        h1 {
-            color: #1A2B4C;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #1A2B4C;
-            color: white;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #0F1D33;
-        }
-        button.danger-button {
-            background-color: #CC3333;
-        }
-        button.danger-button:hover {
-            background-color: #A02222;
-        }
-        p.warning {
-            color: #CC3333;
-            font-weight: bold;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</head>
-<body>
-
+<!-- admin.html -->
 <div class="admin-container">
     <h1>Área Administrativa SISLAB</h1>
     <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
 
     <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
     <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
-    <button onclick="imprimirPacienteFicticio()">Imprimir Paciente Fictício</button>
+    <button onclick="carregarPacienteFicticio()">Carregar Paciente Fictício</button>
 
     <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import {
-        getFirestore, collection, getDocs,
-        query, limit, writeBatch, orderBy
-    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, limit, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
@@ -144,13 +86,13 @@
         window.location.href = 'log_inventario.html';
     }
 
-    async function imprimirPacienteFicticio() {
+    async function carregarPacienteFicticio() {
         try {
             const response = await fetch('pacientes_aleatorios.json');
             const pacientes = await response.json();
             const paciente = pacientes[Math.floor(Math.random() * pacientes.length)];
             localStorage.setItem('pacienteFicticio', JSON.stringify(paciente));
-            window.location.href = 'index.html?imprimir=ficticio';
+            window.location.href = 'index.html?preencher=ficticio';
         } catch (err) {
             console.error("Erro ao carregar paciente fictício:", err);
             alert("Erro ao carregar paciente fictício. Verifique se o arquivo JSON está acessível.");
@@ -158,5 +100,8 @@
     }
 </script>
 
-</body>
-</html>
+<!-- 
+Changelog:
+- Substituído botão "Imprimir Paciente Fictício" por "Carregar Paciente Fictício".
+- Função 'imprimirPacienteFicticio()' renomeada e alterada para 'carregarPacienteFicticio()', apenas preenche os campos.
+-->
