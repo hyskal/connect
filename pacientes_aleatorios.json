@@ -14,7 +14,8 @@
       "Colesterol Total (CT)",
       "Triglicerídeos (TG)",
       "Vitamina D (25-OH Vitamina D)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Pedro Santos",
@@ -30,7 +31,8 @@
       "FAN (Fator Antinúcleo)",
       "Cálcio Total (Ca Total)",
       "Ácido Úrico (AU)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Maria Eduarda Lima",
@@ -46,7 +48,8 @@
       "TGP (ALT)",
       "Fosfatase Alcalina (FA)",
       "Gama GT (GGT)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Pedro Henrique Costa",
@@ -61,7 +64,8 @@
       "LDL-Colesterol (Colesterol de Baixa Densidade)",
       "Triglicerídeos (TG)",
       "Glicemia (Glicose Sérica)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Laura Sofia Almeida",
@@ -74,7 +78,8 @@
       "Urina Tipo I (EAS)",
       "Urocultura (Cultura de Urina)",
       "PCR (Proteína C Reativa)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Gabriel Miguel Ribeiro",
@@ -90,7 +95,8 @@
       "Ureia (BUN)",
       "Creatinina (Creat)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Isabela Fernanda Martins",
@@ -105,7 +111,8 @@
       "Vitamina D (25-OH Vitamina D)",
       "Ácido Fólico (Folato)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Rafael Gonçalo Dias",
@@ -119,7 +126,8 @@
       "Ferritina (Ferr)",
       "Vitamina B12 (Cobalamina)",
       "Proteínas Totais e Frações (PTF)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Luiza Beatriz Rocha",
@@ -132,7 +140,8 @@
       "Parasitológico de Fezes (EPF)",
       "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
       "Cultura de Fezes (Coprocultura)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Felipe Augusto Borges",
@@ -147,7 +156,8 @@
       "Gama GT (GGT)",
       "Fosfatase Alcalina (FA)",
       "Bilirrubinas Totais e Frações (BTF)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Sophia Valentina Santos",
@@ -162,7 +172,8 @@
       "LDL-Colesterol (Colesterol de Baixa Densidade)",
       "Triglicerídeos (TG)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Arthur Leonardo Costa",
@@ -176,7 +187,8 @@
       "Glicosilada (Hemoglobina Glicada, HbA1c)",
       "Ureia (BUN)",
       "Creatinina (Creat)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Helena Manuela Silva",
@@ -190,7 +202,8 @@
       "Ferritina (Ferr)",
       "Hemograma Completo (HC)",
       "Cálcio Total (Ca Total)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Bernardo Joaquim Pereira",
@@ -204,7 +217,8 @@
       "Ureia (BUN)",
       "Creatinina (Creat)",
       "Eletroforese de Proteínas (Eletroforese)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Davi Lorenzo Rodrigues",
@@ -217,7 +231,8 @@
       "PCR (Proteína C Reativa)",
       "VHS (Velocidade de Hemossedimentação)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Valentina Luiza Costa",
@@ -230,7 +245,8 @@
       "TSH (Hormônio Estimulador da Tireoide)",
       "T4 Livre (Tiroxina Livre)",
       "Anticorpos Anti-TPO (Anti-Tireoperoxidase)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Miguel Davi Santos",
@@ -247,7 +263,8 @@
       "Apolipoproteína A1 (ApoA1)",
       "Apolipoproteína B (ApoB)",
       "Glicemia (Glicose Sérica)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Cecília Heloísa Pires",
@@ -262,7 +279,8 @@
       "LH (Hormônio Luteinizante)",
       "FSH (Hormônio Folículo Estimulante)",
       "Prolactina (PRL)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "João Lucas Ferreira",
@@ -276,7 +294,8 @@
       "PSA Livre (Antígeno Prostático Específico Livre)",
       "Testosterona Total (Testo Total)",
       "Testosterona Livre (Testo Livre)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Lara Isadora Rodrigues",
@@ -290,7 +309,8 @@
       "Ferro Sérico (Fe Sérico)",
       "Ferritina (Ferr)",
       "Transferrina (Transf)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Enzo Gabriel Lima",
@@ -304,7 +324,8 @@
       "PCR (Proteína C Reativa)",
       "VHS (Velocidade de Hemossedimentação)",
       "Cultura de Secreção (Cultura)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Lorena Alice Guimarães",
@@ -316,7 +337,8 @@
     "examesSelecionados": [
       "Fenitoína (Difenil-hidantoína)",
       "Ácido Valproico (Valproato)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Cauã Eduardo Rodrigues",
@@ -329,7 +351,8 @@
       "Ácido Úrico (AU)",
       "Ureia (BUN)",
       "Creatinina (Creat)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Sofia Emanuelly Santos",
@@ -344,7 +367,8 @@
       "TGO (AST)",
       "TGP (ALT)",
       "Bilirrubinas Totais e Frações (BTF)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Luiza Fernanda Castro",
@@ -357,7 +381,8 @@
       "FAN (Fator Antinúcleo)",
       "PCR (Proteína C Reativa)",
       "VHS (Velocidade de Hemossedimentação)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Pedro Gabriel Soares",
@@ -371,7 +396,8 @@
       "Vitamina D (25-OH Vitamina D)",
       "Fósforo (P)",
       "Paratormônio (PTH)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Beatriz Clara Martins",
@@ -383,7 +409,8 @@
     "examesSelecionados": [
       "Hemograma Completo (HC)",
       "Zinco (Zn)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Lucas Samuel Costa",
@@ -396,7 +423,8 @@
       "Chumbo (Pb)",
       "Cromo (Cr)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Ana Luiza Pereira",
@@ -410,7 +438,8 @@
       "D-Dímero (D-Dimer)",
       "Tempo de Protrombina (TP)",
       "Tempo de Tromboplastina Parcial Ativada (TTPA)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Victor Rocha",
@@ -423,7 +452,8 @@
       "Pesquisa de Malária (Gota Espessa)",
       "Hemograma Completo (HC)",
       "PCR (Proteína C Reativa)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Mariana Sofia Sales",
@@ -439,7 +469,8 @@
       "Magnésio (Mg)",
       "Creatinina (Creat)",
       "Lactato (Ácido Lático)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Gustavo Henrique Santos",
@@ -451,7 +482,8 @@
     "examesSelecionados": [
       "Anti-HIV 1 e 2 (HIV)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Júlia Rafaela Rocha",
@@ -463,7 +495,8 @@
     "examesSelecionados": [
       "VDRL (Sífilis)",
       "FTA-Abs (Sífilis (Teste Confirmatório))"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Pedro Arthur Alves",
@@ -476,7 +509,8 @@
       "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
       "Pesquisa de Tuberculose (Cultura para TB)",
       "VHS (Velocidade de Hemossedimentação)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Amanda Vitória Silva",
@@ -489,7 +523,8 @@
       "Beta-HCG (HCG Quantitativo)",
       "Progesterona (Prog)",
       "Estradiol (E2)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Thiago Miguel Conceição",
@@ -500,7 +535,8 @@
     "observacoes": "Suspeita de infecção fúngica. Coleta para micológico direto.",
     "examesSelecionados": [
       "Pesquisa de Fungos (Micológico Direto)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Gabriela Isabela Ribeiro",
@@ -512,7 +548,8 @@
     "examesSelecionados": [
       "Pesquisa de Leishmania (Leishmania)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Matheus João Martins",
@@ -525,7 +562,8 @@
       "Alfa-1 Glicoproteína Ácida (AGP)",
       "Eletroforese de Proteínas (Eletroforese)",
       "Proteínas Totais e Frações (PTF)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Ana Júlia Costa",
@@ -537,7 +575,8 @@
     "examesSelecionados": [
       "Alfa-Fetoproteína (AFP)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Carlos Eduardo Dias",
@@ -550,7 +589,8 @@
       "Bacterioscopia (Gram)",
       "Hemograma Completo (HC)",
       "PCR (Proteína C Reativa)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Mariana Letícia Santos",
@@ -561,7 +601,8 @@
     "observacoes": "Acompanhamento de paciente com bipolaridade. Verificar nível de lítio.",
     "examesSelecionados": [
       "Lítio (Li)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Vitor Soares",
@@ -573,7 +614,8 @@
     "examesSelecionados": [
       "Troponina I (TnI)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Heloísa Gabriela Martins",
@@ -586,7 +628,8 @@
       "Hemograma Completo (HC)",
       "Ferro Sérico (Fe Sérico)",
       "Ferritina (Ferr)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Pedro Lucas Pereira",
@@ -599,7 +642,8 @@
       "Painel Viral Respiratório (PCR Viral)",
       "PCR (Proteína C Reativa)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Maria Eduarda Ribeiro",
@@ -612,7 +656,8 @@
       "Microalbuminúria (MAU)",
       "Creatinina (Creat)",
       "Ureia (BUN)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Lucas Gabriel Lima",
@@ -625,7 +670,8 @@
       "Tempo de Protrombina (TP)",
       "Tempo de Tromboplastina Parcial Ativada (TTPA)",
       "Fibrinogênio (Fibrin)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Ana Clara Santos",
@@ -638,7 +684,8 @@
       "Tireoglobulina (TG)",
       "Anticorpos Anti-Tireoglobulina (Anti-TG)",
       "TSH (Hormônio Estimulador da Tireoide)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Pedro Ribeiro",
@@ -651,7 +698,8 @@
       "Homocisteína (Hcy)",
       "Colesterol Total (CT)",
       "HDL-Colesterol (Colesterol de Alta Densidade)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Laura Sofia Costa",
@@ -664,7 +712,8 @@
       "Procalcitonina (PCT)",
       "Hemograma Completo (HC)",
       "PCR (Proteína C Reativa)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Gabriel Miguel Martins",
@@ -677,7 +726,8 @@
       "Zinco (Zn)",
       "Cobre (Cu)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Isabela Fernanda Conceição",
@@ -691,7 +741,8 @@
       "TGO (AST)",
       "TGP (ALT)",
       "Bilirrubinas Totais e Frações (BTF)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Rafael Gonçalo Alves",
@@ -703,7 +754,8 @@
     "examesSelecionados": [
       "Fator V Leiden (FVL)",
       "Tempo de Protrombina (TP)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Luiza Beatriz Guimarães",
@@ -716,7 +768,8 @@
       "FAN (Fator Antinúcleo)",
       "Eletroforese de Proteínas (Eletroforese)",
       "Proteínas Totais e Frações (PTF)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Felipe Augusto Oliveira",
@@ -728,7 +781,8 @@
     "examesSelecionados": [
       "Chumbo (Pb)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Sophia Valentina Pereira",
@@ -742,7 +796,8 @@
       "Hepatite A IgG (Anti-HAV IgG)",
       "HBsAg (Antígeno de Superfície da Hepatite B)",
       "Anti-HCV (Anticorpo Anti-Hepatite C)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Arthur Leonardo Costa",
@@ -755,7 +810,8 @@
       "Insulina (Ins)",
       "Glicemia (Glicose Sérica)",
       "Glicosilada (Hemoglobina Glicada, HbA1c)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Helena Manuela Sales",
@@ -767,7 +823,8 @@
     "examesSelecionados": [
       "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Bernardo Joaquim Rocha",
@@ -779,7 +836,8 @@
     "examesSelecionados": [
       "Meta-Hemoglobina (MetHb)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Davi Lorenzo Martins",
@@ -790,7 +848,8 @@
     "observacoes": "Suspeita de infecção fúngica sistêmica. Pesquisar Criptococos.",
     "examesSelecionados": [
       "Pesquisa de Criptococos (Tinta da China)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Valentina Luiza Borges",
@@ -803,7 +862,8 @@
       "Coombs Direto (CD)",
       "Coombs Indireto (CI)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Miguel Davi Costa",
@@ -816,7 +876,8 @@
       "Cálcio Total (Ca Total)",
       "Cálcio Iônico (Ca Iônico)",
       "Fósforo (P)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Cecília Heloísa Silva",
@@ -828,7 +889,8 @@
     "examesSelecionados": [
       "Tempo de Protrombina (TP)",
       "Tempo de Tromboplastina Parcial Ativada (TTPA)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "João Lucas Pereira",
@@ -841,7 +903,8 @@
       "Apolipoproteína A1 (ApoA1)",
       "Apolipoproteína B (ApoB)",
       "Colesterol Total (CT)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Lara Isadora Guimarães",
@@ -855,7 +918,8 @@
       "Vitamina B12 (Cobalamina)",
       "Ácido Fólico (Folato)",
       "Ferro Sérico (Fe Sérico)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Enzo Gabriel Martins",
@@ -869,7 +933,8 @@
       "Creatinina (Creat)",
       "TGO (AST)",
       "TGP (ALT)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Lorena Alice Conceição",
@@ -881,7 +946,8 @@
     "examesSelecionados": [
       "PCR (Proteína C Reativa)",
       "VHS (Velocidade de Hemossedimentação)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Cauã Eduardo Pires",
@@ -894,7 +960,8 @@
       "Glicemia de Jejum (GJ)",
       "Glicemia Pós-Prandial (GPP)",
       "Glicosilada (Hemoglobina Glicada, HbA1c)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Sofia Emanuelly Borges",
@@ -906,7 +973,8 @@
     "examesSelecionados": [
       "Anti-HIV 1 e 2 (HIV)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Luiza Fernanda Rodrigues",
@@ -917,7 +985,8 @@
     "observacoes": "Suspeita de doença autoimune. Investigar FAN.",
     "examesSelecionados": [
       "FAN (Fator Antinúcleo)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Pedro Gabriel Silva",
@@ -930,7 +999,8 @@
       "TSH (Hormônio Estimulador da Tireoide)",
       "T3 Total (Triiodotironina Total)",
       "T4 Livre (Tiroxina Livre)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Beatriz Clara Conceição",
@@ -944,7 +1014,8 @@
       "TGP (ALT)",
       "Gama GT (GGT)",
       "Fosfatase Alcalina (FA)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Lucas Samuel Pires",
@@ -956,7 +1027,8 @@
     "examesSelecionados": [
       "Testosterona Total (Testo Total)",
       "Testosterona Livre (Testo Livre)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Ana Luiza Borges",
@@ -968,7 +1040,8 @@
     "examesSelecionados": [
       "Ferritina (Ferr)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Victor Costa",
@@ -980,7 +1053,8 @@
     "examesSelecionados": [
       "Vitamina D (25-OH Vitamina D)",
       "Vitamina B12 (Cobalamina)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Mariana Sofia Martins",
@@ -993,7 +1067,8 @@
       "PCR (Proteína C Reativa)",
       "Hemograma Completo (HC)",
       "VHS (Velocidade de Hemossedimentação)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Gustavo Henrique Conceição",
@@ -1005,7 +1080,8 @@
     "examesSelecionados": [
       "TSH (Hormônio Estimulador da Tireoide)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Júlia Rafaela Pires",
@@ -1018,7 +1094,8 @@
       "Amilase (Amil)",
       "Lipase (Lip)",
       "Hemograma Completo (HC)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Pedro Arthur Borges",
@@ -1031,7 +1108,8 @@
       "Glicemia (Glicose Sérica)",
       "Colesterol Total (CT)",
       "Triglicerídeos (TG)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Amanda Vitória Martins",
@@ -1045,7 +1123,8 @@
       "LDL-Colesterol (Colesterol de Baixa Densidade)",
       "Ureia (BUN)",
       "Creatinina (Creat)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Thiago Miguel Pires",
@@ -1059,7 +1138,8 @@
       "Sódio (Na)",
       "Potássio (K)",
       "Cloro (Cl)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Gabriela Isabela Borges",
@@ -1071,7 +1151,8 @@
     "examesSelecionados": [
       "Ureia (BUN)",
       "Creatinina (Creat)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Matheus João Conceição",
@@ -1082,7 +1163,8 @@
     "observacoes": "Suspeita de problemas na tireoide. Avaliar TSH.",
     "examesSelecionados": [
       "TSH (Hormônio Estimulador da Tireoide)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Ana Júlia Martins",
@@ -1095,7 +1177,8 @@
       "Bilirrubinas Totais e Frações (BTF)",
       "TGO (AST)",
       "TGP (ALT)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Carlos Eduardo Pereira",
@@ -1106,7 +1189,8 @@
     "observacoes": "Queixas de dor articular. Investigar FR.",
     "examesSelecionados": [
       "Fator Reumatoide (FR)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Mariana Letícia Dias",
@@ -1119,7 +1203,8 @@
       "Hemograma Completo (HC)",
       "Colesterol Total (CT)",
       "Triglicerídeos (TG)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Vitor Soares",
@@ -1132,7 +1217,8 @@
       "Urina Tipo I (EAS)",
       "Urocultura (Cultura de Urina)",
       "PCR (Proteína C Reativa)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Heloísa Gabriela Costa",
@@ -1144,7 +1230,8 @@
     "examesSelecionados": [
       "Proteínas Totais e Frações (PTF)",
       "Albumina (Alb)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Pedro Lucas Martins",
@@ -1156,7 +1243,8 @@
     "examesSelecionados": [
       "Ureia (BUN)",
       "Creatinina (Creat)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Maria Eduarda Conceição",
@@ -1167,7 +1255,8 @@
     "observacoes": "Acompanhamento de paciente com AIDS. Verificar Anti-HIV.",
     "examesSelecionados": [
       "Anti-HIV 1 e 2 (HIV)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Lucas Gabriel Pires",
@@ -1178,7 +1267,8 @@
     "observacoes": "Sintomas de doença celíaca. Avaliar marcadores.",
     "examesSelecionados": [
       "Anticorpos Anti-TPO (Anti-Tireoperoxidase)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Ana Clara Borges",
@@ -1190,7 +1280,8 @@
     "examesSelecionados": [
       "TSH (Hormônio Estimulador da Tireoide)",
       "T4 Livre (Tiroxina Livre)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "João Pedro Martins",
@@ -1202,7 +1293,8 @@
     "examesSelecionados": [
       "TGO (AST)",
       "TGP (ALT)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Laura Sofia Conceição",
@@ -1213,7 +1305,8 @@
     "observacoes": "Sintomas de infecção. Avaliar PCR.",
     "examesSelecionados": [
       "PCR (Proteína C Reativa)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Gabriel Miguel Pires",
@@ -1224,7 +1317,8 @@
     "observacoes": "Controle de diabetes. Avaliar glicemia.",
     "examesSelecionados": [
       "Glicemia (Glicose Sérica)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Isabela Fernanda Borges",
@@ -1235,7 +1329,8 @@
     "observacoes": "Acompanhamento de paciente com gota. Avaliar ácido úrico.",
     "examesSelecionados": [
       "Ácido Úrico (AU)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Rafael Gonçalo Martins",
@@ -1246,7 +1341,8 @@
     "observacoes": "Queixas de dor. Avaliar VHS.",
     "examesSelecionados": [
       "VHS (Velocidade de Hemossedimentação)"
-    ]
+    ],
+    "sexo": "Masculino"
   },
   {
     "nome": "Luiza Beatriz Pires",
@@ -1257,7 +1353,8 @@
     "observacoes": "Acompanhamento de paciente com diabetes. Avaliar Hemoglobina Glicada.",
     "examesSelecionados": [
       "Glicosilada (Hemoglobina Glicada, HbA1c)"
-    ]
+    ],
+    "sexo": "Feminino"
   },
   {
     "nome": "Felipe Augusto Conceição",
@@ -1268,7 +1365,8 @@
     "observacoes": "Queixas de tosse. Avaliar painel viral.",
     "examesSelecionados": [
       "Painel Viral Respiratório (PCR Viral)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Sophia Valentina Borges",
@@ -1279,7 +1377,8 @@
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar Alfa-1 Glicoproteína.",
     "examesSelecionados": [
       "Alfa-1 Glicoproteína Ácida (AGP)"
-    ]
+    ],
+    "sexo": "Outro"
   },
   {
     "nome": "Arthur Leonardo Martins",
@@ -1290,6 +1389,7 @@
     "observacoes": "Suspeita de tumor. Avaliar Alfa-Fetoproteína.",
     "examesSelecionados": [
       "Alfa-Fetoproteína (AFP)"
-    ]
+    ],
+    "sexo": "Masculino"
   }
 ]
