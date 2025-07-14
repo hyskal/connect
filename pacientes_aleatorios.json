@@ -2,7 +2,7 @@
   {
     "nome": "Ana Clara Oliveira",
     "dataNasc": "1988-05-15",
-    "cpf": "123.456.789-01",
+    "cpf": "234.585.395-65",
     "endereco": "Rua do Cajueiro, 123, Centro, Alagoinhas - BA, 48000-001",
     "contato": "(75) 98765-4321",
     "observacoes": "Paciente relata fadiga crônica, histórico familiar de diabetes. Indicado painel metabólico completo.",
@@ -19,7 +19,7 @@
   {
     "nome": "João Pedro Santos",
     "dataNasc": "1975-11-22",
-    "cpf": "987.654.321-09",
+    "cpf": "597.371.785-21",
     "endereco": "Avenida 2 de Julho, 456, Barreiro, Alagoinhas - BA, 48000-002",
     "contato": "(75) 91234-5678",
     "observacoes": "Dor articular persistente, suspeita de doença autoimune. Solicitar exames reumatológicos e inflamatórios.",
@@ -35,7 +35,7 @@
   {
     "nome": "Maria Eduarda Lima",
     "dataNasc": "1995-09-01",
-    "cpf": "012.345.678-90",
+    "cpf": "707.362.985-17",
     "endereco": "Travessa dos Lírios, 78, Mangalô, Alagoinhas - BA, 48000-003",
     "contato": "(75) 96543-2109",
     "observacoes": "Checape de rotina, sem queixas específicas. Avaliar função renal e hepática.",
@@ -51,7 +51,7 @@
   {
     "nome": "Pedro Henrique Costa",
     "dataNasc": "1970-03-25",
-    "cpf": "109.876.543-21",
+    "cpf": "778.146.455-90",
     "endereco": "Praça Rui Barbosa, 10, Centro, Alagoinhas - BA, 48000-004",
     "contato": "(75) 99876-5432",
     "observacoes": "Monitoramento de pressão alta e colesterol. Importante acompanhar perfil lipídico e glicemia.",
@@ -66,7 +66,7 @@
   {
     "nome": "Laura Sofia Almeida",
     "dataNasc": "2000-11-10",
-    "cpf": "210.987.654-32",
+    "cpf": "963.824.895-57",
     "endereco": "Rua das Flores, 55, Santa Terezinha, Alagoinhas - BA, 48000-005",
     "contato": "(75) 95432-1098",
     "observacoes": "Sintomas de infecção urinária recorrente. Solicitar cultura e sensibilidade.",
@@ -79,7 +79,7 @@
   {
     "nome": "Gabriel Miguel Ribeiro",
     "dataNasc": "1965-07-03",
-    "cpf": "321.098.765-43",
+    "cpf": "758.940.795-00",
     "endereco": "Avenida Alagoinhas, 200, Kennedy, Alagoinhas - BA, 48000-006",
     "contato": "(75) 91098-7654",
     "observacoes": "Acompanhamento pós-cirúrgico, verificar eletrólitos e função renal.",
@@ -95,7 +95,7 @@
   {
     "nome": "Isabela Fernanda Martins",
     "dataNasc": "1990-01-20",
-    "cpf": "432.109.876-54",
+    "cpf": "826.534.145-89",
     "endereco": "Rua do Sol, 7, Teresópolis, Alagoinhas - BA, 48000-007",
     "contato": "(75) 97654-3210",
     "observacoes": "Exames de rotina para gravidez. Avaliar tireoide e vitaminas.",
@@ -110,7 +110,7 @@
   {
     "nome": "Rafael Gonçalo Dias",
     "dataNasc": "1980-04-05",
-    "cpf": "543.210.987-65",
+    "cpf": "322.306.745-01",
     "endereco": "Rua da Paz, 30, Urbis I, Alagoinhas - BA, 48000-008",
     "contato": "(75) 93210-9876",
     "observacoes": "Queixas de cansaço e sonolência. Investigar anemia e deficiência de B12.",
@@ -124,7 +124,7 @@
   {
     "nome": "Luiza Beatriz Rocha",
     "dataNasc": "1998-12-08",
-    "cpf": "654.321.098-76",
+    "cpf": "557.166.355-39",
     "endereco": "Condomínio Primavera, 12, Jardim Imperial, Alagoinhas - BA, 48000-009",
     "contato": "(75) 98765-4321",
     "observacoes": "Histórico de problemas intestinais. Análise de fezes para parasitas.",
@@ -137,7 +137,7 @@
   {
     "nome": "Felipe Augusto Borges",
     "dataNasc": "1972-02-18",
-    "cpf": "765.432.109-87",
+    "cpf": "404.569.415-33",
     "endereco": "Alameda dos Coqueiros, 20, Barreiro, Alagoinhas - BA, 48000-010",
     "contato": "(75) 92109-8765",
     "observacoes": "Acompanhamento de função hepática após medicação. Verificar enzimas e bilirrubinas.",
@@ -152,7 +152,7 @@
   {
     "nome": "Sophia Valentina Santos",
     "dataNasc": "1993-06-20",
-    "cpf": "876.543.210-98",
+    "cpf": "966.567.995-31",
     "endereco": "Rua da Alegria, 15, Alagoinhas Velha, Alagoinhas - BA, 48000-011",
     "contato": "(75) 96543-2101",
     "observacoes": "Avaliação de saúde geral. Incluir perfil lipídico e hemograma.",
@@ -167,7 +167,7 @@
   {
     "nome": "Arthur Leonardo Costa",
     "dataNasc": "1985-08-03",
-    "cpf": "987.654.321-01",
+    "cpf": "354.807.115-55",
     "endereco": "Largo do Carmo, 5, Centro, Alagoinhas - BA, 48000-012",
     "contato": "(75) 91234-5679",
     "observacoes": "Controle de diabetes tipo 2. Avaliar glicemia e hemoglobina glicada.",
@@ -181,7 +181,7 @@
   {
     "nome": "Helena Manuela Silva",
     "dataNasc": "2005-01-10",
-    "cpf": "098.765.432-10",
+    "cpf": "757.870.365-06",
     "endereco": "Rua do Dendê, 40, Catu, Alagoinhas - BA, 48000-013",
     "contato": "(75) 99876-5430",
     "observacoes": "Acompanhamento pediátrico. Avaliar vitaminas e ferro.",
@@ -195,7 +195,7 @@
   {
     "nome": "Bernardo Joaquim Pereira",
     "dataNasc": "1960-10-28",
-    "cpf": "123.456.789-02",
+    "cpf": "702.578.365-00",
     "endereco": "Travessa da Felicidade, 22, Retiro, Alagoinhas - BA, 48000-014",
     "contato": "(75) 95432-1090",
     "observacoes": "Check-up geriátrico. Avaliar função cardíaca e renal.",
@@ -209,7 +209,7 @@
   {
     "nome": "Davi Lorenzo Rodrigues",
     "dataNasc": "1992-03-17",
-    "cpf": "012.345.678-91",
+    "cpf": "657.264.115-52",
     "endereco": "Rua dos Cajueiros, 10, Centro, Alagoinhas - BA, 48000-015",
     "contato": "(75) 91098-7650",
     "observacoes": "Sintomas de alergia. Investigar marcadores inflamatórios.",
@@ -222,7 +222,7 @@
   {
     "nome": "Valentina Luiza Costa",
     "dataNasc": "1983-07-07",
-    "cpf": "109.876.543-22",
+    "cpf": "708.144.345-17",
     "endereco": "Avenida Paulo VI, 120, Alagoinhas IV, Alagoinhas - BA, 48000-016",
     "contato": "(75) 97654-3211",
     "observacoes": "Acompanhamento de tireoide. Verificar TSH e T4.",
@@ -235,7 +235,7 @@
   {
     "nome": "Miguel Davi Santos",
     "dataNasc": "1978-09-28",
-    "cpf": "210.987.654-33",
+    "cpf": "492.718.465-08",
     "endereco": "Rua do Campo, 88, Bairro Novo, Alagoinhas - BA, 48000-017",
     "contato": "(75) 93210-9870",
     "observacoes": "Avaliação de risco cardiovascular. Perfil lipídico completo e glicemia.",
@@ -252,7 +252,7 @@
   {
     "nome": "Cecília Heloísa Pires",
     "dataNasc": "1997-05-02",
-    "cpf": "321.098.765-44",
+    "cpf": "981.854.275-42",
     "endereco": "Travessa dos Rios, 1, Jardim Petrolar, Alagoinhas - BA, 48000-018",
     "contato": "(75) 98765-4320",
     "observacoes": "Exames de rotina para controle de natalidade. Avaliar hormônios femininos.",
@@ -267,7 +267,7 @@
   {
     "nome": "João Lucas Ferreira",
     "dataNasc": "1968-11-09",
-    "cpf": "432.109.876-55",
+    "cpf": "387.054.575-56",
     "endereco": "Avenida Getúlio Vargas, 150, Centro, Alagoinhas - BA, 48000-019",
     "contato": "(75) 92109-8760",
     "observacoes": "Acompanhamento de saúde masculina. Verificar PSA e testosterona.",
@@ -281,7 +281,7 @@
   {
     "nome": "Lara Isadora Rodrigues",
     "dataNasc": "2002-06-25",
-    "cpf": "543.210.987-66",
+    "cpf": "837.729.475-30",
     "endereco": "Rua dos Ipês, 77, Teresópolis, Alagoinhas - BA, 48000-020",
     "contato": "(75) 96543-2100",
     "observacoes": "Suspeita de deficiência de ferro. Avaliar hemograma e ferro sérico.",
@@ -295,7 +295,7 @@
   {
     "nome": "Enzo Gabriel Lima",
     "dataNasc": "1994-04-12",
-    "cpf": "654.321.098-77",
+    "cpf": "054.621.515-78",
     "endereco": "Rua do Porto, 33, Mangalô, Alagoinhas - BA, 48000-021",
     "contato": "(75) 99876-5431",
     "observacoes": "Investigação de febre de origem desconhecida. Hemocultura e marcadores inflamatórios.",
@@ -309,7 +309,7 @@
   {
     "nome": "Lorena Alice Guimarães",
     "dataNasc": "1973-08-01",
-    "cpf": "765.432.109-88",
+    "cpf": "196.146.535-31",
     "endereco": "Avenida Castelo Branco, 18, Centro, Alagoinhas - BA, 48000-022",
     "contato": "(75) 95432-1099",
     "observacoes": "Controle de medicação anticonvulsivante. Verificar nível sérico do fármaco.",
@@ -321,7 +321,7 @@
   {
     "nome": "Cauã Eduardo Rodrigues",
     "dataNasc": "1981-02-28",
-    "cpf": "876.543.210-99",
+    "cpf": "978.785.625-63",
     "endereco": "Rua das Azaleias, 25, Kennedy, Alagoinhas - BA, 48000-023",
     "contato": "(75) 91234-5670",
     "observacoes": "Histórico de gota. Monitorar ácido úrico e função renal.",
@@ -334,7 +334,7 @@
   {
     "nome": "Sofia Emanuelly Santos",
     "dataNasc": "1996-10-05",
-    "cpf": "987.654.321-02",
+    "cpf": "627.934.385-53",
     "endereco": "Condomínio Flores do Campo, 4, Santa Terezinha, Alagoinhas - BA, 48000-024",
     "contato": "(75) 99876-5431",
     "observacoes": "Acompanhamento de infecção hepática. Avaliar marcadores virais e função hepática.",
@@ -349,7 +349,7 @@
   {
     "nome": "Luiza Fernanda Castro",
     "dataNasc": "1971-01-15",
-    "cpf": "012.345.678-92",
+    "cpf": "967.539.685-71",
     "endereco": "Rua do Comércio, 100, Centro, Alagoinhas - BA, 48000-025",
     "contato": "(75) 95432-1091",
     "observacoes": "Suspeita de doença autoimune. Investigar FAN e marcadores inflamatórios.",
@@ -362,7 +362,7 @@
   {
     "nome": "Pedro Gabriel Soares",
     "dataNasc": "1989-07-22",
-    "cpf": "109.876.543-23",
+    "cpf": "976.695.715-00",
     "endereco": "Travessa dos Passarinhos, 7, Alagoinhas Velha, Alagoinhas - BA, 48000-026",
     "contato": "(75) 91098-7651",
     "observacoes": "Monitoramento de osteoporose. Avaliar cálcio e vitamina D.",
@@ -376,7 +376,7 @@
   {
     "nome": "Beatriz Clara Martins",
     "dataNasc": "2001-04-03",
-    "cpf": "210.987.654-34",
+    "cpf": "259.835.815-54",
     "endereco": "Rua da Esperança, 1, Urbis II, Alagoinhas - BA, 48000-027",
     "contato": "(75) 97654-3212",
     "observacoes": "Acompanhamento pediátrico. Verificar hemograma e zinco.",
@@ -388,7 +388,7 @@
   {
     "nome": "Lucas Samuel Costa",
     "dataNasc": "1967-09-19",
-    "cpf": "321.098.765-45",
+    "cpf": "149.031.145-97",
     "endereco": "Avenida do Contorno, 50, Mangalô, Alagoinhas - BA, 48000-028",
     "contato": "(75) 93210-9871",
     "observacoes": "Queixas neurológicas. Investigar chumbo e cromo.",
@@ -401,7 +401,7 @@
   {
     "nome": "Ana Luiza Pereira",
     "dataNasc": "1991-11-29",
-    "cpf": "432.109.876-56",
+    "cpf": "743.238.045-71",
     "endereco": "Rua das Palmeiras, 11, Jardim Petrolar, Alagoinhas - BA, 48000-029",
     "contato": "(75) 98765-4322",
     "observacoes": "Avaliação de risco trombótico. Pesquisar Fator V Leiden e D-Dímero.",
@@ -415,7 +415,7 @@
   {
     "nome": "João Victor Rocha",
     "dataNasc": "1984-02-14",
-    "cpf": "543.210.987-67",
+    "cpf": "553.555.785-43",
     "endereco": "Rua da Floresta, 66, Barreiro, Alagoinhas - BA, 48000-030",
     "contato": "(75) 92109-8761",
     "observacoes": "Sintomas de febre e mal-estar em viajante. Pesquisar malária.",
@@ -428,7 +428,7 @@
   {
     "nome": "Mariana Sofia Sales",
     "dataNasc": "1999-09-07",
-    "cpf": "654.321.098-78",
+    "cpf": "911.793.815-56",
     "endereco": "Alameda dos Bosques, 9, Teresópolis, Alagoinhas - BA, 48000-031",
     "contato": "(75) 96543-2102",
     "observacoes": "Check-up esportivo. Avaliar eletrólitos e função muscular.",
@@ -444,7 +444,7 @@
   {
     "nome": "Gustavo Henrique Santos",
     "dataNasc": "1976-05-18",
-    "cpf": "765.432.109-89",
+    "cpf": "601.649.055-53",
     "endereco": "Rua da Saudade, 44, Bairro Novo, Alagoinhas - BA, 48000-032",
     "contato": "(75) 99876-5432",
     "observacoes": "Acompanhamento de paciente com AIDS. Monitorar carga viral e linfócitos.",
@@ -456,7 +456,7 @@
   {
     "nome": "Júlia Rafaela Rocha",
     "dataNasc": "1987-01-29",
-    "cpf": "876.543.210-00",
+    "cpf": "581.085.365-02",
     "endereco": "Rua da Liberdade, 13, Centro, Alagoinhas - BA, 48000-033",
     "contato": "(75) 95432-1092",
     "observacoes": "Suspeita de sífilis. Realizar testes de triagem e confirmatório.",
@@ -468,7 +468,7 @@
   {
     "nome": "Pedro Arthur Alves",
     "dataNasc": "1999-03-08",
-    "cpf": "987.654.321-03",
+    "cpf": "191.533.405-58",
     "endereco": "Avenida do Ouro, 70, Kennedy, Alagoinhas - BA, 48000-034",
     "contato": "(75) 91098-7652",
     "observacoes": "Queixas de tosse persistente e emagrecimento. Investigar tuberculose.",
@@ -481,7 +481,7 @@
   {
     "nome": "Amanda Vitória Silva",
     "dataNasc": "1974-06-11",
-    "cpf": "012.345.678-93",
+    "cpf": "937.564.065-55",
     "endereco": "Rua do Cedro, 9, Mangalô, Alagoinhas - BA, 48000-035",
     "contato": "(75) 97654-3213",
     "observacoes": "Acompanhamento de gestação. Verificar beta-HCG e hormônios.",
@@ -494,7 +494,7 @@
   {
     "nome": "Thiago Miguel Conceição",
     "dataNasc": "1986-09-04",
-    "cpf": "109.876.543-24",
+    "cpf": "549.425.345-77",
     "endereco": "Rua da Harmonia, 1, Santa Terezinha, Alagoinhas - BA, 48000-036",
     "contato": "(75) 93210-9872",
     "observacoes": "Suspeita de infecção fúngica. Coleta para micológico direto.",
@@ -505,7 +505,7 @@
   {
     "nome": "Gabriela Isabela Ribeiro",
     "dataNasc": "2003-01-26",
-    "cpf": "210.987.654-35",
+    "cpf": "370.769.725-81",
     "endereco": "Avenida dos Sonhos, 77, Teresópolis, Alagoinhas - BA, 48000-037",
     "contato": "(75) 98765-4323",
     "observacoes": "Sintomas de leishmaniose em área endêmica. Pesquisar parasita.",
@@ -517,7 +517,7 @@
   {
     "nome": "Matheus João Martins",
     "dataNasc": "1963-05-14",
-    "cpf": "321.098.765-46",
+    "cpf": "485.577.515-08",
     "endereco": "Rua do Progresso, 50, Bairro Novo, Alagoinhas - BA, 48000-038",
     "contato": "(75) 92109-8762",
     "observacoes": "Acompanhamento de paciente com doença crônica. Verificar alfa-1 glicoproteína e eletroforese.",
@@ -530,7 +530,7 @@
   {
     "nome": "Ana Júlia Costa",
     "dataNasc": "1990-08-08",
-    "cpf": "432.109.876-57",
+    "cpf": "008.906.015-69",
     "endereco": "Rua da Conquista, 12, Centro, Alagoinhas - BA, 48000-039",
     "contato": "(75) 96543-2103",
     "observacoes": "Investigação de tumor. Avaliar alfa-fetoproteína.",
@@ -542,7 +542,7 @@
   {
     "nome": "Carlos Eduardo Dias",
     "dataNasc": "1979-02-01",
-    "cpf": "543.210.987-68",
+    "cpf": "588.112.045-00",
     "endereco": "Avenida da União, 10, Kennedy, Alagoinhas - BA, 48000-040",
     "contato": "(75) 99876-5433",
     "observacoes": "Sintomas de infecção bacteriana. Realizar bacterioscopia e hemograma.",
@@ -555,7 +555,7 @@
   {
     "nome": "Mariana Letícia Santos",
     "dataNasc": "1991-04-18",
-    "cpf": "654.321.098-79",
+    "cpf": "115.397.895-43",
     "endereco": "Rua da Esperança, 88, Bairro Novo, Alagoinhas - BA, 48000-041",
     "contato": "(75) 95432-1093",
     "observacoes": "Acompanhamento de paciente com bipolaridade. Verificar nível de lítio.",
@@ -566,7 +566,7 @@
   {
     "nome": "João Vitor Soares",
     "dataNasc": "1982-10-15",
-    "cpf": "765.432.109-90",
+    "cpf": "373.986.385-40",
     "endereco": "Travessa dos Lagos, 3, Jardim Petrolar, Alagoinhas - BA, 48000-042",
     "contato": "(75) 91234-5671",
     "observacoes": "Queixas de dor torácica. Avaliar troponina para infarto.",
@@ -578,7 +578,7 @@
   {
     "nome": "Heloísa Gabriela Martins",
     "dataNasc": "2000-05-20",
-    "cpf": "876.543.210-01",
+    "cpf": "448.173.695-07",
     "endereco": "Rua da Saudade, 11, Teresópolis, Alagoinhas - BA, 48000-043",
     "contato": "(75) 99876-5434",
     "observacoes": "Acompanhamento de criança com anemia. Verificar hemograma e ferro.",
@@ -591,7 +591,7 @@
   {
     "nome": "Pedro Lucas Pereira",
     "dataNasc": "1969-01-01",
-    "cpf": "987.654.321-04",
+    "cpf": "425.044.735-91",
     "endereco": "Avenida do Sol, 50, Centro, Alagoinhas - BA, 48000-044",
     "contato": "(75) 95432-1094",
     "observacoes": "Queixas respiratórias. Solicitar painel viral e PCR.",
@@ -604,7 +604,7 @@
   {
     "nome": "Maria Eduarda Ribeiro",
     "dataNasc": "1994-07-17",
-    "cpf": "012.345.678-94",
+    "cpf": "201.231.035-41",
     "endereco": "Rua da Amizade, 25, Kennedy, Alagoinhas - BA, 48000-045",
     "contato": "(75) 91098-7653",
     "observacoes": "Monitoramento de doença renal crônica. Verificar microalbuminúria.",
@@ -617,7 +617,7 @@
   {
     "nome": "Lucas Gabriel Lima",
     "dataNasc": "1980-03-03",
-    "cpf": "109.876.543-25",
+    "cpf": "905.328.745-01",
     "endereco": "Rua da Felicidade, 33, Bairro Novo, Alagoinhas - BA, 48000-046",
     "contato": "(75) 97654-3214",
     "observacoes": "Suspeita de problemas na coagulação. Avaliar Tempo de Protrombina e TTPA.",
@@ -630,7 +630,7 @@
   {
     "nome": "Ana Clara Santos",
     "dataNasc": "1997-09-12",
-    "cpf": "210.987.654-36",
+    "cpf": "404.992.165-04",
     "endereco": "Avenida do Sol Poente, 6, Santa Terezinha, Alagoinhas - BA, 48000-047",
     "contato": "(75) 93210-9873",
     "observacoes": "Acompanhamento de paciente com problema de tireoide. Verificar Tireoglobulina e anticorpos.",
@@ -643,7 +643,7 @@
   {
     "nome": "João Pedro Ribeiro",
     "dataNasc": "1972-06-01",
-    "cpf": "321.098.765-47",
+    "cpf": "426.724.885-09",
     "endereco": "Rua das Oliveiras, 11, Teresópolis, Alagoinhas - BA, 48000-048",
     "contato": "(75) 98765-4324",
     "observacoes": "Histórico de problemas cardíacos. Avaliar homocisteína e colesterol.",
@@ -656,7 +656,7 @@
   {
     "nome": "Laura Sofia Costa",
     "dataNasc": "1985-04-20",
-    "cpf": "432.109.876-58",
+    "cpf": "041.396.935-50",
     "endereco": "Rua da Paz, 40, Urbis III, Alagoinhas - BA, 48000-049",
     "contato": "(75) 92109-8763",
     "observacoes": "Suspeita de infecção grave. Avaliar Procalcitonina e hemograma.",
@@ -669,7 +669,7 @@
   {
     "nome": "Gabriel Miguel Martins",
     "dataNasc": "2000-08-14",
-    "cpf": "543.210.987-69",
+    "cpf": "576.887.015-62",
     "endereco": "Avenida dos Ventos, 88, Jardim Imperial, Alagoinhas - BA, 48000-050",
     "contato": "(75) 96543-2104",
     "observacoes": "Avaliação de saúde infantil. Verificar zinco e cobre.",
@@ -682,7 +682,7 @@
   {
     "nome": "Isabela Fernanda Conceição",
     "dataNasc": "1970-12-01",
-    "cpf": "654.321.098-80",
+    "cpf": "942.441.345-90",
     "endereco": "Rua do Farol, 1, Centro, Alagoinhas - BA, 48000-051",
     "contato": "(75) 99876-5435",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar amônia e função hepática.",
@@ -696,7 +696,7 @@
   {
     "nome": "Rafael Gonçalo Alves",
     "dataNasc": "1983-03-29",
-    "cpf": "765.432.109-91",
+    "cpf": "376.081.495-66",
     "endereco": "Rua da Esperança, 5, Kennedy, Alagoinhas - BA, 48000-052",
     "contato": "(75) 95432-1095",
     "observacoes": "Suspeita de trombofilia. Investigar Fator V Leiden.",
@@ -708,7 +708,7 @@
   {
     "nome": "Luiza Beatriz Guimarães",
     "dataNasc": "1998-10-14",
-    "cpf": "876.543.210-02",
+    "cpf": "973.578.295-29",
     "endereco": "Travessa das Estrelas, 2, Santa Terezinha, Alagoinhas - BA, 48000-053",
     "contato": "(75) 91234-5672",
     "observacoes": "Acompanhamento de paciente com lúpus. Verificar FAN e eletroforese.",
@@ -721,7 +721,7 @@
   {
     "nome": "Felipe Augusto Oliveira",
     "dataNasc": "1965-07-07",
-    "cpf": "987.654.321-05",
+    "cpf": "134.525.105-06",
     "endereco": "Rua do Sol Nascente, 10, Teresópolis, Alagoinhas - BA, 48000-054",
     "contato": "(75) 99876-5436",
     "observacoes": "Monitoramento de toxicidade por metal pesado. Verificar chumbo.",
@@ -733,7 +733,7 @@
   {
     "nome": "Sophia Valentina Pereira",
     "dataNasc": "1993-02-01",
-    "cpf": "012.345.678-95",
+    "cpf": "525.697.995-72",
     "endereco": "Avenida dos Girassóis, 15, Urbis I, Alagoinhas - BA, 48000-055",
     "contato": "(75) 95432-1096",
     "observacoes": "Suspeita de hepatite. Avaliar marcadores virais.",
@@ -747,7 +747,7 @@
   {
     "nome": "Arthur Leonardo Costa",
     "dataNasc": "1988-06-19",
-    "cpf": "109.876.543-26",
+    "cpf": "870.625.025-45",
     "endereco": "Rua da Felicidade, 22, Jardim Imperial, Alagoinhas - BA, 48000-056",
     "contato": "(75) 91098-7654",
     "observacoes": "Controle de diabetes. Avaliar insulina e glicemia.",
@@ -760,7 +760,7 @@
   {
     "nome": "Helena Manuela Sales",
     "dataNasc": "2005-04-04",
-    "cpf": "210.987.654-37",
+    "cpf": "429.933.175-39",
     "endereco": "Rua das Acácias, 30, Bairro Novo, Alagoinhas - BA, 48000-057",
     "contato": "(75) 97654-3215",
     "observacoes": "Investigação de anemia. Avaliar cadeias leves e hemograma.",
@@ -772,7 +772,7 @@
   {
     "nome": "Bernardo Joaquim Rocha",
     "dataNasc": "1960-09-17",
-    "cpf": "321.098.765-48",
+    "cpf": "163.746.375-85",
     "endereco": "Avenida da Amizade, 100, Centro, Alagoinhas - BA, 48000-058",
     "contato": "(75) 93210-9874",
     "observacoes": "Acompanhamento de função pulmonar. Avaliar Meta-Hemoglobina.",
@@ -784,7 +784,7 @@
   {
     "nome": "Davi Lorenzo Martins",
     "dataNasc": "1992-02-05",
-    "cpf": "432.109.876-59",
+    "cpf": "666.942.885-57",
     "endereco": "Rua do Amanhecer, 15, Mangalô, Alagoinhas - BA, 48000-059",
     "contato": "(75) 98765-4325",
     "observacoes": "Suspeita de infecção fúngica sistêmica. Pesquisar Criptococos.",
@@ -795,7 +795,7 @@
   {
     "nome": "Valentina Luiza Borges",
     "dataNasc": "1983-05-10",
-    "cpf": "543.210.987-70",
+    "cpf": "625.590.055-06",
     "endereco": "Rua do Entardecer, 55, Santa Terezinha, Alagoinhas - BA, 48000-060",
     "contato": "(75) 92109-8764",
     "observacoes": "Acompanhamento pós-transfusional. Avaliar Coombs.",
@@ -808,7 +808,7 @@
   {
     "nome": "Miguel Davi Costa",
     "dataNasc": "1978-07-22",
-    "cpf": "654.321.098-81",
+    "cpf": "704.625.465-60",
     "endereco": "Avenida da Esperança, 200, Kennedy, Alagoinhas - BA, 48000-061",
     "contato": "(75) 96543-2105",
     "observacoes": "Controle de cálcio e fósforo. Avaliar cálcio iônico.",
@@ -821,7 +821,7 @@
   {
     "nome": "Cecília Heloísa Silva",
     "dataNasc": "1997-09-01",
-    "cpf": "765.432.109-92",
+    "cpf": "401.204.665-97",
     "endereco": "Rua das Rosas, 7, Teresópolis, Alagoinhas - BA, 48000-062",
     "contato": "(75) 99876-5435",
     "observacoes": "Acompanhamento de coagulação. Avaliar tempo de protrombina e TTPA.",
@@ -833,7 +833,7 @@
   {
     "nome": "João Lucas Pereira",
     "dataNasc": "1968-04-10",
-    "cpf": "876.543.210-03",
+    "cpf": "875.621.125-25",
     "endereco": "Rua do Sol, 30, Urbis II, Alagoinhas - BA, 48000-063",
     "contato": "(75) 95432-1097",
     "observacoes": "Monitoramento de perfil lipídico. Incluir apolipoproteínas.",
@@ -846,7 +846,7 @@
   {
     "nome": "Lara Isadora Guimarães",
     "dataNasc": "2002-11-25",
-    "cpf": "987.654.321-06",
+    "cpf": "607.401.755-72",
     "endereco": "Avenida das Estrelas, 1, Jardim Imperial, Alagoinhas - BA, 48000-064",
     "contato": "(75) 91098-7655",
     "observacoes": "Queixas de tontura e fadiga. Avaliar anemia e deficiências.",
@@ -860,7 +860,7 @@
   {
     "nome": "Enzo Gabriel Martins",
     "dataNasc": "1994-01-01",
-    "cpf": "012.345.678-96",
+    "cpf": "029.517.885-09",
     "endereco": "Rua do Luar, 8, Centro, Alagoinhas - BA, 48000-065",
     "contato": "(75) 97654-3216",
     "observacoes": "Acompanhamento de função renal e hepática. Checape de rotina.",
@@ -874,7 +874,7 @@
   {
     "nome": "Lorena Alice Conceição",
     "dataNasc": "1973-04-18",
-    "cpf": "109.876.543-27",
+    "cpf": "209.427.755-03",
     "endereco": "Travessa dos Girassóis, 1, Kennedy, Alagoinhas - BA, 48000-066",
     "contato": "(75) 93210-9875",
     "observacoes": "Sintomas de infecção. Avaliar marcadores inflamatórios.",
@@ -886,7 +886,7 @@
   {
     "nome": "Cauã Eduardo Pires",
     "dataNasc": "1981-08-01",
-    "cpf": "210.987.654-38",
+    "cpf": "669.139.095-43",
     "endereco": "Rua do Amanhecer, 11, Santa Terezinha, Alagoinhas - BA, 48000-067",
     "contato": "(75) 98765-4326",
     "observacoes": "Controle de diabetes. Avaliar glicemia de jejum e pós-prandial.",
@@ -899,7 +899,7 @@
   {
     "nome": "Sofia Emanuelly Borges",
     "dataNasc": "1996-12-05",
-    "cpf": "321.098.765-49",
+    "cpf": "680.395.035-23",
     "endereco": "Avenida da Paz, 50, Teresópolis, Alagoinhas - BA, 48000-068",
     "contato": "(75) 92109-8765",
     "observacoes": "Acompanhamento de HIV. Verificar anti-HIV.",
@@ -911,7 +911,7 @@
   {
     "nome": "Luiza Fernanda Rodrigues",
     "dataNasc": "1971-03-20",
-    "cpf": "432.109.876-60",
+    "cpf": "150.141.695-20",
     "endereco": "Rua do Lago, 77, Urbis III, Alagoinhas - BA, 48000-069",
     "contato": "(75) 96543-2106",
     "observacoes": "Suspeita de doença autoimune. Investigar FAN.",
@@ -922,7 +922,7 @@
   {
     "nome": "Pedro Gabriel Silva",
     "dataNasc": "1989-09-19",
-    "cpf": "543.210.987-71",
+    "cpf": "767.768.125-51",
     "endereco": "Rua do Sol, 99, Jardim Imperial, Alagoinhas - BA, 48000-070",
     "contato": "(75) 99876-5437",
     "observacoes": "Acompanhamento de função tireoidiana. Verificar TSH e T3.",
@@ -935,7 +935,7 @@
   {
     "nome": "Beatriz Clara Conceição",
     "dataNasc": "2001-07-03",
-    "cpf": "654.321.098-82",
+    "cpf": "759.397.345-02",
     "endereco": "Avenida das Palmeiras, 11, Bairro Novo, Alagoinhas - BA, 48000-071",
     "contato": "(75) 95432-1097",
     "observacoes": "Acompanhamento de paciente com problema hepático. Avaliar função hepática.",
@@ -949,7 +949,7 @@
   {
     "nome": "Lucas Samuel Pires",
     "dataNasc": "1967-02-14",
-    "cpf": "765.432.109-93",
+    "cpf": "421.655.295-14",
     "endereco": "Rua do Mirante, 5, Centro, Alagoinhas - BA, 48000-072",
     "contato": "(75) 91234-5673",
     "observacoes": "Avaliação de saúde do homem. Verificar testosterona.",
@@ -961,7 +961,7 @@
   {
     "nome": "Ana Luiza Borges",
     "dataNasc": "1991-04-05",
-    "cpf": "876.543.210-04",
+    "cpf": "180.315.225-70",
     "endereco": "Rua da Vitória, 25, Kennedy, Alagoinhas - BA, 48000-073",
     "contato": "(75) 99876-5438",
     "observacoes": "Queixas de cansaço. Investigar Ferritina e Hemograma.",
@@ -973,7 +973,7 @@
   {
     "nome": "João Victor Costa",
     "dataNasc": "1984-10-22",
-    "cpf": "987.654.321-07",
+    "cpf": "711.302.265-06",
     "endereco": "Avenida do Futuro, 3, Santa Terezinha, Alagoinhas - BA, 48000-074",
     "contato": "(75) 95432-1098",
     "observacoes": "Acompanhamento de criança. Avaliar vitaminas.",
@@ -985,7 +985,7 @@
   {
     "nome": "Mariana Sofia Martins",
     "dataNasc": "1999-12-08",
-    "cpf": "012.345.678-97",
+    "cpf": "848.758.445-49",
     "endereco": "Rua da Aurora, 10, Teresópolis, Alagoinhas - BA, 48000-075",
     "contato": "(75) 91098-7655",
     "observacoes": "Sintomas de infecção bacteriana. Solicitar PCR e Hemograma.",
@@ -998,7 +998,7 @@
   {
     "nome": "Gustavo Henrique Conceição",
     "dataNasc": "1976-02-18",
-    "cpf": "109.876.543-28",
+    "cpf": "423.989.355-07",
     "endereco": "Rua do Paraíso, 12, Urbis I, Alagoinhas - BA, 48000-076",
     "contato": "(75) 97654-3217",
     "observacoes": "Acompanhamento de gestante. Avaliar TSH e hemograma.",
@@ -1010,7 +1010,7 @@
   {
     "nome": "Júlia Rafaela Pires",
     "dataNasc": "1987-04-01",
-    "cpf": "210.987.654-39",
+    "cpf": "235.072.385-27",
     "endereco": "Avenida da Felicidade, 30, Jardim Imperial, Alagoinhas - BA, 48000-077",
     "contato": "(75) 93210-9876",
     "observacoes": "Queixas de dor abdominal. Avaliar amilase e lipase.",
@@ -1023,7 +1023,7 @@
   {
     "nome": "Pedro Arthur Borges",
     "dataNasc": "1999-06-25",
-    "cpf": "321.098.765-50",
+    "cpf": "030.204.215-60",
     "endereco": "Rua do Rio, 55, Bairro Novo, Alagoinhas - BA, 48000-078",
     "contato": "(75) 98765-4327",
     "observacoes": "Avaliação de paciente com diabetes. Glicemia e colesterol.",
@@ -1036,7 +1036,7 @@
   {
     "nome": "Amanda Vitória Martins",
     "dataNasc": "1974-09-07",
-    "cpf": "432.109.876-61",
+    "cpf": "754.947.055-36",
     "endereco": "Rua da Montanha, 18, Centro, Alagoinhas - BA, 48000-079",
     "contato": "(75) 92109-8766",
     "observacoes": "Controle de hipertensão. Perfil lipídico e função renal.",
@@ -1050,7 +1050,7 @@
   {
     "nome": "Thiago Miguel Pires",
     "dataNasc": "1986-11-01",
-    "cpf": "543.210.987-72",
+    "cpf": "088.195.195-18",
     "endereco": "Avenida do Mar, 10, Kennedy, Alagoinhas - BA, 48000-080",
     "contato": "(75) 96543-2107",
     "observacoes": "Queixas de tontura. Investigar anemia e eletrólitos.",
@@ -1064,7 +1064,7 @@
   {
     "nome": "Gabriela Isabela Borges",
     "dataNasc": "2003-03-26",
-    "cpf": "654.321.098-83",
+    "cpf": "129.925.775-53",
     "endereco": "Rua da Onda, 77, Santa Terezinha, Alagoinhas - BA, 48000-081",
     "contato": "(75) 99876-5438",
     "observacoes": "Acompanhamento de função renal em criança. Verificar ureia e creatinina.",
@@ -1076,7 +1076,7 @@
   {
     "nome": "Matheus João Conceição",
     "dataNasc": "1963-07-14",
-    "cpf": "765.432.109-94",
+    "cpf": "153.786.635-47",
     "endereco": "Travessa do Campo, 3, Teresópolis, Alagoinhas - BA, 48000-082",
     "contato": "(75) 95432-1099",
     "observacoes": "Suspeita de problemas na tireoide. Avaliar TSH.",
@@ -1087,7 +1087,7 @@
   {
     "nome": "Ana Júlia Martins",
     "dataNasc": "1990-09-08",
-    "cpf": "876.543.210-05",
+    "cpf": "501.798.155-12",
     "endereco": "Rua do Vale, 11, Urbis III, Alagoinhas - BA, 48000-083",
     "contato": "(75) 91234-5674",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar bilirrubinas.",
@@ -1100,7 +1100,7 @@
   {
     "nome": "Carlos Eduardo Pereira",
     "dataNasc": "1979-04-01",
-    "cpf": "987.654.321-08",
+    "cpf": "472.600.185-00",
     "endereco": "Avenida do Sol Nascente, 50, Jardim Imperial, Alagoinhas - BA, 48000-084",
     "contato": "(75) 97654-3218",
     "observacoes": "Queixas de dor articular. Investigar FR.",
@@ -1111,7 +1111,7 @@
   {
     "nome": "Mariana Letícia Dias",
     "dataNasc": "1991-06-18",
-    "cpf": "012.345.678-98",
+    "cpf": "677.943.045-55",
     "endereco": "Rua da Lua, 22, Bairro Novo, Alagoinhas - BA, 48000-085",
     "contato": "(75) 93210-9877",
     "observacoes": "Acompanhamento de rotina. Avaliar hemograma e perfil lipídico.",
@@ -1124,7 +1124,7 @@
   {
     "nome": "João Vitor Soares",
     "dataNasc": "1982-12-15",
-    "cpf": "109.876.543-29",
+    "cpf": "531.463.295-06",
     "endereco": "Travessa dos Mares, 1, Centro, Alagoinhas - BA, 48000-086",
     "contato": "(75) 98765-4328",
     "observacoes": "Sintomas de infecção urinária. Solicitar Urina Tipo I e urocultura.",
@@ -1137,7 +1137,7 @@
   {
     "nome": "Heloísa Gabriela Costa",
     "dataNasc": "2000-07-20",
-    "cpf": "210.987.654-40",
+    "cpf": "305.870.515-82",
     "endereco": "Rua das Ondas, 5, Kennedy, Alagoinhas - BA, 48000-087",
     "contato": "(75) 92109-8767",
     "observacoes": "Acompanhamento de criança com desnutrição. Avaliar proteínas totais.",
@@ -1149,7 +1149,7 @@
   {
     "nome": "Pedro Lucas Martins",
     "dataNasc": "1969-03-01",
-    "cpf": "321.098.765-51",
+    "cpf": "495.885.485-19",
     "endereco": "Rua do Vento, 22, Santa Terezinha, Alagoinhas - BA, 48000-088",
     "contato": "(75) 96543-2108",
     "observacoes": "Suspeita de problemas renais. Investigar ureia e creatinina.",
@@ -1161,7 +1161,7 @@
   {
     "nome": "Maria Eduarda Conceição",
     "dataNasc": "1994-09-17",
-    "cpf": "432.109.876-62",
+    "cpf": "827.822.165-03",
     "endereco": "Avenida do Bosque, 40, Teresópolis, Alagoinhas - BA, 48000-089",
     "contato": "(75) 99876-5439",
     "observacoes": "Acompanhamento de paciente com AIDS. Verificar Anti-HIV.",
@@ -1172,7 +1172,7 @@
   {
     "nome": "Lucas Gabriel Pires",
     "dataNasc": "1980-05-03",
-    "cpf": "543.210.987-73",
+    "cpf": "533.818.925-92",
     "endereco": "Rua do Sol, 10, Urbis II, Alagoinhas - BA, 48000-090",
     "contato": "(75) 95432-1099",
     "observacoes": "Sintomas de doença celíaca. Avaliar marcadores.",
@@ -1183,7 +1183,7 @@
   {
     "nome": "Ana Clara Borges",
     "dataNasc": "1997-11-12",
-    "cpf": "654.321.098-84",
+    "cpf": "209.115.595-07",
     "endereco": "Rua da Primavera, 33, Jardim Imperial, Alagoinhas - BA, 48000-091",
     "contato": "(75) 91234-5675",
     "observacoes": "Queixas de cansaço. Investigar tireoide.",
@@ -1195,7 +1195,7 @@
   {
     "nome": "João Pedro Martins",
     "dataNasc": "1972-01-29",
-    "cpf": "765.432.109-95",
+    "cpf": "876.394.945-83",
     "endereco": "Avenida do Amanhecer, 50, Bairro Novo, Alagoinhas - BA, 48000-092",
     "contato": "(75) 97654-3219",
     "observacoes": "Acompanhamento de função hepática. Verificar enzimas.",
@@ -1207,7 +1207,7 @@
   {
     "nome": "Laura Sofia Conceição",
     "dataNasc": "1985-03-08",
-    "cpf": "876.543.210-06",
+    "cpf": "275.696.785-83",
     "endereco": "Rua da Harmonia, 1, Santa Terezinha, Alagoinhas - BA, 48000-093",
     "contato": "(75) 93210-9878",
     "observacoes": "Sintomas de infecção. Avaliar PCR.",
@@ -1218,7 +1218,7 @@
   {
     "nome": "Gabriel Miguel Pires",
     "dataNasc": "2000-05-20",
-    "cpf": "987.654.321-09",
+    "cpf": "046.268.315-08",
     "endereco": "Travessa do Campo, 2, Teresópolis, Alagoinhas - BA, 48000-094",
     "contato": "(75) 98765-4329",
     "observacoes": "Controle de diabetes. Avaliar glicemia.",
@@ -1229,7 +1229,7 @@
   {
     "nome": "Isabela Fernanda Borges",
     "dataNasc": "1970-07-03",
-    "cpf": "012.345.678-99",
+    "cpf": "250.283.125-32",
     "endereco": "Rua da Montanha, 1, Urbis I, Alagoinhas - BA, 48000-095",
     "contato": "(75) 92109-8768",
     "observacoes": "Acompanhamento de paciente com gota. Avaliar ácido úrico.",
@@ -1240,7 +1240,7 @@
   {
     "nome": "Rafael Gonçalo Martins",
     "dataNasc": "1983-09-19",
-    "cpf": "109.876.543-30",
+    "cpf": "004.096.195-82",
     "endereco": "Avenida do Mar, 10, Jardim Imperial, Alagoinhas - BA, 48000-096",
     "contato": "(75) 96543-2109",
     "observacoes": "Queixas de dor. Avaliar VHS.",
@@ -1251,7 +1251,7 @@
   {
     "nome": "Luiza Beatriz Pires",
     "dataNasc": "1998-11-29",
-    "cpf": "210.987.654-41",
+    "cpf": "952.511.545-34",
     "endereco": "Rua da Onda, 22, Bairro Novo, Alagoinhas - BA, 48000-097",
     "contato": "(75) 99876-5430",
     "observacoes": "Acompanhamento de paciente com diabetes. Avaliar Hemoglobina Glicada.",
@@ -1262,7 +1262,7 @@
   {
     "nome": "Felipe Augusto Conceição",
     "dataNasc": "1965-02-14",
-    "cpf": "321.098.765-52",
+    "cpf": "734.076.685-54",
     "endereco": "Travessa do Campo, 1, Centro, Alagoinhas - BA, 48000-098",
     "contato": "(75) 95432-1090",
     "observacoes": "Queixas de tosse. Avaliar painel viral.",
@@ -1273,7 +1273,7 @@
   {
     "nome": "Sophia Valentina Borges",
     "dataNasc": "1993-04-05",
-    "cpf": "432.109.876-63",
+    "cpf": "214.964.015-57",
     "endereco": "Rua do Sol, 2, Kennedy, Alagoinhas - BA, 48000-099",
     "contato": "(75) 91234-5670",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar Alfa-1 Glicoproteína.",
@@ -1284,7 +1284,7 @@
   {
     "nome": "Arthur Leonardo Martins",
     "dataNasc": "1988-06-11",
-    "cpf": "543.210.987-74",
+    "cpf": "866.449.865-28",
     "endereco": "Avenida do Mar, 30, Santa Terezinha, Alagoinhas - BA, 48000-100",
     "contato": "(75) 97654-3210",
     "observacoes": "Suspeita de tumor. Avaliar Alfa-Fetoproteína.",
