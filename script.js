@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.5
+// VERSÃO: 2.0.6
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
@@ -73,8 +73,9 @@ const dddsValidos = [
     98, 99
 ];
 
-window.onload = () => {
-    carregarExames();
+window.onload = async () => { // Torna a função onload assíncrona
+    await carregarExames(); // AGORA, aguarda a lista de exames ser carregada e renderizada
+
     document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
     document.getElementById('cpf').addEventListener('input', formatarCPF);
     document.getElementById('contato').addEventListener('input', formatarContato);
@@ -88,6 +89,21 @@ window.onload = () => {
             atualizarExamesSelecionadosDisplay();
         }
     });
+
+    // --- NOVO: Carregar paciente fictício se houver ---
+    // Este bloco agora só será executado DEPOIS que carregarExames() for concluído.
+    const pacienteFicticio = localStorage.getItem('pacienteFicticio');
+    if (pacienteFicticio) {
+        try {
+            const cadastro = JSON.parse(pacienteFicticio);
+            preencherCamposComCadastro(cadastro);
+            localStorage.removeItem('pacienteFicticio');
+        } catch (e) {
+            console.error("Erro ao carregar paciente fictício:", e);
+        }
+    }
+    // --- FIM NOVO ---
+};
 
     // --- NOVO: Carregar paciente fictício se houver ---
     const pacienteFicticio = localStorage.getItem('pacienteFicticio');
