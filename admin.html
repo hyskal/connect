@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB - Administração</title>
+    <title>SISLAB - Administração V2.0.5</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -63,7 +63,7 @@
         
         <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
         
-        <button onclick="carregarPacienteFicticio()">Gerar Paciente Aleatório</button>
+        <button onclick="gerarNovoPacienteAleatorio()">Gerar Novo Paciente Aleatório</button>
 
         <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
     </div>
@@ -161,28 +161,17 @@
             }
         }
 
-        // NOVO: Função para exibir o Log Geral de Inventário
+        // Função para exibir o Log Geral de Inventário
         async function mostrarLogGeralInventario() {
             alert("Redirecionando para a página do Log Geral de Inventário (a ser implementada).");
             window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
         }
 
-        // NOVO: Função para carregar paciente fictício - AGORA ABRE EM NOVA ABA
-        async function carregarPacienteFicticio() {
-            try {
-                const response = await fetch('pacientes_aleatorios.json');
-                if (!response.ok) {
-                    throw new Error(`Erro ao carregar pacientes_aleatorios.json: ${response.statusText}`);
-                }
-                const pacientes = await response.json();
-                const paciente = pacientes[Math.floor(Math.random() * pacientes.length)];
-                localStorage.setItem('pacienteFicticio', JSON.stringify(paciente));
-                alert("Paciente aleatório carregado. Uma nova aba será aberta.");
-                window.open('index.html?preencher=ficticio', '_blank'); // Abre em nova aba
-            } catch (err) {
-                console.error("Erro ao carregar paciente fictício:", err);
-                alert("Erro ao carregar paciente fictício. Verifique se o arquivo JSON está acessível.");
-            }
+        // Função para abrir index.html em nova aba com parâmetro para gerar paciente aleatório
+        async function gerarNovoPacienteAleatorio() {
+            alert("Uma nova aba será aberta para gerar um paciente aleatório.");
+            // Abre em nova aba com o parâmetro 'gerar=ficticio'
+            window.open('index.html?gerar=ficticio', '_blank'); 
         }
     </script>
 
