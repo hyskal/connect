@@ -109,7 +109,7 @@
             const minute = now.getMinutes().toString().padStart(2, '0');
             const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
 
-            const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB_ADMIN} + HHMM, ex: ${SENHA_BASE_SISLAB_ADMIN}${hour}${minute}):`);
+            const senhaDigitada = prompt(`Para limpar o histórico, digite a senha`);
             if (senhaDigitada === null) {
                 return;
             }
