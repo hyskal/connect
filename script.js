@@ -956,7 +956,7 @@ async function limparHistorico() {
     const minute = now.getMinutes().toString().padStart(2, '0'); // Obter o minuto formatado
     const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute; // Concatenar para formar a senha esperada
 
-    const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`); // Mensagem para o usuário
+    const senhaDigitada = prompt(`Para limpar o histórico, digite a senha.`); // Mensagem para o usuário
     if (senhaDigitada === null) {
         console.log("limparHistorico: Usuário cancelou a entrada da senha.");
         return;
