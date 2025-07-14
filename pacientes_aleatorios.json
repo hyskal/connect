@@ -6,7 +6,17 @@
     "endereco": "Rua do Cajueiro, 123, Centro, Alagoinhas - BA, 48000-001",
     "contato": "(75) 98765-4321",
     "observacoes": "Paciente relata fadiga crônica, histórico familiar de diabetes. Indicado painel metabólico completo.",
-    "examesSelecionados": ["Glicemia (Glicose Sérica)", "Hemograma Completo (HC)", "TGO (AST)", "TGP (ALT)", "Colesterol Total (CT)", "Triglicerídeos (TG)", "Vitamina D (25-OH Vitamina D)"]
+    "examesSelecionados": [
+      "Bilirrubinas Totais e Frações (BTF)",
+      "Colesterol Total (CT)",
+      "Contagem de Reticulócitos (RET)",
+      "Glicemia (Glicose Sérica)",
+      "Hemograma Completo (HC)",
+      "TGO (AST)",
+      "TGP (ALT)",
+      "Triglicerídeos (TG)",
+      "Vitamina D (25-OH Vitamina D)"
+    ]
   },
   {
     "nome": "João Pedro Santos",
@@ -15,7 +25,15 @@
     "endereco": "Avenida 2 de Julho, 456, Barreiro, Alagoinhas - BA, 48000-002",
     "contato": "(75) 91234-5678",
     "observacoes": "Dor articular persistente, suspeita de doença autoimune. Solicitar exames reumatológicos e inflamatórios.",
-    "examesSelecionados": ["Fator Reumatoide (FR)", "VHS (Velocidade de Hemossedimentação)", "PCR (Proteína C Reativa)", "FAN (Fator Antinúcleo)", "Cálcio Total (Ca Total)", "Ácido Úrico (AU)"]
+    "examesSelecionados": [
+      "Cálcio Total (Ca Total)",
+      "FAN (Fator Antinúcleo)",
+      "Fator Reumatoide (FR)",
+      "PCR (Proteína C Reativa)",
+      "Peptídeo Natriurético Cerebral (BNP)",
+      "VHS (Velocidade de Hemossedimentação)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Maria Eduarda Lima",
@@ -24,7 +42,15 @@
     "endereco": "Travessa dos Lírios, 78, Mangalô, Alagoinhas - BA, 48000-003",
     "contato": "(75) 96543-2109",
     "observacoes": "Checape de rotina, sem queixas específicas. Avaliar função renal e hepática.",
-    "examesSelecionados": ["Ureia (BUN)", "Creatinina (Creat)", "TGO (AST)", "TGP (ALT)", "Fosfatase Alcalina (FA)", "Gama GT (GGT)"]
+    "examesSelecionados": [
+      "Creatinina (Creat)",
+      "Ferro Sérico (Fe Sérico)",
+      "Fosfatase Alcalina (FA)",
+      "Gama GT (GGT)",
+      "TGO (AST)",
+      "TGP (ALT)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Pedro Henrique Costa",
@@ -33,7 +59,16 @@
     "endereco": "Praça Rui Barbosa, 10, Centro, Alagoinhas - BA, 48000-004",
     "contato": "(75) 99876-5432",
     "observacoes": "Monitoramento de pressão alta e colesterol. Importante acompanhar perfil lipídico e glicemia.",
-    "examesSelecionados": ["Colesterol Total (CT)", "HDL-Colesterol (Colesterol de Alta Densidade)", "LDL-Colesterol (Colesterol de Baixa Densidade)", "Triglicerídeos (TG)", "Glicemia (Glicose Sérica)"]
+    "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "Glicemia (Glicose Sérica)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)",
+      "LDL-Colesterol (Colesterol de Baixa Densidade)",
+      "TGP (ALT)",
+      "Tempo de Protrombina (TP)",
+      "Triglicerídeos (TG)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Laura Sofia Almeida",
@@ -42,7 +77,16 @@
     "endereco": "Rua das Flores, 55, Santa Terezinha, Alagoinhas - BA, 48000-005",
     "contato": "(75) 95432-1098",
     "observacoes": "Sintomas de infecção urinária recorrente. Solicitar cultura e sensibilidade.",
-    "examesSelecionados": ["Urina Tipo I (EAS)", "Urocultura (Cultura de Urina)", "PCR (Proteína C Reativa)"]
+    "examesSelecionados": [
+      "Coombs Direto (CD)",
+      "Fibrinogênio (Fibrin)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "PCR (Proteína C Reativa)",
+      "Procalcitonina (PCT)",
+      "Testosterona Total (Testo Total)",
+      "Urina Tipo I (EAS)",
+      "Urocultura (Cultura de Urina)"
+    ]
   },
   {
     "nome": "Gabriel Miguel Ribeiro",
@@ -51,7 +95,14 @@
     "endereco": "Avenida Alagoinhas, 200, Kennedy, Alagoinhas - BA, 48000-006",
     "contato": "(75) 91098-7654",
     "observacoes": "Acompanhamento pós-cirúrgico, verificar eletrólitos e função renal.",
-    "examesSelecionados": ["Sódio (Na)", "Potássio (K)", "Cloro (Cl)", "Ureia (BUN)", "Creatinina (Creat)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Cloro (Cl)",
+      "Creatinina (Creat)",
+      "Hemograma Completo (HC)",
+      "Potássio (K)",
+      "Sódio (Na)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Isabela Fernanda Martins",
@@ -60,7 +111,13 @@
     "endereco": "Rua do Sol, 7, Teresópolis, Alagoinhas - BA, 48000-007",
     "contato": "(75) 97654-3210",
     "observacoes": "Exames de rotina para gravidez. Avaliar tireoide e vitaminas.",
-    "examesSelecionados": ["TSH (Hormônio Estimulador da Tireoide)", "T4 Livre (Tiroxina Livre)", "Vitamina D (25-OH Vitamina D)", "Ácido Fólico (Folato)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Hemograma Completo (HC)",
+      "T4 Livre (Tiroxina Livre)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Vitamina D (25-OH Vitamina D)",
+      "Ácido Fólico (Folato)"
+    ]
   },
   {
     "nome": "Rafael Gonçalo Dias",
@@ -69,7 +126,13 @@
     "endereco": "Rua da Paz, 30, Urbis I, Alagoinhas - BA, 48000-008",
     "contato": "(75) 93210-9876",
     "observacoes": "Queixas de cansaço e sonolência. Investigar anemia e deficiência de B12.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Ferritina (Ferr)", "Vitamina B12 (Cobalamina)", "Proteínas Totais e Frações (PTF)"]
+    "examesSelecionados": [
+      "Contagem de Reticulócitos (RET)",
+      "Ferritina (Ferr)",
+      "Hemograma Completo (HC)",
+      "Proteínas Totais e Frações (PTF)",
+      "Vitamina B12 (Cobalamina)"
+    ]
   },
   {
     "nome": "Luiza Beatriz Rocha",
@@ -78,7 +141,13 @@
     "endereco": "Condomínio Primavera, 12, Jardim Imperial, Alagoinhas - BA, 48000-009",
     "contato": "(75) 98765-4321",
     "observacoes": "Histórico de problemas intestinais. Análise de fezes para parasitas.",
-    "examesSelecionados": ["Parasitológico de Fezes (EPF)", "Pesquisa de Sangue Oculto nas Fezes (PSOMF)", "Cultura de Fezes (Coprocultura)"]
+    "examesSelecionados": [
+      "Cultura de Fezes (Coprocultura)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Hepatite A IgM (Anti-HAV IgM)",
+      "Parasitológico de Fezes (EPF)",
+      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)"
+    ]
   },
   {
     "nome": "Felipe Augusto Borges",
@@ -87,7 +156,15 @@
     "endereco": "Alameda dos Coqueiros, 20, Barreiro, Alagoinhas - BA, 48000-010",
     "contato": "(75) 92109-8765",
     "observacoes": "Acompanhamento de função hepática após medicação. Verificar enzimas e bilirrubinas.",
-    "examesSelecionados": ["TGO (AST)", "TGP (ALT)", "Gama GT (GGT)", "Fosfatase Alcalina (FA)", "Bilirrubinas Totais e Frações (BTF)"]
+    "examesSelecionados": [
+      "Bilirrubinas Totais e Frações (BTF)",
+      "Fosfatase Alcalina (FA)",
+      "Gama GT (GGT)",
+      "LH (Hormônio Luteinizante)",
+      "P (Fósforo)",
+      "TGO (AST)",
+      "TGP (ALT)"
+    ]
   },
   {
     "nome": "Sophia Valentina Santos",
@@ -96,7 +173,15 @@
     "endereco": "Rua da Alegria, 15, Alagoinhas Velha, Alagoinhas - BA, 48000-011",
     "contato": "(75) 96543-2101",
     "observacoes": "Avaliação de saúde geral. Incluir perfil lipídico e hemograma.",
-    "examesSelecionados": ["Colesterol Total (CT)", "HDL-Colesterol (Colesterol de Alta Densidade)", "LDL-Colesterol (Colesterol de Baixa Densidade)", "Triglicerídeos (TG)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "Cultura de Secreção (Cultura)",
+      "Fibrinogênio (Fibrin)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)",
+      "Hemograma Completo (HC)",
+      "LDL-Colesterol (Colesterol de Baixa Densidade)",
+      "Triglicerídeos (TG)"
+    ]
   },
   {
     "nome": "Arthur Leonardo Costa",
@@ -105,7 +190,13 @@
     "endereco": "Largo do Carmo, 5, Centro, Alagoinhas - BA, 48000-012",
     "contato": "(75) 91234-5679",
     "observacoes": "Controle de diabetes tipo 2. Avaliar glicemia e hemoglobina glicada.",
-    "examesSelecionados": ["Glicemia (Glicose Sérica)", "Glicosilada (Hemoglobina Glicada, HbA1c)", "Ureia (BUN)", "Creatinina (Creat)"]
+    "examesSelecionados": [
+      "Contagem de Reticulócitos (RET)",
+      "Creatinina (Creat)",
+      "Glicemia (Glicose Sérica)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Helena Manuela Silva",
@@ -114,7 +205,15 @@
     "endereco": "Rua do Dendê, 40, Catu, Alagoinhas - BA, 48000-013",
     "contato": "(75) 99876-5430",
     "observacoes": "Acompanhamento pediátrico. Avaliar vitaminas e ferro.",
-    "examesSelecionados": ["Vitamina D (25-OH Vitamina D)", "Ferritina (Ferr)", "Hemograma Completo (HC)", "Cálcio Total (Ca Total)"]
+    "examesSelecionados": [
+      "Cobre (Cu)",
+      "Contagem de Reticulócitos (RET)",
+      "Cálcio Total (Ca Total)",
+      "Ferritina (Ferr)",
+      "Hemograma Completo (HC)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Vitamina D (25-OH Vitamina D)"
+    ]
   },
   {
     "nome": "Bernardo Joaquim Pereira",
@@ -123,7 +222,17 @@
     "endereco": "Travessa da Felicidade, 22, Retiro, Alagoinhas - BA, 48000-014",
     "contato": "(75) 95432-1090",
     "observacoes": "Check-up geriátrico. Avaliar função cardíaca e renal.",
-    "examesSelecionados": ["Peptídeo Natriurético Cerebral (BNP)", "Ureia (BUN)", "Creatinina (Creat)", "Eletroforese de Proteínas (Eletroforese)"]
+    "examesSelecionados": [
+      "Alfa-1 Glicoproteína Ácida (AGP)",
+      "Bacterioscopia (Gram)",
+      "Beta-HCG (HCG Quantitativo)",
+      "Creatinina (Creat)",
+      "Eletroforese de Proteínas (Eletroforese)",
+      "P (Fósforo)",
+      "Peptídeo Natriurético Cerebral (BNP)",
+      "Pesquisa de Criptococos (Tinta da China)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Davi Lorenzo Rodrigues",
@@ -132,7 +241,17 @@
     "endereco": "Rua dos Cajueiros, 10, Centro, Alagoinhas - BA, 48000-015",
     "contato": "(75) 91098-7650",
     "observacoes": "Sintomas de alergia. Investigar marcadores inflamatórios.",
-    "examesSelecionados": ["PCR (Proteína C Reativa)", "VHS (Velocidade de Hemossedimentação)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Fibrinogênio (Fibrin)",
+      "Glicemia de Jejum (GJ)",
+      "Hemograma Completo (HC)",
+      "Homocisteína (Hcy)",
+      "Na (Sódio)",
+      "PCR (Proteína C Reativa)",
+      "Progesterona (Prog)",
+      "Transferrina (Transf)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Valentina Luiza Costa",
@@ -141,7 +260,13 @@
     "endereco": "Avenida Paulo VI, 120, Alagoinhas IV, Alagoinhas - BA, 48000-016",
     "contato": "(75) 97654-3211",
     "observacoes": "Acompanhamento de tireoide. Verificar TSH e T4.",
-    "examesSelecionados": ["TSH (Hormônio Estimulador da Tireoide)", "T4 Livre (Tiroxina Livre)", "Anticorpos Anti-TPO (Anti-Tireoperoxidase)"]
+    "examesSelecionados": [
+      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
+      "Cálcio Total (Ca Total)",
+      "Hepatite A IgM (Anti-HAV IgM)",
+      "T4 Livre (Tiroxina Livre)",
+      "TSH (Hormônio Estimulador da Tireoide)"
+    ]
   },
   {
     "nome": "Miguel Davi Santos",
@@ -150,7 +275,17 @@
     "endereco": "Rua do Campo, 88, Bairro Novo, Alagoinhas - BA, 48000-017",
     "contato": "(75) 93210-9870",
     "observacoes": "Avaliação de risco cardiovascular. Perfil lipídico completo e glicemia.",
-    "examesSelecionados": ["Colesterol Total (CT)", "HDL-Colesterol (Colesterol de Alta Densidade)", "LDL-Colesterol (Colesterol de Baixa Densidade)", "Triglicerídeos (TG)", "Apolipoproteína A1 (ApoA1)", "Apolipoproteína B (ApoB)", "Glicemia (Glicose Sérica)"]
+    "examesSelecionados": [
+      "Apolipoproteína A1 (ApoA1)",
+      "Apolipoproteína B (ApoB)",
+      "Colesterol Total (CT)",
+      "Coombs Direto (CD)",
+      "Glicemia (Glicose Sérica)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)",
+      "K (Potássio)",
+      "LDL-Colesterol (Colesterol de Baixa Densidade)",
+      "Triglicerídeos (TG)"
+    ]
   },
   {
     "nome": "Cecília Heloísa Pires",
@@ -159,7 +294,13 @@
     "endereco": "Travessa dos Rios, 1, Jardim Petrolar, Alagoinhas - BA, 48000-018",
     "contato": "(75) 98765-4320",
     "observacoes": "Exames de rotina para controle de natalidade. Avaliar hormônios femininos.",
-    "examesSelecionados": ["Estradiol (E2)", "Progesterona (Prog)", "LH (Hormônio Luteinizante)", "FSH (Hormônio Folículo Estimulante)", "Prolactina (PRL)"]
+    "examesSelecionados": [
+      "Estradiol (E2)",
+      "FSH (Hormônio Folículo Estimulante)",
+      "LH (Hormônio Luteinizante)",
+      "Progesterona (Prog)",
+      "Prolactina (PRL)"
+    ]
   },
   {
     "nome": "João Lucas Ferreira",
@@ -168,7 +309,13 @@
     "endereco": "Avenida Getúlio Vargas, 150, Centro, Alagoinhas - BA, 48000-019",
     "contato": "(75) 92109-8760",
     "observacoes": "Acompanhamento de saúde masculina. Verificar PSA e testosterona.",
-    "examesSelecionados": ["PSA Total (Antígeno Prostático Específico Total)", "PSA Livre (Antígeno Prostático Específico Livre)", "Testosterona Total (Testo Total)", "Testosterona Livre (Testo Livre)"]
+    "examesSelecionados": [
+      "Cultura de Fezes (Coprocultura)",
+      "PSA Livre (Antígeno Prostático Específico Livre)",
+      "PSA Total (Antígeno Prostático Específico Total)",
+      "Testosterona Livre (Testo Livre)",
+      "Testosterona Total (Testo Total)"
+    ]
   },
   {
     "nome": "Lara Isadora Rodrigues",
@@ -177,7 +324,13 @@
     "endereco": "Rua dos Ipês, 77, Teresópolis, Alagoinhas - BA, 48000-020",
     "contato": "(75) 96543-2100",
     "observacoes": "Suspeita de deficiência de ferro. Avaliar hemograma e ferro sérico.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Ferro Sérico (Fe Sérico)", "Ferritina (Ferr)", "Transferrina (Transf)"]
+    "examesSelecionados": [
+      "Contagem de Reticulócitos (RET)",
+      "Ferritina (Ferr)",
+      "Ferro Sérico (Fe Sérico)",
+      "Hemograma Completo (HC)",
+      "Transferrina (Transf)"
+    ]
   },
   {
     "nome": "Enzo Gabriel Lima",
@@ -186,7 +339,13 @@
     "endereco": "Rua do Porto, 33, Mangalô, Alagoinhas - BA, 48000-021",
     "contato": "(75) 99876-5431",
     "observacoes": "Investigação de febre de origem desconhecida. Hemocultura e marcadores inflamatórios.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "PCR (Proteína C Reativa)", "VHS (Velocidade de Hemossedimentação)", "Cultura de Secreção (Cultura)"]
+    "examesSelecionados": [
+      "Cultura de Secreção (Cultura)",
+      "Hemograma Completo (HC)",
+      "PCR (Proteína C Reativa)",
+      "Painel Viral Respiratório (PCR Viral)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Lorena Alice Guimarães",
@@ -195,7 +354,16 @@
     "endereco": "Avenida Castelo Branco, 18, Centro, Alagoinhas - BA, 48000-022",
     "contato": "(75) 95432-1099",
     "observacoes": "Controle de medicação anticonvulsivante. Verificar nível sérico do fármaco.",
-    "examesSelecionados": ["Fenitoína (Difenil-hidantoína)", "Ácido Valproico (Valproato)"]
+    "examesSelecionados": [
+      "Cortisol (Cort)",
+      "Fenitoína (Difenil-hidantoína)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Meta-Hemoglobina (MetHb)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Urinocultura com Antibiograma (Urocultura c/ ATB)",
+      "VDRL (Sífilis)",
+      "Ácido Valproico (Valproato)"
+    ]
   },
   {
     "nome": "Cauã Eduardo Rodrigues",
@@ -204,7 +372,16 @@
     "endereco": "Rua das Azaleias, 25, Kennedy, Alagoinhas - BA, 48000-023",
     "contato": "(75) 91234-5670",
     "observacoes": "Histórico de gota. Monitorar ácido úrico e função renal.",
-    "examesSelecionados": ["Ácido Úrico (AU)", "Ureia (BUN)", "Creatinina (Creat)"]
+    "examesSelecionados": [
+      "Anti-HBs (Anticorpo Anti-HBs)",
+      "Creatinina (Creat)",
+      "Gama GT (GGT)",
+      "TGO (AST)",
+      "Triglicerídeos (TG)",
+      "Ureia (BUN)",
+      "VHS (Velocidade de Hemossedimentação)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Sofia Emanuelly Santos",
@@ -213,7 +390,13 @@
     "endereco": "Condomínio Flores do Campo, 4, Santa Terezinha, Alagoinhas - BA, 48000-024",
     "contato": "(75) 99876-5431",
     "observacoes": "Acompanhamento de infecção hepática. Avaliar marcadores virais e função hepática.",
-    "examesSelecionados": ["HBsAg (Antígeno de Superfície da Hepatite B)", "Anti-HCV (Anticorpo Anti-Hepatite C)", "TGO (AST)", "TGP (ALT)", "Bilirrubinas Totais e Frações (BTF)"]
+    "examesSelecionados": [
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Bilirrubinas Totais e Frações (BTF)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "TGO (AST)",
+      "TGP (ALT)"
+    ]
   },
   {
     "nome": "Luiza Fernanda Castro",
@@ -222,7 +405,13 @@
     "endereco": "Rua do Comércio, 100, Centro, Alagoinhas - BA, 48000-025",
     "contato": "(75) 95432-1091",
     "observacoes": "Suspeita de doença autoimune. Investigar FAN e marcadores inflamatórios.",
-    "examesSelecionados": ["FAN (Fator Antinúcleo)", "PCR (Proteína C Reativa)", "VHS (Velocidade de Hemossedimentação)"]
+    "examesSelecionados": [
+      "Apolipoproteína A1 (ApoA1)",
+      "FAN (Fator Antinúcleo)",
+      "PCR (Proteína C Reativa)",
+      "VHS (Velocidade de Hemossedimentação)",
+      "Ácido Fólico (Folato)"
+    ]
   },
   {
     "nome": "Pedro Gabriel Soares",
@@ -231,7 +420,15 @@
     "endereco": "Travessa dos Passarinhos, 7, Alagoinhas Velha, Alagoinhas - BA, 48000-026",
     "contato": "(75) 91098-7651",
     "observacoes": "Monitoramento de osteoporose. Avaliar cálcio e vitamina D.",
-    "examesSelecionados": ["Cálcio Total (Ca Total)", "Vitamina D (25-OH Vitamina D)", "Fósforo (P)", "Paratormônio (PTH)"]
+    "examesSelecionados": [
+      "Cálcio Total (Ca Total)",
+      "Eritrossedimentação (ESR)",
+      "Fósforo (P)",
+      "Hepatite A IgG (Anti-HAV IgG)",
+      "Paratormônio (PTH)",
+      "Troponina I (TnI)",
+      "Vitamina D (25-OH Vitamina D)"
+    ]
   },
   {
     "nome": "Beatriz Clara Martins",
@@ -240,7 +437,15 @@
     "endereco": "Rua da Esperança, 1, Urbis II, Alagoinhas - BA, 48000-027",
     "contato": "(75) 97654-3212",
     "observacoes": "Acompanhamento pediátrico. Verificar hemograma e zinco.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Zinco (Zn)"]
+    "examesSelecionados": [
+      "Cromo (Cr)",
+      "Estradiol (E2)",
+      "Glicemia Pós-Prandial (GPP)",
+      "Hemograma Completo (HC)",
+      "K (Potássio)",
+      "Na (Sódio)",
+      "Zinco (Zn)"
+    ]
   },
   {
     "nome": "Lucas Samuel Costa",
@@ -249,7 +454,16 @@
     "endereco": "Avenida do Contorno, 50, Mangalô, Alagoinhas - BA, 48000-028",
     "contato": "(75) 93210-9871",
     "observacoes": "Queixas neurológicas. Investigar chumbo e cromo.",
-    "examesSelecionados": ["Chumbo (Pb)", "Cromo (Cr)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Alfa-1 Glicoproteína Ácida (AGP)",
+      "Bilirrubinas Totais e Frações (BTF)",
+      "Chumbo (Pb)",
+      "Cromo (Cr)",
+      "Cálcio Total (Ca Total)",
+      "Hemograma Completo (HC)",
+      "Homocisteína (Hcy)",
+      "Proteínas Totais e Frações (PTF)"
+    ]
   },
   {
     "nome": "Ana Luiza Pereira",
@@ -258,7 +472,13 @@
     "endereco": "Rua das Palmeiras, 11, Jardim Petrolar, Alagoinhas - BA, 48000-029",
     "contato": "(75) 98765-4322",
     "observacoes": "Avaliação de risco trombótico. Pesquisar Fator V Leiden e D-Dímero.",
-    "examesSelecionados": ["Fator V Leiden (FVL)", "D-Dímero (D-Dimer)", "Tempo de Protrombina (TP)", "Tempo de Tromboplastina Parcial Ativada (TTPA)"]
+    "examesSelecionados": [
+      "D-Dímero (D-Dimer)",
+      "Fator V Leiden (FVL)",
+      "Tempo de Protrombina (TP)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
+      "Troponina I (TnI)"
+    ]
   },
   {
     "nome": "João Victor Rocha",
@@ -267,7 +487,15 @@
     "endereco": "Rua da Floresta, 66, Barreiro, Alagoinhas - BA, 48000-030",
     "contato": "(75) 92109-8761",
     "observacoes": "Sintomas de febre e mal-estar em viajante. Pesquisar malária.",
-    "examesSelecionados": ["Pesquisa de Malária (Gota Espessa)", "Hemograma Completo (HC)", "PCR (Proteína C Reativa)"]
+    "examesSelecionados": [
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Beta-HCG (HCG Quantitativo)",
+      "Hemograma Completo (HC)",
+      "PCR (Proteína C Reativa)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Pesquisa de Malária (Gota Espessa)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Mariana Sofia Sales",
@@ -276,7 +504,16 @@
     "endereco": "Alameda dos Bosques, 9, Teresópolis, Alagoinhas - BA, 48000-031",
     "contato": "(75) 96543-2102",
     "observacoes": "Check-up esportivo. Avaliar eletrólitos e função muscular.",
-    "examesSelecionados": ["Sódio (Na)", "Potássio (K)", "Cloro (Cl)", "Magnésio (Mg)", "Creatinina (Creat)", "Lactato (Ácido Lático)"]
+    "examesSelecionados": [
+      "Cloro (Cl)",
+      "Creatinina (Creat)",
+      "Lactato (Ácido Lático)",
+      "Magnésio (Mg)",
+      "Pesquisa de Criptococos (Tinta da China)",
+      "Pesquisa de Tuberculose (Cultura para TB)",
+      "Potássio (K)",
+      "Sódio (Na)"
+    ]
   },
   {
     "nome": "Gustavo Henrique Santos",
@@ -285,7 +522,13 @@
     "endereco": "Rua da Saudade, 44, Bairro Novo, Alagoinhas - BA, 48000-032",
     "contato": "(75) 99876-5432",
     "observacoes": "Acompanhamento de paciente com AIDS. Monitorar carga viral e linfócitos.",
-    "examesSelecionados": ["Anti-HIV 1 e 2 (HIV)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Anti-HIV 1 e 2 (HIV)",
+      "Glicemia (Glicose Sérica)",
+      "Hemograma Completo (HC)",
+      "LH (Hormônio Luteinizante)",
+      "Lítio (Li)"
+    ]
   },
   {
     "nome": "Júlia Rafaela Rocha",
@@ -294,7 +537,13 @@
     "endereco": "Rua da Liberdade, 13, Centro, Alagoinhas - BA, 48000-033",
     "contato": "(75) 95432-1092",
     "observacoes": "Suspeita de sífilis. Realizar testes de triagem e confirmatório.",
-    "examesSelecionados": ["VDRL (Sífilis)", "FTA-Abs (Sífilis (Teste Confirmatório))"]
+    "examesSelecionados": [
+      "Contagem de Reticulócitos (RET)",
+      "FTA-Abs (Sífilis (Teste Confirmatório))",
+      "Paratormônio (PTH)",
+      "VDRL (Sífilis)",
+      "Ácido Valproico (Valproato)"
+    ]
   },
   {
     "nome": "Pedro Arthur Alves",
@@ -303,7 +552,13 @@
     "endereco": "Avenida do Ouro, 70, Kennedy, Alagoinhas - BA, 48000-034",
     "contato": "(75) 91098-7652",
     "observacoes": "Queixas de tosse persistente e emagrecimento. Investigar tuberculose.",
-    "examesSelecionados": ["Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)", "Pesquisa de Tuberculose (Cultura para TB)", "VHS (Velocidade de Hemossedimentação)"]
+    "examesSelecionados": [
+      "Cobre (Cu)",
+      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
+      "Pesquisa de Tuberculose (Cultura para TB)",
+      "Proteínas Totais e Frações (PTF)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Amanda Vitória Silva",
@@ -312,7 +567,17 @@
     "endereco": "Rua do Cedro, 9, Mangalô, Alagoinhas - BA, 48000-035",
     "contato": "(75) 97654-3213",
     "observacoes": "Acompanhamento de gestação. Verificar beta-HCG e hormônios.",
-    "examesSelecionados": ["Beta-HCG (HCG Quantitativo)", "Progesterona (Prog)", "Estradiol (E2)"]
+    "examesSelecionados": [
+      "Beta-HCG (HCG Quantitativo)",
+      "Estradiol (E2)",
+      "FAN (Fator Antinúcleo)",
+      "FSH (Hormônio Folículo Estimulante)",
+      "Fosfatase Alcalina (FA)",
+      "Glicemia Pós-Prandial (GPP)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Progesterona (Prog)",
+      "Triglicerídeos (TG)"
+    ]
   },
   {
     "nome": "Thiago Miguel Conceição",
@@ -321,7 +586,16 @@
     "endereco": "Rua da Harmonia, 1, Santa Terezinha, Alagoinhas - BA, 48000-036",
     "contato": "(75) 93210-9872",
     "observacoes": "Suspeita de infecção fúngica. Coleta para micológico direto.",
-    "examesSelecionados": ["Pesquisa de Fungos (Micológico Direto)"]
+    "examesSelecionados": [
+      "Amônia (NH3)",
+      "Bacterioscopia (Gram)",
+      "Cromo (Cr)",
+      "Microalbuminúria (MAU)",
+      "Pesquisa de Fungos (Micológico Direto)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
+      "Triglicerídeos (TG)"
+    ]
   },
   {
     "nome": "Gabriela Isabela Ribeiro",
@@ -330,7 +604,13 @@
     "endereco": "Avenida dos Sonhos, 77, Teresópolis, Alagoinhas - BA, 48000-037",
     "contato": "(75) 98765-4323",
     "observacoes": "Sintomas de leishmaniose em área endêmica. Pesquisar parasita.",
-    "examesSelecionados": ["Pesquisa de Leishmania (Leishmania)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Glicemia (Glicose Sérica)",
+      "Hemograma Completo (HC)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Proteínas Totais e Frações (PTF)",
+      "T4 Livre (Tiroxina Livre)"
+    ]
   },
   {
     "nome": "Matheus João Martins",
@@ -339,7 +619,13 @@
     "endereco": "Rua do Progresso, 50, Bairro Novo, Alagoinhas - BA, 48000-038",
     "contato": "(75) 92109-8762",
     "observacoes": "Acompanhamento de paciente com doença crônica. Verificar alfa-1 glicoproteína e eletroforese.",
-    "examesSelecionados": ["Alfa-1 Glicoproteína Ácida (AGP)", "Eletroforese de Proteínas (Eletroforese)", "Proteínas Totais e Frações (PTF)"]
+    "examesSelecionados": [
+      "Alfa-1 Glicoproteína Ácida (AGP)",
+      "D-Dímero (D-Dimer)",
+      "Eletroforese de Proteínas (Eletroforese)",
+      "Pesquisa de Tuberculose (Cultura para TB)",
+      "Proteínas Totais e Frações (PTF)"
+    ]
   },
   {
     "nome": "Ana Júlia Costa",
@@ -348,7 +634,16 @@
     "endereco": "Rua da Conquista, 12, Centro, Alagoinhas - BA, 48000-039",
     "contato": "(75) 96543-2103",
     "observacoes": "Investigação de tumor. Avaliar alfa-fetoproteína.",
-    "examesSelecionados": ["Alfa-Fetoproteína (AFP)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Alfa-Fetoproteína (AFP)",
+      "Anti-HIV 1 e 2 (HIV)",
+      "Contagem de Reticulócitos (RET)",
+      "Glicemia Pós-Prandial (GPP)",
+      "Hemograma Completo (HC)",
+      "Microalbuminúria (MAU)",
+      "Tempo de Protrombina (TP)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Carlos Eduardo Dias",
@@ -357,7 +652,16 @@
     "endereco": "Avenida da União, 10, Kennedy, Alagoinhas - BA, 48000-040",
     "contato": "(75) 99876-5433",
     "observacoes": "Sintomas de infecção bacteriana. Realizar bacterioscopia e hemograma.",
-    "examesSelecionados": ["Bacterioscopia (Gram)", "Hemograma Completo (HC)", "PCR (Proteína C Reativa)"]
+    "examesSelecionados": [
+      "Bacterioscopia (Gram)",
+      "Eritrossedimentação (ESR)",
+      "Hemograma Completo (HC)",
+      "Homocisteína (Hcy)",
+      "Insulina (Ins)",
+      "PCR (Proteína C Reativa)",
+      "Paratormônio (PTH)",
+      "Pesquisa de Criptococos (Tinta da China)"
+    ]
   },
   {
     "nome": "Mariana Letícia Santos",
@@ -366,7 +670,17 @@
     "endereco": "Rua da Esperança, 88, Bairro Novo, Alagoinhas - BA, 48000-041",
     "contato": "(75) 95432-1093",
     "observacoes": "Acompanhamento de paciente com bipolaridade. Verificar nível de lítio.",
-    "examesSelecionados": ["Lítio (Li)"]
+    "examesSelecionados": [
+      "Albumina (Alb)",
+      "Cálcio Total (Ca Total)",
+      "FSH (Hormônio Folículo Estimulante)",
+      "Gama GT (GGT)",
+      "Hemograma Completo (HC)",
+      "Lítio (Li)",
+      "Microalbuminúria (MAU)",
+      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "João Vitor Soares",
@@ -375,7 +689,15 @@
     "endereco": "Travessa dos Lagos, 3, Jardim Petrolar, Alagoinhas - BA, 48000-042",
     "contato": "(75) 91234-5671",
     "observacoes": "Queixas de dor torácica. Avaliar troponina para infarto.",
-    "examesSelecionados": ["Troponina I (TnI)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Coombs Indireto (CI)",
+      "Ferritina (Ferr)",
+      "Hemograma Completo (HC)",
+      "Troponina I (TnI)",
+      "Urinocultura com Antibiograma (Urocultura c/ ATB)",
+      "VDRL (Sífilis)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Heloísa Gabriela Martins",
@@ -384,7 +706,17 @@
     "endereco": "Rua da Saudade, 11, Teresópolis, Alagoinhas - BA, 48000-043",
     "contato": "(75) 99876-5434",
     "observacoes": "Acompanhamento de criança com anemia. Verificar hemograma e ferro.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Ferro Sérico (Fe Sérico)", "Ferritina (Ferr)"]
+    "examesSelecionados": [
+      "Alfa-Fetoproteína (AFP)",
+      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
+      "Contagem de Reticulócitos (RET)",
+      "Fenitoína (Difenil-hidantoína)",
+      "Ferritina (Ferr)",
+      "Ferro Sérico (Fe Sérico)",
+      "Gama GT (GGT)",
+      "Hemograma Completo (HC)",
+      "Progesterona (Prog)"
+    ]
   },
   {
     "nome": "Pedro Lucas Pereira",
@@ -393,7 +725,13 @@
     "endereco": "Avenida do Sol, 50, Centro, Alagoinhas - BA, 48000-044",
     "contato": "(75) 95432-1094",
     "observacoes": "Queixas respiratórias. Solicitar painel viral e PCR.",
-    "examesSelecionados": ["Painel Viral Respiratório (PCR Viral)", "PCR (Proteína C Reativa)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Hemograma Completo (HC)",
+      "PCR (Proteína C Reativa)",
+      "Painel Viral Respiratório (PCR Viral)",
+      "Testosterona Livre (Testo Livre)",
+      "Ácido Valproico (Valproato)"
+    ]
   },
   {
     "nome": "Maria Eduarda Ribeiro",
@@ -402,7 +740,17 @@
     "endereco": "Rua da Amizade, 25, Kennedy, Alagoinhas - BA, 48000-045",
     "contato": "(75) 91098-7653",
     "observacoes": "Monitoramento de doença renal crônica. Verificar microalbuminúria.",
-    "examesSelecionados": ["Microalbuminúria (MAU)", "Creatinina (Creat)", "Ureia (BUN)"]
+    "examesSelecionados": [
+      "Anti-HIV 1 e 2 (HIV)",
+      "Creatinina (Creat)",
+      "Cultura de Secreção (Cultura)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Lipase (Lip)",
+      "Microalbuminúria (MAU)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Tempo de Protrombina (TP)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Lucas Gabriel Lima",
@@ -411,7 +759,13 @@
     "endereco": "Rua da Felicidade, 33, Bairro Novo, Alagoinhas - BA, 48000-046",
     "contato": "(75) 97654-3214",
     "observacoes": "Suspeita de problemas na coagulação. Avaliar Tempo de Protrombina e TTPA.",
-    "examesSelecionados": ["Tempo de Protrombina (TP)", "Tempo de Tromboplastina Parcial Ativada (TTPA)", "Fibrinogênio (Fibrin)"]
+    "examesSelecionados": [
+      "Fibrinogênio (Fibrin)",
+      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
+      "Tempo de Protrombina (TP)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
+      "VDRL (Sífilis)"
+    ]
   },
   {
     "nome": "Ana Clara Santos",
@@ -420,7 +774,17 @@
     "endereco": "Avenida do Sol Poente, 6, Santa Terezinha, Alagoinhas - BA, 48000-047",
     "contato": "(75) 93210-9873",
     "observacoes": "Acompanhamento de paciente com problema de tireoide. Verificar Tireoglobulina e anticorpos.",
-    "examesSelecionados": ["Tireoglobulina (TG)", "Anticorpos Anti-Tireoglobulina (Anti-TG)", "TSH (Hormônio Estimulador da Tireoide)"]
+    "examesSelecionados": [
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
+      "Chumbo (Pb)",
+      "Lactato (Ácido Lático)",
+      "Paratormônio (PTH)",
+      "Progesterona (Prog)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
+      "Tireoglobulina (TG)"
+    ]
   },
   {
     "nome": "João Pedro Ribeiro",
@@ -429,7 +793,17 @@
     "endereco": "Rua das Oliveiras, 11, Teresópolis, Alagoinhas - BA, 48000-048",
     "contato": "(75) 98765-4324",
     "observacoes": "Histórico de problemas cardíacos. Avaliar homocisteína e colesterol.",
-    "examesSelecionados": ["Homocisteína (Hcy)", "Colesterol Total (CT)", "HDL-Colesterol (Colesterol de Alta Densidade)"]
+    "examesSelecionados": [
+      "ASLO (Anti-Estreptolisina O)",
+      "Colesterol Total (CT)",
+      "FAN (Fator Antinúcleo)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)",
+      "Homocisteína (Hcy)",
+      "LH (Hormônio Luteinizante)",
+      "PSA Livre (Antígeno Prostático Específico Livre)",
+      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Laura Sofia Costa",
@@ -438,7 +812,13 @@
     "endereco": "Rua da Paz, 40, Urbis III, Alagoinhas - BA, 48000-049",
     "contato": "(75) 92109-8763",
     "observacoes": "Suspeita de infecção grave. Avaliar Procalcitonina e hemograma.",
-    "examesSelecionados": ["Procalcitonina (PCT)", "Hemograma Completo (HC)", "PCR (Proteína C Reativa)"]
+    "examesSelecionados": [
+      "Albumina (Alb)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Hemograma Completo (HC)",
+      "PCR (Proteína C Reativa)",
+      "Procalcitonina (PCT)"
+    ]
   },
   {
     "nome": "Gabriel Miguel Martins",
@@ -447,7 +827,13 @@
     "endereco": "Avenida dos Ventos, 88, Jardim Imperial, Alagoinhas - BA, 48000-050",
     "contato": "(75) 96543-2104",
     "observacoes": "Avaliação de saúde infantil. Verificar zinco e cobre.",
-    "examesSelecionados": ["Zinco (Zn)", "Cobre (Cu)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Anti-HBs (Anticorpo Anti-HBs)",
+      "Bacterioscopia (Gram)",
+      "Cobre (Cu)",
+      "Hemograma Completo (HC)",
+      "Zinco (Zn)"
+    ]
   },
   {
     "nome": "Isabela Fernanda Conceição",
@@ -456,7 +842,16 @@
     "endereco": "Rua do Farol, 1, Centro, Alagoinhas - BA, 48000-051",
     "contato": "(75) 99876-5435",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar amônia e função hepática.",
-    "examesSelecionados": ["Amônia (NH3)", "TGO (AST)", "TGP (ALT)", "Bilirrubinas Totais e Frações (BTF)"]
+    "examesSelecionados": [
+      "Amônia (NH3)",
+      "Bilirrubinas Totais e Frações (BTF)",
+      "PSA Total (Antígeno Prostático Específico Total)",
+      "Painel Viral Respiratório (PCR Viral)",
+      "TGO (AST)",
+      "TGP (ALT)",
+      "Transferrina (Transf)",
+      "Urina Tipo I (EAS)"
+    ]
   },
   {
     "nome": "Rafael Gonçalo Alves",
@@ -465,7 +860,13 @@
     "endereco": "Rua da Esperança, 5, Kennedy, Alagoinhas - BA, 48000-052",
     "contato": "(75) 95432-1095",
     "observacoes": "Suspeita de trombofilia. Investigar Fator V Leiden.",
-    "examesSelecionados": ["Fator V Leiden (FVL)", "Tempo de Protrombina (TP)"]
+    "examesSelecionados": [
+      "Estradiol (E2)",
+      "Fator V Leiden (FVL)",
+      "Fenitoína (Difenil-hidantoína)",
+      "Pesquisa de Fungos (Micológico Direto)",
+      "Tempo de Protrombina (TP)"
+    ]
   },
   {
     "nome": "Luiza Beatriz Guimarães",
@@ -474,7 +875,13 @@
     "endereco": "Travessa das Estrelas, 2, Santa Terezinha, Alagoinhas - BA, 48000-053",
     "contato": "(75) 91234-5672",
     "observacoes": "Acompanhamento de paciente com lúpus. Verificar FAN e eletroforese.",
-    "examesSelecionados": ["FAN (Fator Antinúcleo)", "Eletroforese de Proteínas (Eletroforese)", "Proteínas Totais e Frações (PTF)"]
+    "examesSelecionados": [
+      "Eletroforese de Proteínas (Eletroforese)",
+      "FAN (Fator Antinúcleo)",
+      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
+      "Proteínas Totais e Frações (PTF)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Felipe Augusto Oliveira",
@@ -483,7 +890,13 @@
     "endereco": "Rua do Sol Nascente, 10, Teresópolis, Alagoinhas - BA, 48000-054",
     "contato": "(75) 99876-5436",
     "observacoes": "Monitoramento de toxicidade por metal pesado. Verificar chumbo.",
-    "examesSelecionados": ["Chumbo (Pb)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Chumbo (Pb)",
+      "Coombs Indireto (CI)",
+      "Hemograma Completo (HC)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "VDRL (Sífilis)"
+    ]
   },
   {
     "nome": "Sophia Valentina Pereira",
@@ -492,7 +905,13 @@
     "endereco": "Avenida dos Girassóis, 15, Urbis I, Alagoinhas - BA, 48000-055",
     "contato": "(75) 95432-1096",
     "observacoes": "Suspeita de hepatite. Avaliar marcadores virais.",
-    "examesSelecionados": ["Hepatite A IgM (Anti-HAV IgM)", "Hepatite A IgG (Anti-HAV IgG)", "HBsAg (Antígeno de Superfície da Hepatite B)", "Anti-HCV (Anticorpo Anti-Hepatite C)"]
+    "examesSelecionados": [
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Fator Reumatoide (FR)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Hepatite A IgG (Anti-HAV IgG)",
+      "Hepatite A IgM (Anti-HAV IgM)"
+    ]
   },
   {
     "nome": "Arthur Leonardo Costa",
@@ -501,7 +920,17 @@
     "endereco": "Rua da Felicidade, 22, Jardim Imperial, Alagoinhas - BA, 48000-056",
     "contato": "(75) 91098-7654",
     "observacoes": "Controle de diabetes. Avaliar insulina e glicemia.",
-    "examesSelecionados": ["Insulina (Ins)", "Glicemia (Glicose Sérica)", "Glicosilada (Hemoglobina Glicada, HbA1c)"]
+    "examesSelecionados": [
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Cortisol (Cort)",
+      "Glicemia (Glicose Sérica)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Insulina (Ins)",
+      "PSA Livre (Antígeno Prostático Específico Livre)",
+      "Pesquisa de Criptococos (Tinta da China)",
+      "Pesquisa de Tuberculose (Cultura para TB)",
+      "Procalcitonina (PCT)"
+    ]
   },
   {
     "nome": "Helena Manuela Sales",
@@ -510,7 +939,13 @@
     "endereco": "Rua das Acácias, 30, Bairro Novo, Alagoinhas - BA, 48000-057",
     "contato": "(75) 97654-3215",
     "observacoes": "Investigação de anemia. Avaliar cadeias leves e hemograma.",
-    "examesSelecionados": ["Cadeias Leves Kappa e Lambda (Cadeias Leves)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Alfa-1 Glicoproteína Ácida (AGP)",
+      "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
+      "Contagem de Reticulócitos (RET)",
+      "Fibrinogênio (Fibrin)",
+      "Hemograma Completo (HC)"
+    ]
   },
   {
     "nome": "Bernardo Joaquim Rocha",
@@ -519,7 +954,15 @@
     "endereco": "Avenida da Amizade, 100, Centro, Alagoinhas - BA, 48000-058",
     "contato": "(75) 93210-9874",
     "observacoes": "Acompanhamento de função pulmonar. Avaliar Meta-Hemoglobina.",
-    "examesSelecionados": ["Meta-Hemoglobina (MetHb)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "ASLO (Anti-Estreptolisina O)",
+      "Contagem de Reticulócitos (RET)",
+      "Coombs Direto (CD)",
+      "Estradiol (E2)",
+      "Hemograma Completo (HC)",
+      "Meta-Hemoglobina (MetHb)",
+      "Peptídeo Natriurético Cerebral (BNP)"
+    ]
   },
   {
     "nome": "Davi Lorenzo Martins",
@@ -528,7 +971,13 @@
     "endereco": "Rua do Amanhecer, 15, Mangalô, Alagoinhas - BA, 48000-059",
     "contato": "(75) 98765-4325",
     "observacoes": "Suspeita de infecção fúngica sistêmica. Pesquisar Criptococos.",
-    "examesSelecionados": ["Pesquisa de Criptococos (Tinta da China)"]
+    "examesSelecionados": [
+      "Cortisol (Cort)",
+      "Ferro Sérico (Fe Sérico)",
+      "K (Potássio)",
+      "Pesquisa de Criptococos (Tinta da China)",
+      "Tempo de Protrombina (TP)"
+    ]
   },
   {
     "nome": "Valentina Luiza Borges",
@@ -537,7 +986,13 @@
     "endereco": "Rua do Entardecer, 55, Santa Terezinha, Alagoinhas - BA, 48000-060",
     "contato": "(75) 92109-8764",
     "observacoes": "Acompanhamento pós-transfusional. Avaliar Coombs.",
-    "examesSelecionados": ["Coombs Direto (CD)", "Coombs Indireto (CI)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "ASLO (Anti-Estreptolisina O)",
+      "Coombs Direto (CD)",
+      "Coombs Indireto (CI)",
+      "Hemograma Completo (HC)",
+      "Na (Sódio)"
+    ]
   },
   {
     "nome": "Miguel Davi Costa",
@@ -546,7 +1001,17 @@
     "endereco": "Avenida da Esperança, 200, Kennedy, Alagoinhas - BA, 48000-061",
     "contato": "(75) 96543-2105",
     "observacoes": "Controle de cálcio e fósforo. Avaliar cálcio iônico.",
-    "examesSelecionados": ["Cálcio Total (Ca Total)", "Cálcio Iônico (Ca Iônico)", "Fósforo (P)"]
+    "examesSelecionados": [
+      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
+      "Bacterioscopia (Gram)",
+      "Cromo (Cr)",
+      "Cálcio Iônico (Ca Iônico)",
+      "Cálcio Total (Ca Total)",
+      "Ferro Sérico (Fe Sérico)",
+      "Fósforo (P)",
+      "Glicemia Pós-Prandial (GPP)",
+      "Ácido Valproico (Valproato)"
+    ]
   },
   {
     "nome": "Cecília Heloísa Silva",
@@ -555,7 +1020,16 @@
     "endereco": "Rua das Rosas, 7, Teresópolis, Alagoinhas - BA, 48000-062",
     "contato": "(75) 99876-5435",
     "observacoes": "Acompanhamento de coagulação. Avaliar tempo de protrombina e TTPA.",
-    "examesSelecionados": ["Tempo de Protrombina (TP)", "Tempo de Tromboplastina Parcial Ativada (TTPA)"]
+    "examesSelecionados": [
+      "Cultura de Secreção (Cultura)",
+      "Eletroforese de Proteínas (Eletroforese)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Prolactina (PRL)",
+      "Tempo de Protrombina (TP)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "João Lucas Pereira",
@@ -564,7 +1038,13 @@
     "endereco": "Rua do Sol, 30, Urbis II, Alagoinhas - BA, 48000-063",
     "contato": "(75) 95432-1097",
     "observacoes": "Monitoramento de perfil lipídico. Incluir apolipoproteínas.",
-    "examesSelecionados": ["Apolipoproteína A1 (ApoA1)", "Apolipoproteína B (ApoB)", "Colesterol Total (CT)"]
+    "examesSelecionados": [
+      "Apolipoproteína A1 (ApoA1)",
+      "Apolipoproteína B (ApoB)",
+      "Colesterol Total (CT)",
+      "Cálcio Total (Ca Total)",
+      "Peptídeo Natriurético Cerebral (BNP)"
+    ]
   },
   {
     "nome": "Lara Isadora Guimarães",
@@ -573,7 +1053,16 @@
     "endereco": "Avenida das Estrelas, 1, Jardim Imperial, Alagoinhas - BA, 48000-064",
     "contato": "(75) 91098-7655",
     "observacoes": "Queixas de tontura e fadiga. Avaliar anemia e deficiências.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Vitamina B12 (Cobalamina)", "Ácido Fólico (Folato)", "Ferro Sérico (Fe Sérico)"]
+    "examesSelecionados": [
+      "Contagem de Reticulócitos (RET)",
+      "Cálcio Iônico (Ca Iônico)",
+      "Ferro Sérico (Fe Sérico)",
+      "Hemograma Completo (HC)",
+      "K (Potássio)",
+      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
+      "Vitamina B12 (Cobalamina)",
+      "Ácido Fólico (Folato)"
+    ]
   },
   {
     "nome": "Enzo Gabriel Martins",
@@ -582,7 +1071,13 @@
     "endereco": "Rua do Luar, 8, Centro, Alagoinhas - BA, 48000-065",
     "contato": "(75) 97654-3216",
     "observacoes": "Acompanhamento de função renal e hepática. Checape de rotina.",
-    "examesSelecionados": ["Ureia (BUN)", "Creatinina (Creat)", "TGO (AST)", "TGP (ALT)"]
+    "examesSelecionados": [
+      "Creatinina (Creat)",
+      "Pesquisa de Criptococos (Tinta da China)",
+      "TGO (AST)",
+      "TGP (ALT)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Lorena Alice Conceição",
@@ -591,7 +1086,13 @@
     "endereco": "Travessa dos Girassóis, 1, Kennedy, Alagoinhas - BA, 48000-066",
     "contato": "(75) 93210-9875",
     "observacoes": "Sintomas de infecção. Avaliar marcadores inflamatórios.",
-    "examesSelecionados": ["PCR (Proteína C Reativa)", "VHS (Velocidade de Hemossedimentação)"]
+    "examesSelecionados": [
+      "ASLO (Anti-Estreptolisina O)",
+      "Cultura de Secreção (Cultura)",
+      "Ferritina (Ferr)",
+      "PCR (Proteína C Reativa)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Cauã Eduardo Pires",
@@ -600,7 +1101,15 @@
     "endereco": "Rua do Amanhecer, 11, Santa Terezinha, Alagoinhas - BA, 48000-067",
     "contato": "(75) 98765-4326",
     "observacoes": "Controle de diabetes. Avaliar glicemia de jejum e pós-prandial.",
-    "examesSelecionados": ["Glicemia de Jejum (GJ)", "Glicemia Pós-Prandial (GPP)", "Glicosilada (Hemoglobina Glicada, HbA1c)"]
+    "examesSelecionados": [
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Creatinina (Creat)",
+      "Ferro Sérico (Fe Sérico)",
+      "Glicemia Pós-Prandial (GPP)",
+      "Glicemia de Jejum (GJ)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Tempo de Protrombina (TP)"
+    ]
   },
   {
     "nome": "Sofia Emanuelly Borges",
@@ -609,7 +1118,13 @@
     "endereco": "Avenida da Paz, 50, Teresópolis, Alagoinhas - BA, 48000-068",
     "contato": "(75) 92109-8765",
     "observacoes": "Acompanhamento de HIV. Verificar anti-HIV.",
-    "examesSelecionados": ["Anti-HIV 1 e 2 (HIV)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Anti-HIV 1 e 2 (HIV)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Hemograma Completo (HC)",
+      "Mg (Magnésio)",
+      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)"
+    ]
   },
   {
     "nome": "Luiza Fernanda Rodrigues",
@@ -618,7 +1133,13 @@
     "endereco": "Rua do Lago, 77, Urbis III, Alagoinhas - BA, 48000-069",
     "contato": "(75) 96543-2106",
     "observacoes": "Suspeita de doença autoimune. Investigar FAN.",
-    "examesSelecionados": ["FAN (Fator Antinúcleo)"]
+    "examesSelecionados": [
+      "Coombs Indireto (CI)",
+      "FAN (Fator Antinúcleo)",
+      "Fosfatase Alcalina (FA)",
+      "Glicemia (Glicose Sérica)",
+      "Urocultura (Cultura de Urina)"
+    ]
   },
   {
     "nome": "Pedro Gabriel Silva",
@@ -627,7 +1148,17 @@
     "endereco": "Rua do Sol, 99, Jardim Imperial, Alagoinhas - BA, 48000-070",
     "contato": "(75) 99876-5437",
     "observacoes": "Acompanhamento de função tireoidiana. Verificar TSH e T3.",
-    "examesSelecionados": ["TSH (Hormônio Estimulador da Tireoide)", "T3 Total (Triiodotironina Total)", "T4 Livre (Tiroxina Livre)"]
+    "examesSelecionados": [
+      "Apolipoproteína B (ApoB)",
+      "FSH (Hormônio Folículo Estimulante)",
+      "Fator Reumatoide (FR)",
+      "Glicemia (Glicose Sérica)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "T3 Total (Triiodotironina Total)",
+      "T4 Livre (Tiroxina Livre)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)"
+    ]
   },
   {
     "nome": "Beatriz Clara Conceição",
@@ -636,7 +1167,13 @@
     "endereco": "Avenida das Palmeiras, 11, Bairro Novo, Alagoinhas - BA, 48000-071",
     "contato": "(75) 95432-1097",
     "observacoes": "Acompanhamento de paciente com problema hepático. Avaliar função hepática.",
-    "examesSelecionados": ["TGO (AST)", "TGP (ALT)", "Gama GT (GGT)", "Fosfatase Alcalina (FA)"]
+    "examesSelecionados": [
+      "Fosfatase Alcalina (FA)",
+      "Gama GT (GGT)",
+      "TGO (AST)",
+      "TGP (ALT)",
+      "VDRL (Sífilis)"
+    ]
   },
   {
     "nome": "Lucas Samuel Pires",
@@ -645,7 +1182,13 @@
     "endereco": "Rua do Mirante, 5, Centro, Alagoinhas - BA, 48000-072",
     "contato": "(75) 91234-5673",
     "observacoes": "Avaliação de saúde do homem. Verificar testosterona.",
-    "examesSelecionados": ["Testosterona Total (Testo Total)", "Testosterona Livre (Testo Livre)"]
+    "examesSelecionados": [
+      "ASLO (Anti-Estreptolisina O)",
+      "Lactato (Ácido Lático)",
+      "Procalcitonina (PCT)",
+      "Testosterona Livre (Testo Livre)",
+      "Testosterona Total (Testo Total)"
+    ]
   },
   {
     "nome": "Ana Luiza Borges",
@@ -654,7 +1197,13 @@
     "endereco": "Rua da Vitória, 25, Kennedy, Alagoinhas - BA, 48000-073",
     "contato": "(75) 99876-5438",
     "observacoes": "Queixas de cansaço. Investigar Ferritina e Hemograma.",
-    "examesSelecionados": ["Ferritina (Ferr)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
+      "Contagem de Reticulócitos (RET)",
+      "Ferritina (Ferr)",
+      "Hemograma Completo (HC)",
+      "TSH (Hormônio Estimulador da Tireoide)"
+    ]
   },
   {
     "nome": "João Victor Costa",
@@ -663,7 +1212,15 @@
     "endereco": "Avenida do Futuro, 3, Santa Terezinha, Alagoinhas - BA, 48000-074",
     "contato": "(75) 95432-1098",
     "observacoes": "Acompanhamento de criança. Avaliar vitaminas.",
-    "examesSelecionados": ["Vitamina D (25-OH Vitamina D)", "Vitamina B12 (Cobalamina)"]
+    "examesSelecionados": [
+      "Fator V Leiden (FVL)",
+      "Fibrinogênio (Fibrin)",
+      "Glicemia de Jejum (GJ)",
+      "Procalcitonina (PCT)",
+      "Tireoglobulina (TG)",
+      "Vitamina B12 (Cobalamina)",
+      "Vitamina D (25-OH Vitamina D)"
+    ]
   },
   {
     "nome": "Mariana Sofia Martins",
@@ -672,7 +1229,17 @@
     "endereco": "Rua da Aurora, 10, Teresópolis, Alagoinhas - BA, 48000-075",
     "contato": "(75) 91098-7655",
     "observacoes": "Sintomas de infecção bacteriana. Solicitar PCR e Hemograma.",
-    "examesSelecionados": ["PCR (Proteína C Reativa)", "Hemograma Completo (HC)", "VHS (Velocidade de Hemossedimentação)"]
+    "examesSelecionados": [
+      "Alfa-Fetoproteína (AFP)",
+      "Colesterol Total (CT)",
+      "Coombs Direto (CD)",
+      "Fenitoína (Difenil-hidantoína)",
+      "Hemograma Completo (HC)",
+      "PCR (Proteína C Reativa)",
+      "Pesquisa de Fungos (Micológico Direto)",
+      "Troponina I (TnI)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Gustavo Henrique Conceição",
@@ -681,7 +1248,13 @@
     "endereco": "Rua do Paraíso, 12, Urbis I, Alagoinhas - BA, 48000-076",
     "contato": "(75) 97654-3217",
     "observacoes": "Acompanhamento de gestante. Avaliar TSH e hemograma.",
-    "examesSelecionados": ["TSH (Hormônio Estimulador da Tireoide)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Fibrinogênio (Fibrin)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Hemograma Completo (HC)",
+      "Pesquisa de Malária (Gota Espessa)",
+      "TSH (Hormônio Estimulador da Tireoide)"
+    ]
   },
   {
     "nome": "Júlia Rafaela Pires",
@@ -690,7 +1263,13 @@
     "endereco": "Avenida da Felicidade, 30, Jardim Imperial, Alagoinhas - BA, 48000-077",
     "contato": "(75) 93210-9876",
     "observacoes": "Queixas de dor abdominal. Avaliar amilase e lipase.",
-    "examesSelecionados": ["Amilase (Amil)", "Lipase (Lip)", "Hemograma Completo (HC)"]
+    "examesSelecionados": [
+      "Amilase (Amil)",
+      "Eritrossedimentação (ESR)",
+      "Hemograma Completo (HC)",
+      "Lipase (Lip)",
+      "T3 Total (Triiodotironina Total)"
+    ]
   },
   {
     "nome": "Pedro Arthur Borges",
@@ -699,7 +1278,16 @@
     "endereco": "Rua do Rio, 55, Bairro Novo, Alagoinhas - BA, 48000-078",
     "contato": "(75) 98765-4327",
     "observacoes": "Avaliação de paciente com diabetes. Glicemia e colesterol.",
-    "examesSelecionados": ["Glicemia (Glicose Sérica)", "Colesterol Total (CT)", "Triglicerídeos (TG)"]
+    "examesSelecionados": [
+      "Anti-HBs (Anticorpo Anti-HBs)",
+      "Anti-HIV 1 e 2 (HIV)",
+      "Chumbo (Pb)",
+      "Colesterol Total (CT)",
+      "D-Dímero (D-Dimer)",
+      "Glicemia (Glicose Sérica)",
+      "Triglicerídeos (TG)",
+      "Vitamina B12 (Cobalamina)"
+    ]
   },
   {
     "nome": "Amanda Vitória Martins",
@@ -708,7 +1296,13 @@
     "endereco": "Rua da Montanha, 18, Centro, Alagoinhas - BA, 48000-079",
     "contato": "(75) 92109-8766",
     "observacoes": "Controle de hipertensão. Perfil lipídico e função renal.",
-    "examesSelecionados": ["Colesterol Total (CT)", "LDL-Colesterol (Colesterol de Baixa Densidade)", "Ureia (BUN)", "Creatinina (Creat)"]
+    "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "Coombs Direto (CD)",
+      "Creatinina (Creat)",
+      "LDL-Colesterol (Colesterol de Baixa Densidade)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Thiago Miguel Pires",
@@ -717,7 +1311,13 @@
     "endereco": "Avenida do Mar, 10, Kennedy, Alagoinhas - BA, 48000-080",
     "contato": "(75) 96543-2107",
     "observacoes": "Queixas de tontura. Investigar anemia e eletrólitos.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Sódio (Na)", "Potássio (K)", "Cloro (Cl)"]
+    "examesSelecionados": [
+      "Cloro (Cl)",
+      "Contagem de Reticulócitos (RET)",
+      "Hemograma Completo (HC)",
+      "Potássio (K)",
+      "Sódio (Na)"
+    ]
   },
   {
     "nome": "Gabriela Isabela Borges",
@@ -726,7 +1326,16 @@
     "endereco": "Rua da Onda, 77, Santa Terezinha, Alagoinhas - BA, 48000-081",
     "contato": "(75) 99876-5438",
     "observacoes": "Acompanhamento de função renal em criança. Verificar ureia e creatinina.",
-    "examesSelecionados": ["Ureia (BUN)", "Creatinina (Creat)"]
+    "examesSelecionados": [
+      "Bacterioscopia (Gram)",
+      "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
+      "Creatinina (Creat)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Insulina (Ins)",
+      "TGP (ALT)",
+      "Ureia (BUN)",
+      "VDRL (Sífilis)"
+    ]
   },
   {
     "nome": "Matheus João Conceição",
@@ -735,7 +1344,17 @@
     "endereco": "Travessa do Campo, 3, Teresópolis, Alagoinhas - BA, 48000-082",
     "contato": "(75) 95432-1099",
     "observacoes": "Suspeita de problemas na tireoide. Avaliar TSH.",
-    "examesSelecionados": ["TSH (Hormônio Estimulador da Tireoide)"]
+    "examesSelecionados": [
+      "Alfa-Fetoproteína (AFP)",
+      "Fenitoína (Difenil-hidantoína)",
+      "Gama GT (GGT)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Lítio (Li)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "VHS (Velocidade de Hemossedimentação)",
+      "Ácido Fólico (Folato)"
+    ]
   },
   {
     "nome": "Ana Júlia Martins",
@@ -744,7 +1363,17 @@
     "endereco": "Rua do Vale, 11, Urbis III, Alagoinhas - BA, 48000-083",
     "contato": "(75) 91234-5674",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar bilirrubinas.",
-    "examesSelecionados": ["Bilirrubinas Totais e Frações (BTF)", "TGO (AST)", "TGP (ALT)"]
+    "examesSelecionados": [
+      "Bilirrubinas Totais e Frações (BTF)",
+      "Colesterol Total (CT)",
+      "Cultura de Fezes (Coprocultura)",
+      "Cultura de Secreção (Cultura)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Pesquisa de Tuberculose (Cultura para TB)",
+      "Proteínas Totais e Frações (PTF)",
+      "TGO (AST)",
+      "TGP (ALT)"
+    ]
   },
   {
     "nome": "Carlos Eduardo Pereira",
@@ -753,7 +1382,13 @@
     "endereco": "Avenida do Sol Nascente, 50, Jardim Imperial, Alagoinhas - BA, 48000-084",
     "contato": "(75) 97654-3218",
     "observacoes": "Queixas de dor articular. Investigar FR.",
-    "examesSelecionados": ["Fator Reumatoide (FR)"]
+    "examesSelecionados": [
+      "Fator Reumatoide (FR)",
+      "Gama GT (GGT)",
+      "Glicemia de Jejum (GJ)",
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "T3 Total (Triiodotironina Total)"
+    ]
   },
   {
     "nome": "Mariana Letícia Dias",
@@ -762,7 +1397,16 @@
     "endereco": "Rua da Lua, 22, Bairro Novo, Alagoinhas - BA, 48000-085",
     "contato": "(75) 93210-9877",
     "observacoes": "Acompanhamento de rotina. Avaliar hemograma e perfil lipídico.",
-    "examesSelecionados": ["Hemograma Completo (HC)", "Colesterol Total (CT)", "Triglicerídeos (TG)"]
+    "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "Coombs Indireto (CI)",
+      "Hemograma Completo (HC)",
+      "PSA Livre (Antígeno Prostático Específico Livre)",
+      "Proteínas Totais e Frações (PTF)",
+      "Tireoglobulina (TG)",
+      "Triglicerídeos (TG)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "João Vitor Soares",
@@ -771,7 +1415,13 @@
     "endereco": "Travessa dos Mares, 1, Centro, Alagoinhas - BA, 48000-086",
     "contato": "(75) 98765-4328",
     "observacoes": "Sintomas de infecção urinária. Solicitar Urina Tipo I e urocultura.",
-    "examesSelecionados": ["Urina Tipo I (EAS)", "Urocultura (Cultura de Urina)", "PCR (Proteína C Reativa)"]
+    "examesSelecionados": [
+      "K (Potássio)",
+      "PCR (Proteína C Reativa)",
+      "Peptídeo Natriurético Cerebral (BNP)",
+      "Urina Tipo I (EAS)",
+      "Urocultura (Cultura de Urina)"
+    ]
   },
   {
     "nome": "Heloísa Gabriela Costa",
@@ -780,7 +1430,13 @@
     "endereco": "Rua das Ondas, 5, Kennedy, Alagoinhas - BA, 48000-087",
     "contato": "(75) 92109-8767",
     "observacoes": "Acompanhamento de criança com desnutrição. Avaliar proteínas totais.",
-    "examesSelecionados": ["Proteínas Totais e Frações (PTF)", "Albumina (Alb)"]
+    "examesSelecionados": [
+      "Albumina (Alb)",
+      "D-Dímero (D-Dimer)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Proteínas Totais e Frações (PTF)",
+      "T3 Total (Triiodotironina Total)"
+    ]
   },
   {
     "nome": "Pedro Lucas Martins",
@@ -789,7 +1445,13 @@
     "endereco": "Rua do Vento, 22, Santa Terezinha, Alagoinhas - BA, 48000-088",
     "contato": "(75) 96543-2108",
     "observacoes": "Suspeita de problemas renais. Investigar ureia e creatinina.",
-    "examesSelecionados": ["Ureia (BUN)", "Creatinina (Creat)"]
+    "examesSelecionados": [
+      "Anti-HBs (Anticorpo Anti-HBs)",
+      "Creatinina (Creat)",
+      "Painel Viral Respiratório (PCR Viral)",
+      "Transferrina (Transf)",
+      "Ureia (BUN)"
+    ]
   },
   {
     "nome": "Maria Eduarda Conceição",
@@ -798,7 +1460,16 @@
     "endereco": "Avenida do Bosque, 40, Teresópolis, Alagoinhas - BA, 48000-089",
     "contato": "(75) 99876-5439",
     "observacoes": "Acompanhamento de paciente com AIDS. Verificar Anti-HIV.",
-    "examesSelecionados": ["Anti-HIV 1 e 2 (HIV)"]
+    "examesSelecionados": [
+      "Anti-HIV 1 e 2 (HIV)",
+      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
+      "Cromo (Cr)",
+      "Glicemia (Glicose Sérica)",
+      "Glicemia de Jejum (GJ)",
+      "Hemograma Completo (HC)",
+      "Lítio (Li)",
+      "Triglicerídeos (TG)"
+    ]
   },
   {
     "nome": "Lucas Gabriel Pires",
@@ -807,7 +1478,13 @@
     "endereco": "Rua do Sol, 10, Urbis II, Alagoinhas - BA, 48000-090",
     "contato": "(75) 95432-1099",
     "observacoes": "Sintomas de doença celíaca. Avaliar marcadores.",
-    "examesSelecionados": ["Anticorpos Anti-TPO (Anti-Tireoperoxidase)"]
+    "examesSelecionados": [
+      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
+      "Bacterioscopia (Gram)",
+      "Coombs Indireto (CI)",
+      "Glicemia (Glicose Sérica)",
+      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)"
+    ]
   },
   {
     "nome": "Ana Clara Borges",
@@ -816,7 +1493,16 @@
     "endereco": "Rua da Primavera, 33, Jardim Imperial, Alagoinhas - BA, 48000-091",
     "contato": "(75) 91234-5675",
     "observacoes": "Queixas de cansaço. Investigar tireoide.",
-    "examesSelecionados": ["TSH (Hormônio Estimulador da Tireoide)", "T4 Livre (Tiroxina Livre)"]
+    "examesSelecionados": [
+      "Bilirrubinas Totais e Frações (BTF)",
+      "Contagem de Reticulócitos (RET)",
+      "Hemograma Completo (HC)",
+      "Na (Sódio)",
+      "Prolactina (PRL)",
+      "T4 Livre (Tiroxina Livre)",
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)"
+    ]
   },
   {
     "nome": "João Pedro Martins",
@@ -825,7 +1511,13 @@
     "endereco": "Avenida do Amanhecer, 50, Bairro Novo, Alagoinhas - BA, 48000-092",
     "contato": "(75) 97654-3219",
     "observacoes": "Acompanhamento de função hepática. Verificar enzimas.",
-    "examesSelecionados": ["TGO (AST)", "TGP (ALT)"]
+    "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "PSA Total (Antígeno Prostático Específico Total)",
+      "TGO (AST)",
+      "TGP (ALT)",
+      "Tireoglobulina (TG)"
+    ]
   },
   {
     "nome": "Laura Sofia Conceição",
@@ -834,7 +1526,15 @@
     "endereco": "Rua da Harmonia, 1, Santa Terezinha, Alagoinhas - BA, 48000-093",
     "contato": "(75) 93210-9878",
     "observacoes": "Sintomas de infecção. Avaliar PCR.",
-    "examesSelecionados": ["PCR (Proteína C Reativa)"]
+    "examesSelecionados": [
+      "Amilase (Amil)",
+      "Cultura de Fezes (Coprocultura)",
+      "Eritrossedimentação (ESR)",
+      "Fibrinogênio (Fibrin)",
+      "PCR (Proteína C Reativa)",
+      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
+      "VDRL (Sífilis)"
+    ]
   },
   {
     "nome": "Gabriel Miguel Pires",
@@ -843,7 +1543,16 @@
     "endereco": "Travessa do Campo, 2, Teresópolis, Alagoinhas - BA, 48000-094",
     "contato": "(75) 98765-4329",
     "observacoes": "Controle de diabetes. Avaliar glicemia.",
-    "examesSelecionados": ["Glicemia (Glicose Sérica)"]
+    "examesSelecionados": [
+      "Alfa-Fetoproteína (AFP)",
+      "Anti-HIV 1 e 2 (HIV)",
+      "Apolipoproteína A1 (ApoA1)",
+      "Cálcio Iônico (Ca Iônico)",
+      "FSH (Hormônio Folículo Estimulante)",
+      "Glicemia (Glicose Sérica)",
+      "Pesquisa de Leishmania (Leishmania)",
+      "Vitamina B12 (Cobalamina)"
+    ]
   },
   {
     "nome": "Isabela Fernanda Borges",
@@ -852,7 +1561,13 @@
     "endereco": "Rua da Montanha, 1, Urbis I, Alagoinhas - BA, 48000-095",
     "contato": "(75) 92109-8768",
     "observacoes": "Acompanhamento de paciente com gota. Avaliar ácido úrico.",
-    "examesSelecionados": ["Ácido Úrico (AU)"]
+    "examesSelecionados": [
+      "Homocisteína (Hcy)",
+      "Lactato (Ácido Lático)",
+      "PCR (Proteína C Reativa)",
+      "Pesquisa de Criptococos (Tinta da China)",
+      "Ácido Úrico (AU)"
+    ]
   },
   {
     "nome": "Rafael Gonçalo Martins",
@@ -861,7 +1576,13 @@
     "endereco": "Avenida do Mar, 10, Jardim Imperial, Alagoinhas - BA, 48000-096",
     "contato": "(75) 96543-2109",
     "observacoes": "Queixas de dor. Avaliar VHS.",
-    "examesSelecionados": ["VHS (Velocidade de Hemossedimentação)"]
+    "examesSelecionados": [
+      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
+      "Ferritina (Ferr)",
+      "Testosterona Total (Testo Total)",
+      "Transferrina (Transf)",
+      "VHS (Velocidade de Hemossedimentação)"
+    ]
   },
   {
     "nome": "Luiza Beatriz Pires",
@@ -870,7 +1591,15 @@
     "endereco": "Rua da Onda, 22, Bairro Novo, Alagoinhas - BA, 48000-097",
     "contato": "(75) 99876-5430",
     "observacoes": "Acompanhamento de paciente com diabetes. Avaliar Hemoglobina Glicada.",
-    "examesSelecionados": ["Glicosilada (Hemoglobina Glicada, HbA1c)"]
+    "examesSelecionados": [
+      "Contagem de Reticulócitos (RET)",
+      "Cromo (Cr)",
+      "Fenitoína (Difenil-hidantoína)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)",
+      "Painel Viral Respiratório (PCR Viral)",
+      "Proteínas Totais e Frações (PTF)",
+      "Urina Tipo I (EAS)"
+    ]
   },
   {
     "nome": "Felipe Augusto Conceição",
@@ -879,7 +1608,16 @@
     "endereco": "Travessa do Campo, 1, Centro, Alagoinhas - BA, 48000-098",
     "contato": "(75) 95432-1090",
     "observacoes": "Queixas de tosse. Avaliar painel viral.",
-    "examesSelecionados": ["Painel Viral Respiratório (PCR Viral)"]
+    "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "Coombs Indireto (CI)",
+      "Creatinina (Creat)",
+      "Hepatite A IgM (Anti-HAV IgM)",
+      "Painel Viral Respiratório (PCR Viral)",
+      "Pesquisa de Malária (Gota Espessa)",
+      "Testosterona Total (Testo Total)",
+      "Zinco (Zn)"
+    ]
   },
   {
     "nome": "Sophia Valentina Borges",
@@ -888,7 +1626,13 @@
     "endereco": "Rua do Sol, 2, Kennedy, Alagoinhas - BA, 48000-099",
     "contato": "(75) 91234-5670",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar Alfa-1 Glicoproteína.",
-    "examesSelecionados": ["Alfa-1 Glicoproteína Ácida (AGP)"]
+    "examesSelecionados": [
+      "Alfa-1 Glicoproteína Ácida (AGP)",
+      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
+      "Coombs Direto (CD)",
+      "Pesquisa de Fungos (Micológico Direto)",
+      "Vitamina B12 (Cobalamina)"
+    ]
   },
   {
     "nome": "Arthur Leonardo Martins",
@@ -897,6 +1641,14 @@
     "endereco": "Avenida do Mar, 30, Santa Terezinha, Alagoinhas - BA, 48000-100",
     "contato": "(75) 97654-3210",
     "observacoes": "Suspeita de tumor. Avaliar Alfa-Fetoproteína.",
-    "examesSelecionados": ["Alfa-Fetoproteína (AFP)"]
+    "examesSelecionados": [
+      "Alfa-Fetoproteína (AFP)",
+      "Amônia (NH3)",
+      "Beta-HCG (HCG Quantitativo)",
+      "Estradiol (E2)",
+      "Lítio (Li)",
+      "Peptídeo Natriurético Cerebral (BNP)",
+      "Pesquisa de Leishmania (Leishmania)"
+    ]
   }
 ]
