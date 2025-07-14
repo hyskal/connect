@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.4
+// VERSÃO: 2.0.5
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
@@ -6,6 +6,7 @@
 // - NOVO: Implementação de senha dinâmica (sislab + HHMM) para ações sensíveis.
 // - NOVO: Botão "Gerar Paciente Aleatório" na página admin.html que carrega dados para index.html.
 // - NOVO: Função preencherCamposComCadastro para carregar dados de paciente fictício ou histórico.
+// - CORREÇÃO: Ajuste na função atualizarListaExamesCompleta para evitar desmarcação instantânea de exames ao carregar paciente.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -14,9 +15,9 @@ let listaExames = [];
 const SENHA_BASE_SISLAB = "sislab";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
-const GITHUB_USERNAME = 'hyskal'; 
-const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; 
+const GITHUB_USERNAME = 'hyskal';
+const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670';
+const GIST_FILENAME = 'exames.txt';
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -108,23 +109,23 @@ function carregarExames() {
 
     fetch(gistRawUrl)
         .then(response => {
-            console.log("Conteúdo Gist/Local - Status da resposta:", response.status); 
+            console.log("Conteúdo Gist/Local - Status da resposta:", response.status);
             if (!response.ok) {
                 console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
-                return fetch(`lista-de-exames.txt?t=${timestamp}`); 
+                return fetch(`lista-de-exames.txt?t=${timestamp}`);
             }
             return response.text();
         })
         .then(text => {
-            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); 
+            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "...");
             listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-            console.log("listaExames após processamento:", listaExames); 
-            
+            console.log("listaExames após processamento:", listaExames);
+
             if (listaExames.length === 0) {
                 console.warn("A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
             }
 
-            atualizarListaExamesCompleta();
+            atualizarListaExamesCompleta(); // Removeu a chamada direta de atualizarExamesSelecionadosDisplay aqui
             configurarPesquisa();
         })
         .catch(error => {
@@ -143,7 +144,8 @@ function atualizarListaExamesCompleta() {
         container.appendChild(label);
         container.appendChild(document.createElement('br'));
     });
-    atualizarExamesSelecionadosDisplay();
+    // A chamada a atualizarExamesSelecionadosDisplay() foi removida daqui,
+    // pois ela será chamada após o preenchimento dos campos, garantindo que os exames permaneçam marcados.
 }
 
 function configurarPesquisa() {
@@ -209,7 +211,7 @@ function marcarExame(exameNome) {
 function atualizarExamesSelecionadosDisplay() {
     const displayContainer = document.getElementById('examesSelecionadosDisplay');
     const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
-    
+
     displayContainer.innerHTML = "";
 
     if (selectedExams.length === 0) {
@@ -352,8 +354,8 @@ function validateCpfAndCheckHistory() {
         showError('cpf', "CPF inválido.");
         return false;
     }
-    
-    clearError('cpf'); 
+
+    clearError('cpf');
     checkCpfInHistory(cpf);
     return true;
 }
@@ -376,33 +378,33 @@ function validarCPF(cpf) {
 // checkCpfInHistory agora busca no banco de dados
 async function checkCpfInHistory(cpf) {
     // LOGS DE DEPURACAO AQUI
-    console.log("Iniciando verificação de CPF no histórico para:", cpf); 
+    console.log("Iniciando verificação de CPF no histórico para:", cpf);
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
         return;
     }
-    
+
     try {
         // Acessa a coleção usando a função globalizada
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         // Constrói a query usando as funções globalizadas
-        const cpfFormatado = formatarCPFParaBusca(cpf); 
-        console.log("CPF formatado para busca:", cpfFormatado); 
+        const cpfFormatado = formatarCPFParaBusca(cpf);
+        console.log("CPF formatado para busca:", cpfFormatado);
 
         const q = window.firebaseFirestoreQuery(historicoRef,
                                window.firebaseFirestoreWhere('cpf', '==', cpfFormatado),
                                window.firebaseFirestoreOrderBy('protocolo', 'desc'),
-                               window.firebaseFirestoreLimit(1)); 
+                               window.firebaseFirestoreLimit(1));
 
         // Executa a query usando a função globalizada
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        console.log("Query Snapshot (docs.length):", querySnapshot.docs.length); 
+        console.log("Query Snapshot (docs.length):", querySnapshot.docs.length);
 
         if (!querySnapshot.empty) {
             const ultimoCadastroDoc = querySnapshot.docs[0];
             const ultimoCadastro = ultimoCadastroDoc.data();
-            console.log("CPF encontrado! Último cadastro:", ultimoCadastro); 
-            
+            console.log("CPF encontrado! Último cadastro:", ultimoCadastro);
+
             const confirmLoad = confirm(
                 `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
                 `Nome: ${ultimoCadastro.nome}\n` +
@@ -554,7 +556,7 @@ function coletarDados() {
 
     const nome = document.getElementById('nome').value.trim();
     // CORREÇÃO: Salvar CPF sem máscara no banco de dados
-    const cpf = document.getElementById('cpf').value.replace(/\D/g, ''); 
+    const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
     const dataNasc = document.getElementById('data_nasc').value;
     const sexo = document.getElementById('sexo').value;
     const endereco = document.getElementById('endereco').value.trim();
@@ -576,7 +578,7 @@ async function salvarProtocoloAtendimento() {
         alert("Banco de dados não inicializado. Verifique a configuração.");
         return;
     }
-    
+
     try {
         const dados = coletarDados(); // Coleta dados e validações
 
@@ -596,18 +598,18 @@ async function salvarProtocoloAtendimento() {
             // Extrai o número sequencial (parte antes do primeiro '-')
             lastProtocolNumber = parseInt(lastProtocoloCompleto.split('-')[0]) || 0;
         }
-        
+
         const newProtocolNumber = (lastProtocolNumber + 1).toString().padStart(4, '0');
-        
+
         const now = new Date(); // Data e hora atual para o protocolo
         const hour = now.getHours().toString().padStart(2, '0');
         const minute = now.getMinutes().toString().padStart(2, '0');
         const day = now.getDate().toString().padStart(2, '0');
         const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Mês é 0-indexed
-        
+
         // Formato: 0001-HHMMDDMM (Ex: 0001-23143006)
         const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
-        
+
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
         dados.timestampServidor = window.firebaseFirestoreServerTimestamp(); // Adiciona timestamp do servidor para ordenação
 
@@ -615,7 +617,7 @@ async function salvarProtocoloAtendimento() {
         // Salva o cadastro no banco de dados
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
         console.log("Documento salvo no banco de dados com protocolo: ", dados.protocolo);
-        
+
         // --- Geração do PDF ---
         const doc = new jsPDF();
         const [ano, mes, dia] = dados.dataNasc.split('-');
@@ -653,7 +655,7 @@ async function salvarProtocoloAtendimento() {
         doc.text("DADOS DO PACIENTE:", 20, currentY);
         currentY += 8;
         doc.setFontSize(11);
-        
+
         const col1X = 25;
         const col2X = 110;
         const lineHeight = 7;
@@ -669,7 +671,7 @@ async function salvarProtocoloAtendimento() {
         currentY += lineHeight;
         doc.text(`Endereço: ${dados.endereco}`, col1X, currentY);
         currentY += lineHeight;
-        
+
         doc.setLineWidth(0.2);
         doc.line(20, currentY, 190, currentY);
         currentY += 10;
@@ -699,7 +701,7 @@ async function salvarProtocoloAtendimento() {
             doc.text(splitText, 30, currentY);
             currentY += (splitText.length * lineHeight);
         }
-        
+
         doc.setLineWidth(0.2);
         doc.line(20, currentY, 190, currentY);
         currentY += 10;
@@ -713,7 +715,7 @@ async function salvarProtocoloAtendimento() {
             const splitText = doc.splitTextToSize(dados.observacoes, 170);
             doc.text(splitText, 25, currentY);
             currentY += (splitText.length * lineHeight);
-            
+
             doc.setLineWidth(0.2);
             doc.line(20, currentY, 190, currentY);
             currentY += 10;
@@ -727,7 +729,7 @@ async function salvarProtocoloAtendimento() {
         doc.output('dataurlnewwindow', { filename: `Protocolo_${dados.nome.replace(/\s+/g, "_")}.pdf` });
 
         alert(`Protocolo ${dados.protocolo} salvo e gerado! Verifique a nova aba para visualizar e imprimir.`);
-        
+
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do banco de dados
     } catch (error) {
@@ -753,7 +755,7 @@ async function mostrarHistorico() {
         const q = window.firebaseFirestoreQuery(
             historicoRef,
             window.firebaseFirestoreOrderBy('protocolo', 'desc')
-        ); 
+        );
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         if (querySnapshot.empty) {
@@ -765,8 +767,8 @@ async function mostrarHistorico() {
         // Mapeia os documentos para um array de dados, incluindo o ID do documento do banco de dados
         const cadastros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        cadastros.forEach((c) => { 
-            const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
+        cadastros.forEach((c) => {
+            const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`;
             // AGORA: O onclick passa o ID do documento do banco de dados DIRETAMENTE
             html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
             if (c.examesNaoListados) {
@@ -873,7 +875,7 @@ async function limparHistorico() {
         try {
             const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
             const batchSize = 100; // Apaga em lotes de 100
-            
+
             // Função para apagar documentos em lote
             const deleteQueryBatch = async (dbInstance, queryToDelete) => {
                 const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
@@ -896,7 +898,7 @@ async function limparHistorico() {
                 totalDeleted += deletedCount;
                 console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
                 // Adicione um pequeno atraso para evitar hitting rate limits do Firestore em deletes muito rápidos
-                await new Promise(resolve => setTimeout(resolve, 50)); 
+                await new Promise(resolve => setTimeout(resolve, 50));
             } while (deletedCount > 0); // Continua apagando enquanto houver documentos
 
             alert(`Histórico apagado com sucesso do banco de dados! Total de ${totalDeleted} registros.`);
@@ -921,7 +923,7 @@ async function imprimirHistorico() {
     let cadastros = [];
     try {
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'desc')); 
+        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'desc'));
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
         cadastros = querySnapshot.docs.map(doc => doc.data());
     } catch (error) {
@@ -960,8 +962,8 @@ async function imprimirHistorico() {
             <ul>
     `;
 
-    cadastros.forEach((c) => { 
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
+    cadastros.forEach((c) => {
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`;
         printContent += `
             <li>
                 <b>${protocoloDisplay}</b><br>
@@ -1055,7 +1057,7 @@ async function salvarListaExamesNoGitHub() {
 
     try {
         const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
-        
+
         const response = await fetch(gistApiUrl, {
             method: 'PATCH',
             headers: {
@@ -1084,4 +1086,4 @@ async function salvarListaExamesNoGitHub() {
         console.error("Erro ao salvar lista de exames na Gist:", error);
         alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
     }
-            }
+}
