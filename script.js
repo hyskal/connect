@@ -3,34 +3,15 @@
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
 // - Removido: Mensagens de console.log de depuração da função checkCpfInHistory (temporárias da v2.0.3-debug).
+// - NOVO: Implementação de senha dinâmica (sislab + HHMM) para ações sensíveis.
+// - NOVO: Botão "Gerar Paciente Aleatório" na página admin.html que carrega dados para index.html.
+// - NOVO: Função preencherCamposComCadastro para carregar dados de paciente fictício ou histórico.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
 
 // Definir a senha base para todas as operações sensíveis
 const SENHA_BASE_SISLAB = "sislab";
-const now = new Date();
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minute = now.getMinutes().toString().padStart(2, '0');
-    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute; // Usa a nova constante SENHA_BASE_SISLAB
-
-    const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
-    if (senhaDigitada === null) {
-        return;
-    }
-    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
-const now = new Date();
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minute = now.getMinutes().toString().padStart(2, '0');
-    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute; // Usa a nova constante SENHA_BASE_SISLAB
-
-    const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
-    if (senhaDigitada === null) {
-        return;
-    }
-    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
-
-
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
 const GITHUB_USERNAME = 'hyskal'; 
@@ -61,7 +42,6 @@ const GOOGLE_FORM_ENTRIES = {
     observacoes: 'entry.9999999999',
     examesNaoListados: 'entry.0000000000'
 };
-
 
 // Lista de DDIs brasileiros válidos
 const dddsValidos = [
@@ -433,9 +413,8 @@ async function checkCpfInHistory(cpf) {
                 `Deseja carregar esses dados básicos no formulário?`
             );
 
-if (confirmLoad) {
-            preencherCamposComCadastro(ultimoCadastro); // Agora chama a nova função
-}
+            if (confirmLoad) {
+                preencherCamposComCadastro(ultimoCadastro); // Agora chama a nova função
             }
         } else {
             console.log("CPF não encontrado no banco de dados. Prossiga com o cadastro.");
@@ -451,15 +430,70 @@ function formatarCPFParaBusca(cpfComMascara) {
     return cpfComMascara.replace(/\D/g, ''); // Remove todos os caracteres não-dígitos
 }
 
-
+// MODIFICADO: preencherCamposComCadastro agora substitui carregarDadosBasicos
+// E é mais robusta para carregar dados do histórico ou paciente fictício
 function preencherCamposComCadastro(p) {
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
 
-  // A verificação se dados existem e o prompt de confirmação será feito dentro de preencherCamposComCadastro
-        // e ele também limpa os campos antes de preencher.
-        preencherCamposComCadastro(cadastro);
-        // O alert e o scroll para o topo já estão dentro de preencherCamposComCadastro
+    if (nomeAtual || cpfAtual) {
+        const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
+        if (!confirmarSubstituicao) {
+            return;
+        }
+    }
+
+    // Limpa os campos antes de preencher
+    document.getElementById('nome').value = '';
+    document.getElementById('cpf').value = '';
+    document.getElementById('data_nasc').value = '';
+    document.getElementById('idade').value = '';
+    document.getElementById('sexo').value = '';
+    document.getElementById('endereco').value = '';
+    document.getElementById('contato').value = '';
+    document.getElementById('observacoes').value = '';
+    document.getElementById('examesNaoListados').value = '';
+
+    // Limpa todos os checkboxes de exames
+    document.querySelectorAll('#exames input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+    clearError('data_nasc');
+    clearError('cpf');
+    clearError('contato');
+
+    // Preenche os campos com os dados do paciente
+    document.getElementById('nome').value = p.nome || '';
+    document.getElementById('cpf').value = p.cpf || '';
+    document.getElementById('data_nasc').value = p.dataNasc || '';
+    // A idade será atualizada automaticamente pelo evento 'change' da data_nasc
+    document.getElementById('sexo').value = p.sexo || '';
+    document.getElementById('endereco').value = p.endereco || '';
+    document.getElementById('contato').value = p.contato || '';
+    document.getElementById('observacoes').value = p.observacoes || '';
+    document.getElementById('examesNaoListados').value = p.examesNaoListados || '';
+
+    // Dispara o evento change para recalcular a idade se a data de nascimento for carregada
+    if (p.dataNasc) {
+        document.getElementById('data_nasc').dispatchEvent(new Event('change'));
+    }
+
+    // Marca os exames selecionados
+    if (Array.isArray(p.examesSelecionados)) {
+        p.examesSelecionados.forEach(exameNome => {
+            const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+            } else {
+                // Se o exame não estiver na lista de exames disponíveis, adicioná-lo dinamicamente
+                marcarExame(exameNome);
+            }
+        });
+    }
+    atualizarExamesSelecionadosDisplay(); // Atualiza o display dos exames selecionados
+
+    alert(`Dados de ${p.nome} carregados com sucesso!`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 function formatarContato() {
     const inputContato = document.getElementById('contato');
@@ -772,52 +806,10 @@ async function carregarCadastroFirebase(docId) {
 
         const cadastro = docSnap.data();
 
-        const nomeAtual = document.getElementById('nome').value.trim();
-        const cpfAtual = document.getElementById('cpf').value.trim();
-
-        if (nomeAtual || cpfAtual) {
-            const confirmar = confirm("Existem dados não salvos no formulário. Deseja substituí-los pelo cadastro completo do histórico?");
-            if (!confirmar) {
-                return;
-            }
-        }
-
-        limparCampos(false);
-
-        // Preenche os campos do formulário com os dados do banco de dados
-        document.getElementById('nome').value = cadastro.nome || '';
-        document.getElementById('cpf').value = cadastro.cpf || ''; 
-        document.getElementById('data_nasc').value = cadastro.dataNasc || '';
-        document.getElementById('idade').value = cadastro.idade || '';
-        document.getElementById('sexo').value = cadastro.sexo || '';
-        document.getElementById('endereco').value = cadastro.endereco || '';
-        document.getElementById('contato').value = cadastro.contato || '';
-        document.getElementById('observacoes').value = cadastro.observacoes || '';
-        document.getElementById('examesNaoListados').value = cadastro.examesNaoListados || '';
-
-        // Dispara o evento change para recalcular a idade se a data de nascimento for carregada
-        if (cadastro.dataNasc) {
-            document.getElementById('data_nasc').dispatchEvent(new Event('change'));
-        }
-
-        // Desmarca todos os checkboxes e marca os do cadastro do banco de dados
-        const allCheckboxes = document.querySelectorAll('.exame');
-        allCheckboxes.forEach(cb => cb.checked = false);
-
-        if (cadastro.exames && Array.isArray(cadastro.exames)) {
-            cadastro.exames.forEach(exameNome => {
-                const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                } else {
-                    marcarExame(exameNome); 
-                }
-            });
-        }
-        atualizarExamesSelecionadosDisplay();
-
-        alert(`Cadastro de ${cadastro.nome} carregado com sucesso do banco de dados!`);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // NOVO: A verificação de dados existentes e o prompt de confirmação será feito dentro de preencherCamposComCadastro
+        // e preencherCamposComCadastro também limpa os campos antes de preencher.
+        preencherCamposComCadastro(cadastro);
+        // O alert e o scroll para o topo já estão dentro de preencherCamposComCadastro
 
     } catch (error) {
         console.error("Erro ao carregar cadastro do banco de dados:", error);
@@ -857,13 +849,18 @@ function limparCampos(showAlert = true) {
     }
 }
 
-// MODIFICADO: limparHistorico agora interage com o banco de dados
+// MODIFICADO: limparHistorico agora interage com o banco de dados e usa senha dinâmica
 async function limparHistorico() {
-    const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
+    const now = new Date(); // Obter a data e hora atuais
+    const hour = now.getHours().toString().padStart(2, '0'); // Obter a hora formatada
+    const minute = now.getMinutes().toString().padStart(2, '0'); // Obter o minuto formatado
+    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute; // Concatenar para formar a senha esperada
+
+    const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`); // Mensagem para o usuário
     if (senhaDigitada === null) {
         return;
     }
-    if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
+    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) { // Comparar com a senha dinâmica
         if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
             alert("Banco de dados não inicializado. Limpeza de histórico desabilitada.");
             return;
@@ -1003,14 +1000,19 @@ async function imprimirHistorico() {
     };
 }
 
-// Removido: A função imprimirTela (para imprimir o layout HTML) foi removida conforme sua solicitação.
+// Removida a função imprimirTela (para imprimir o layout HTML) foi removida conforme sua solicitação.
 
 function editarListaExamesComSenha() {
-    const senhaDigitada = prompt("Para editar a lista de exames, digite a senha:");
+    const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute;
+
+    const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
     if (senhaDigitada === null) {
         return;
     }
-    if (senhaDigitada === SENHA_EDITAR_LISTA) {
+    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
         carregarListaExamesParaEdicao();
     } else {
         alert('Senha incorreta. Edição não permitida.');
@@ -1082,6 +1084,4 @@ async function salvarListaExamesNoGitHub() {
         console.error("Erro ao salvar lista de exames na Gist:", error);
         alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
     }
-}
-
-// Removida a função enviarParaPlanilha, pois a integração com Google Forms foi descontinuada para o histórico.
+            }
