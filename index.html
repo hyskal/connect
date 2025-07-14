@@ -391,7 +391,7 @@
         /* Seção 10: Estilos para Impressão */
         @media print {
             .nao-imprimir { display: none; }
-            body { 
+            body {
                 background-color: white;
                 position: relative; /* Para posicionar o rodapé */
                 padding-bottom: 50px; /* Espaço para o rodapé */
@@ -421,11 +421,11 @@
             }
             /* Ocultar a coluna 2 (pesquisa e exames disponíveis) */
             .column.center {
-                display: none; 
+                display: none;
             }
             /* Ocultar elementos específicos na impressão */
             .action-buttons-container, #historico, .sugestoes-box, #pesquisaExame, .sislab-logo, h2, h3 { /* Oculta títulos menores, etc. */
-                display: none; 
+                display: none;
             }
             /* Ajustar margens para o conteúdo impresso */
             .main-header-container {
@@ -597,7 +597,7 @@
         <button onclick="imprimirHistorico()">Imprimir Histórico</button>
         <button onclick="limparCampos()">Limpar Campos</button>
         <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
-        <button onclick="window.location.href='admin.html'">Acessar Admin</button> 
+        <button onclick="window.location.href='admin.html'">Acessar Admin</button>
     </div>
 
     <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -651,11 +651,11 @@
         window.firebaseFirestoreDeleteDoc = deleteDoc;
         window.firebaseFirestoreDoc = doc;
         window.firebaseFirestoreWriteBatch = writeBatch;
-        window.firebaseFirestoreWhere = where; 
-        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreWhere = where;
+        window.firebaseFirestoreServerTimestamp = serverTimestamp;
         window.firebaseFirestoreGetDoc = getDoc;
         // Se precisar de FieldValue (para timestamp), importe também
-        window.firebaseFirestoreFieldValue = FieldValue; 
+        window.firebaseFirestoreFieldValue = FieldValue;
 
     </script>
     <script src="script.js"></script>
