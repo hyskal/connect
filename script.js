@@ -530,26 +530,6 @@ async function salvarProtocoloAtendimento() {
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Banco de dados não inicializado. Verifique a configuração.");
         return;
-// 🔧 Correção para paciente fictício carregado do localStorage
-  if (typeof protocolo.data_nasc === 'string') {
-    protocolo.data_nasc = new Date(protocolo.data_nasc);
-  }
-
-  try {
-    await firebaseFirestoreAddDoc(
-      firebaseFirestoreCollection(firestoreDb, "historico"),
-      {
-        ...protocolo,
-        timestamp: firebaseFirestoreServerTimestamp()
-      }
-    );
-    alert("Protocolo salvo com sucesso!");
-  } catch (error) {
-    console.error("Erro ao salvar protocolo:", error);
-    alert("Erro ao salvar protocolo. Verifique o console para detalhes (regras do banco de dados, conexão, etc.).");
-  }
-    }
-
     }
     
     try {
