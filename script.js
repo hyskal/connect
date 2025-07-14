@@ -7,10 +7,30 @@
 const { jsPDF } = window.jspdf;
 let listaExames = [];
 
-// Definir a senha para limpar o histórico
-const SENHA_LIMPAR_HISTORICO = "sislab";
-// Definir a senha para editar a lista de exames
-const SENHA_EDITAR_LISTA = "sislab2025";
+// Definir a senha base para todas as operações sensíveis
+const SENHA_BASE_SISLAB = "sislab";
+const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute; // Usa a nova constante SENHA_BASE_SISLAB
+
+    const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
+    if (senhaDigitada === null) {
+        return;
+    }
+    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute; // Usa a nova constante SENHA_BASE_SISLAB
+
+    const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
+    if (senhaDigitada === null) {
+        return;
+    }
+    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+
+
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
 const GITHUB_USERNAME = 'hyskal'; 
@@ -87,6 +107,19 @@ window.onload = () => {
             atualizarExamesSelecionadosDisplay();
         }
     });
+
+    // --- NOVO: Carregar paciente fictício se houver ---
+    const pacienteFicticio = localStorage.getItem('pacienteFicticio');
+    if (pacienteFicticio) {
+        try {
+            const cadastro = JSON.parse(pacienteFicticio);
+            preencherCamposComCadastro(cadastro);
+            localStorage.removeItem('pacienteFicticio');
+        } catch (e) {
+            console.error("Erro ao carregar paciente fictício:", e);
+        }
+    }
+    // --- FIM NOVO ---
 };
 
 function carregarExames() {
@@ -400,8 +433,9 @@ async function checkCpfInHistory(cpf) {
                 `Deseja carregar esses dados básicos no formulário?`
             );
 
-            if (confirmLoad) {
-                carregarDadosBasicos(ultimoCadastro);
+if (confirmLoad) {
+            preencherCamposComCadastro(ultimoCadastro); // Agora chama a nova função
+}
             }
         } else {
             console.log("CPF não encontrado no banco de dados. Prossiga com o cadastro.");
@@ -418,37 +452,14 @@ function formatarCPFParaBusca(cpfComMascara) {
 }
 
 
-function carregarDadosBasicos(cadastro) {
+function preencherCamposComCadastro(p) {
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
 
-    if (nomeAtual || cpfAtual) {
-        const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
-        if (!confirmarSubstituicao) {
-            return;
-        }
-    }
-
-    document.getElementById('nome').value = '';
-    document.getElementById('data_nasc').value = '';
-    document.getElementById('idade').value = '';
-    document.getElementById('sexo').value = '';
-    document.getElementById('endereco').value = '';
-    document.getElementById('contato').value = '';
-    clearError('data_nasc');
-    clearError('cpf');
-    clearError('contato');
-
-    document.getElementById('nome').value = cadastro.nome;
-    document.getElementById('cpf').value = cadastro.cpf; 
-    document.getElementById('data_nasc').value = cadastro.dataNasc;
-    document.getElementById('data_nasc').dispatchEvent(new Event('change'));
-    document.getElementById('sexo').value = cadastro.sexo;
-    document.getElementById('endereco').value = cadastro.endereco;
-    document.getElementById('contato').value = cadastro.contato;
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+  // A verificação se dados existem e o prompt de confirmação será feito dentro de preencherCamposComCadastro
+        // e ele também limpa os campos antes de preencher.
+        preencherCamposComCadastro(cadastro);
+        // O alert e o scroll para o topo já estão dentro de preencherCamposComCadastro
 
 function formatarContato() {
     const inputContato = document.getElementById('contato');
