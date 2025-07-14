@@ -167,7 +167,7 @@
             window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
         }
 
-        // NOVO: Função para carregar paciente fictício
+        // NOVO: Função para carregar paciente fictício - AGORA ABRE EM NOVA ABA
         async function carregarPacienteFicticio() {
             try {
                 const response = await fetch('pacientes_aleatorios.json');
@@ -177,8 +177,8 @@
                 const pacientes = await response.json();
                 const paciente = pacientes[Math.floor(Math.random() * pacientes.length)];
                 localStorage.setItem('pacienteFicticio', JSON.stringify(paciente));
-                alert("Paciente aleatório carregado. Você será redirecionado.");
-                window.location.href = 'index.html?preencher=ficticio';
+                alert("Paciente aleatório carregado. Uma nova aba será aberta.");
+                window.open('index.html?preencher=ficticio', '_blank'); // Abre em nova aba
             } catch (err) {
                 console.error("Erro ao carregar paciente fictício:", err);
                 alert("Erro ao carregar paciente fictício. Verifique se o arquivo JSON está acessível.");
