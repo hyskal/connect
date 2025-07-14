@@ -1,107 +1,169 @@
-<!-- admin.html -->
-<div class="admin-container">
-    <h1>Área Administrativa SISLAB</h1>
-    <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>SISLAB - Administração</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .admin-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        h1 {
+            color: #1A2B4C;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1A2B4C; /* Cor padrão para botões admin */
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0F1D33;
+        }
+        /* Estilo específico para o botão de limpar histórico, se for de "perigo" */
+        button.danger-button {
+            background-color: #CC3333; /* Vermelho para ação perigosa */
+        }
+        button.danger-button:hover {
+            background-color: #A02222;
+        }
+        p.warning {
+            color: #CC3333;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
 
-    <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
-    <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
-    <button onclick="carregarPacienteFicticio()">Carregar Paciente Fictício</button>
+    <div class="admin-container">
+        <h1>Área Administrativa SISLAB</h1>
+        <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
+        
+        <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
+        
+        <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
+        
+        <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
+    </div>
 
-    <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
-</div>
+    <script type="module">
+        // Importa as funções do SDK do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, limit, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        
+        // Sua configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+            measurementId: "G-3TL54MWJFS" // Opcional, se não usar analytics aqui
+        };
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, limit, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app); 
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
-        authDomain: "sislab-cetep.firebaseapp.com",
-        projectId: "sislab-cetep",
-        storageBucket: "sislab-cetep.firebasestorage.app",
-        messagingSenderId: "958611861664",
-        appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
-        measurementId: "G-3TL54MWJFS"
-    };
+        // Torna as instâncias e funções do Firebase acessíveis globalmente para o JavaScript desta página
+        window.firestoreDb = db;
+        window.firebaseFirestoreCollection = collection;
+        window.firebaseFirestoreGetDocs = getDocs;
+        window.firebaseFirestoreQuery = query;
+        window.firebaseFirestoreLimit = limit;
+        window.firebaseFirestoreWriteBatch = writeBatch;
+        window.firebaseFirestoreOrderBy = orderBy; 
+    </script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    <script>
+        // Definir a senha para limpar o histórico (a mesma do script.js principal)
+        const SENHA_LIMPAR_HISTORICO = "sislab";
 
-    window.firestoreDb = db;
-    window.firebaseFirestoreCollection = collection;
-    window.firebaseFirestoreGetDocs = getDocs;
-    window.firebaseFirestoreQuery = query;
-    window.firebaseFirestoreLimit = limit;
-    window.firebaseFirestoreWriteBatch = writeBatch;
-    window.firebaseFirestoreOrderBy = orderBy;
-</script>
-
-<script>
-    const SENHA_LIMPAR_HISTORICO = "sislab";
-
-    async function limparHistoricoAdmin() {
-        const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
-        if (senhaDigitada === null) return;
-        if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
-            if (!window.firestoreDb) {
-                alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
+        // A função de limpar histórico, agora na página admin
+        async function limparHistoricoAdmin() {
+            const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
+            if (senhaDigitada === null) {
                 return;
             }
-            const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do Firebase? Esta ação é irreversível!");
-            if (!confirmDeleteAll) return;
+            if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
+                if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
+                    alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
+                    return;
+                }
+                const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do Firebase? Esta ação é irreversível e apagará todos os dados de pacientes!");
+                if (!confirmDeleteAll) {
+                    return;
+                }
 
-            try {
-                const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-                const batchSize = 100;
+                try {
+                    const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
+                    const batchSize = 100; // Apaga em lotes de 100
+                    
+                    const deleteQueryBatch = async (dbInstance, queryToDelete) => {
+                        const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
+                        if (snapshot.empty) {
+                            return 0;
+                        }
+                        const batch = window.firebaseFirestoreWriteBatch(dbInstance);
+                        snapshot.docs.forEach(d => { // Usar 'd' ou 'doc' para evitar conflito com window.doc
+                            batch.delete(d.ref);
+                        });
+                        await batch.commit();
+                        return snapshot.size;
+                    };
 
-                const deleteQueryBatch = async (db, q) => {
-                    const snapshot = await window.firebaseFirestoreGetDocs(q);
-                    if (snapshot.empty) return 0;
-                    const batch = window.firebaseFirestoreWriteBatch(db);
-                    snapshot.docs.forEach(d => batch.delete(d.ref));
-                    await batch.commit();
-                    return snapshot.size;
-                };
+                    let totalDeleted = 0;
+                    let deletedCount;
+                    do {
+                        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize));
+                        deletedCount = await deleteQueryBatch(window.firestoreDb, q);
+                        totalDeleted += deletedCount;
+                        console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
+                        await new Promise(resolve => setTimeout(resolve, 50)); 
+                    } while (deletedCount === batchSize); // Continua apagando se o lote estiver completo
 
-                let totalDeleted = 0, deletedCount;
-                do {
-                    const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize));
-                    deletedCount = await deleteQueryBatch(window.firestoreDb, q);
-                    totalDeleted += deletedCount;
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                } while (deletedCount === batchSize);
+                    alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
+                    // Não há histórico para mostrar nesta página, apenas um alerta de sucesso.
+                } catch (error) {
+                    console.error("Erro ao limpar histórico do Firebase:", error);
+                    alert("Erro ao limpar histórico do Firebase. Verifique o console e regras do Firestore.");
+                }
 
-                alert(`Histórico apagado com sucesso! Total de ${totalDeleted} registros.`);
-            } catch (error) {
-                console.error("Erro ao limpar histórico:", error);
-                alert("Erro ao limpar histórico. Verifique o console.");
+            } else {
+                alert('Senha incorreta. Histórico não foi limpo.');
             }
-        } else {
-            alert('Senha incorreta. Histórico não foi limpo.');
         }
-    }
 
-    async function mostrarLogGeralInventario() {
-        alert("Redirecionando para a página do Log Geral de Inventário (a ser implementada).\n\nOu pressione F12 > Console para visualizar o backend.");
-        window.location.href = 'log_inventario.html';
-    }
-
-    async function carregarPacienteFicticio() {
-        try {
-            const response = await fetch('pacientes_aleatorios.json');
-            const pacientes = await response.json();
-            const paciente = pacientes[Math.floor(Math.random() * pacientes.length)];
-            localStorage.setItem('pacienteFicticio', JSON.stringify(paciente));
-            window.location.href = 'index.html?preencher=ficticio';
-        } catch (err) {
-            console.error("Erro ao carregar paciente fictício:", err);
-            alert("Erro ao carregar paciente fictício. Verifique se o arquivo JSON está acessível.");
+        // NOVO: Função para exibir o Log Geral de Inventário
+        async function mostrarLogGeralInventario() {
+            // Esta função pode abrir uma nova página HTML (ex: log_inventario.html)
+            // ou um modal grande para exibir o log.
+            // Por simplicidade na primeira fase, podemos redirecionar para uma página ainda a ser criada.
+            alert("Redirecionando para a página do Log Geral de Inventário (a ser implementada).");
+            window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
         }
-    }
-</script>
+    </script>
 
-<!-- 
-Changelog:
-- Substituído botão "Imprimir Paciente Fictício" por "Carregar Paciente Fictício".
-- Função 'imprimirPacienteFicticio()' renomeada e alterada para 'carregarPacienteFicticio()', apenas preenche os campos.
--->
+</body>
+</html>
