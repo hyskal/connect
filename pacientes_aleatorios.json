@@ -7,13 +7,11 @@
     "contato": "(75) 98765-4321",
     "observacoes": "Paciente relata fadiga crônica, histórico familiar de diabetes. Indicado painel metabólico completo.",
     "examesSelecionados": [
-      "Bilirrubinas Totais e Frações (BTF)",
-      "Colesterol Total (CT)",
-      "Contagem de Reticulócitos (RET)",
       "Glicemia (Glicose Sérica)",
       "Hemograma Completo (HC)",
       "TGO (AST)",
       "TGP (ALT)",
+      "Colesterol Total (CT)",
       "Triglicerídeos (TG)",
       "Vitamina D (25-OH Vitamina D)"
     ]
@@ -26,12 +24,11 @@
     "contato": "(75) 91234-5678",
     "observacoes": "Dor articular persistente, suspeita de doença autoimune. Solicitar exames reumatológicos e inflamatórios.",
     "examesSelecionados": [
-      "Cálcio Total (Ca Total)",
-      "FAN (Fator Antinúcleo)",
       "Fator Reumatoide (FR)",
-      "PCR (Proteína C Reativa)",
-      "Peptídeo Natriurético Cerebral (BNP)",
       "VHS (Velocidade de Hemossedimentação)",
+      "PCR (Proteína C Reativa)",
+      "FAN (Fator Antinúcleo)",
+      "Cálcio Total (Ca Total)",
       "Ácido Úrico (AU)"
     ]
   },
@@ -43,13 +40,12 @@
     "contato": "(75) 96543-2109",
     "observacoes": "Checape de rotina, sem queixas específicas. Avaliar função renal e hepática.",
     "examesSelecionados": [
+      "Ureia (BUN)",
       "Creatinina (Creat)",
-      "Ferro Sérico (Fe Sérico)",
-      "Fosfatase Alcalina (FA)",
-      "Gama GT (GGT)",
       "TGO (AST)",
       "TGP (ALT)",
-      "Ureia (BUN)"
+      "Fosfatase Alcalina (FA)",
+      "Gama GT (GGT)"
     ]
   },
   {
@@ -61,13 +57,10 @@
     "observacoes": "Monitoramento de pressão alta e colesterol. Importante acompanhar perfil lipídico e glicemia.",
     "examesSelecionados": [
       "Colesterol Total (CT)",
-      "Glicemia (Glicose Sérica)",
       "HDL-Colesterol (Colesterol de Alta Densidade)",
       "LDL-Colesterol (Colesterol de Baixa Densidade)",
-      "TGP (ALT)",
-      "Tempo de Protrombina (TP)",
       "Triglicerídeos (TG)",
-      "Ácido Úrico (AU)"
+      "Glicemia (Glicose Sérica)"
     ]
   },
   {
@@ -78,14 +71,9 @@
     "contato": "(75) 95432-1098",
     "observacoes": "Sintomas de infecção urinária recorrente. Solicitar cultura e sensibilidade.",
     "examesSelecionados": [
-      "Coombs Direto (CD)",
-      "Fibrinogênio (Fibrin)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "PCR (Proteína C Reativa)",
-      "Procalcitonina (PCT)",
-      "Testosterona Total (Testo Total)",
       "Urina Tipo I (EAS)",
-      "Urocultura (Cultura de Urina)"
+      "Urocultura (Cultura de Urina)",
+      "PCR (Proteína C Reativa)"
     ]
   },
   {
@@ -96,12 +84,12 @@
     "contato": "(75) 91098-7654",
     "observacoes": "Acompanhamento pós-cirúrgico, verificar eletrólitos e função renal.",
     "examesSelecionados": [
-      "Cloro (Cl)",
-      "Creatinina (Creat)",
-      "Hemograma Completo (HC)",
-      "Potássio (K)",
       "Sódio (Na)",
-      "Ureia (BUN)"
+      "Potássio (K)",
+      "Cloro (Cl)",
+      "Ureia (BUN)",
+      "Creatinina (Creat)",
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -112,11 +100,11 @@
     "contato": "(75) 97654-3210",
     "observacoes": "Exames de rotina para gravidez. Avaliar tireoide e vitaminas.",
     "examesSelecionados": [
-      "Hemograma Completo (HC)",
-      "T4 Livre (Tiroxina Livre)",
       "TSH (Hormônio Estimulador da Tireoide)",
+      "T4 Livre (Tiroxina Livre)",
       "Vitamina D (25-OH Vitamina D)",
-      "Ácido Fólico (Folato)"
+      "Ácido Fólico (Folato)",
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -127,11 +115,10 @@
     "contato": "(75) 93210-9876",
     "observacoes": "Queixas de cansaço e sonolência. Investigar anemia e deficiência de B12.",
     "examesSelecionados": [
-      "Contagem de Reticulócitos (RET)",
-      "Ferritina (Ferr)",
       "Hemograma Completo (HC)",
-      "Proteínas Totais e Frações (PTF)",
-      "Vitamina B12 (Cobalamina)"
+      "Ferritina (Ferr)",
+      "Vitamina B12 (Cobalamina)",
+      "Proteínas Totais e Frações (PTF)"
     ]
   },
   {
@@ -142,11 +129,9 @@
     "contato": "(75) 98765-4321",
     "observacoes": "Histórico de problemas intestinais. Análise de fezes para parasitas.",
     "examesSelecionados": [
-      "Cultura de Fezes (Coprocultura)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Hepatite A IgM (Anti-HAV IgM)",
       "Parasitológico de Fezes (EPF)",
-      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)"
+      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
+      "Cultura de Fezes (Coprocultura)"
     ]
   },
   {
@@ -157,13 +142,11 @@
     "contato": "(75) 92109-8765",
     "observacoes": "Acompanhamento de função hepática após medicação. Verificar enzimas e bilirrubinas.",
     "examesSelecionados": [
-      "Bilirrubinas Totais e Frações (BTF)",
-      "Fosfatase Alcalina (FA)",
-      "Gama GT (GGT)",
-      "LH (Hormônio Luteinizante)",
-      "P (Fósforo)",
       "TGO (AST)",
-      "TGP (ALT)"
+      "TGP (ALT)",
+      "Gama GT (GGT)",
+      "Fosfatase Alcalina (FA)",
+      "Bilirrubinas Totais e Frações (BTF)"
     ]
   },
   {
@@ -175,12 +158,10 @@
     "observacoes": "Avaliação de saúde geral. Incluir perfil lipídico e hemograma.",
     "examesSelecionados": [
       "Colesterol Total (CT)",
-      "Cultura de Secreção (Cultura)",
-      "Fibrinogênio (Fibrin)",
       "HDL-Colesterol (Colesterol de Alta Densidade)",
-      "Hemograma Completo (HC)",
       "LDL-Colesterol (Colesterol de Baixa Densidade)",
-      "Triglicerídeos (TG)"
+      "Triglicerídeos (TG)",
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -191,11 +172,10 @@
     "contato": "(75) 91234-5679",
     "observacoes": "Controle de diabetes tipo 2. Avaliar glicemia e hemoglobina glicada.",
     "examesSelecionados": [
-      "Contagem de Reticulócitos (RET)",
-      "Creatinina (Creat)",
       "Glicemia (Glicose Sérica)",
       "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Ureia (BUN)"
+      "Ureia (BUN)",
+      "Creatinina (Creat)"
     ]
   },
   {
@@ -206,13 +186,10 @@
     "contato": "(75) 99876-5430",
     "observacoes": "Acompanhamento pediátrico. Avaliar vitaminas e ferro.",
     "examesSelecionados": [
-      "Cobre (Cu)",
-      "Contagem de Reticulócitos (RET)",
-      "Cálcio Total (Ca Total)",
+      "Vitamina D (25-OH Vitamina D)",
       "Ferritina (Ferr)",
       "Hemograma Completo (HC)",
-      "TSH (Hormônio Estimulador da Tireoide)",
-      "Vitamina D (25-OH Vitamina D)"
+      "Cálcio Total (Ca Total)"
     ]
   },
   {
@@ -223,15 +200,10 @@
     "contato": "(75) 95432-1090",
     "observacoes": "Check-up geriátrico. Avaliar função cardíaca e renal.",
     "examesSelecionados": [
-      "Alfa-1 Glicoproteína Ácida (AGP)",
-      "Bacterioscopia (Gram)",
-      "Beta-HCG (HCG Quantitativo)",
-      "Creatinina (Creat)",
-      "Eletroforese de Proteínas (Eletroforese)",
-      "P (Fósforo)",
       "Peptídeo Natriurético Cerebral (BNP)",
-      "Pesquisa de Criptococos (Tinta da China)",
-      "Ureia (BUN)"
+      "Ureia (BUN)",
+      "Creatinina (Creat)",
+      "Eletroforese de Proteínas (Eletroforese)"
     ]
   },
   {
@@ -242,15 +214,9 @@
     "contato": "(75) 91098-7650",
     "observacoes": "Sintomas de alergia. Investigar marcadores inflamatórios.",
     "examesSelecionados": [
-      "Fibrinogênio (Fibrin)",
-      "Glicemia de Jejum (GJ)",
-      "Hemograma Completo (HC)",
-      "Homocisteína (Hcy)",
-      "Na (Sódio)",
       "PCR (Proteína C Reativa)",
-      "Progesterona (Prog)",
-      "Transferrina (Transf)",
-      "VHS (Velocidade de Hemossedimentação)"
+      "VHS (Velocidade de Hemossedimentação)",
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -261,11 +227,9 @@
     "contato": "(75) 97654-3211",
     "observacoes": "Acompanhamento de tireoide. Verificar TSH e T4.",
     "examesSelecionados": [
-      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
-      "Cálcio Total (Ca Total)",
-      "Hepatite A IgM (Anti-HAV IgM)",
+      "TSH (Hormônio Estimulador da Tireoide)",
       "T4 Livre (Tiroxina Livre)",
-      "TSH (Hormônio Estimulador da Tireoide)"
+      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)"
     ]
   },
   {
@@ -276,15 +240,13 @@
     "contato": "(75) 93210-9870",
     "observacoes": "Avaliação de risco cardiovascular. Perfil lipídico completo e glicemia.",
     "examesSelecionados": [
+      "Colesterol Total (CT)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)",
+      "LDL-Colesterol (Colesterol de Baixa Densidade)",
+      "Triglicerídeos (TG)",
       "Apolipoproteína A1 (ApoA1)",
       "Apolipoproteína B (ApoB)",
-      "Colesterol Total (CT)",
-      "Coombs Direto (CD)",
-      "Glicemia (Glicose Sérica)",
-      "HDL-Colesterol (Colesterol de Alta Densidade)",
-      "K (Potássio)",
-      "LDL-Colesterol (Colesterol de Baixa Densidade)",
-      "Triglicerídeos (TG)"
+      "Glicemia (Glicose Sérica)"
     ]
   },
   {
@@ -296,9 +258,9 @@
     "observacoes": "Exames de rotina para controle de natalidade. Avaliar hormônios femininos.",
     "examesSelecionados": [
       "Estradiol (E2)",
-      "FSH (Hormônio Folículo Estimulante)",
-      "LH (Hormônio Luteinizante)",
       "Progesterona (Prog)",
+      "LH (Hormônio Luteinizante)",
+      "FSH (Hormônio Folículo Estimulante)",
       "Prolactina (PRL)"
     ]
   },
@@ -310,11 +272,10 @@
     "contato": "(75) 92109-8760",
     "observacoes": "Acompanhamento de saúde masculina. Verificar PSA e testosterona.",
     "examesSelecionados": [
-      "Cultura de Fezes (Coprocultura)",
-      "PSA Livre (Antígeno Prostático Específico Livre)",
       "PSA Total (Antígeno Prostático Específico Total)",
-      "Testosterona Livre (Testo Livre)",
-      "Testosterona Total (Testo Total)"
+      "PSA Livre (Antígeno Prostático Específico Livre)",
+      "Testosterona Total (Testo Total)",
+      "Testosterona Livre (Testo Livre)"
     ]
   },
   {
@@ -325,10 +286,9 @@
     "contato": "(75) 96543-2100",
     "observacoes": "Suspeita de deficiência de ferro. Avaliar hemograma e ferro sérico.",
     "examesSelecionados": [
-      "Contagem de Reticulócitos (RET)",
-      "Ferritina (Ferr)",
-      "Ferro Sérico (Fe Sérico)",
       "Hemograma Completo (HC)",
+      "Ferro Sérico (Fe Sérico)",
+      "Ferritina (Ferr)",
       "Transferrina (Transf)"
     ]
   },
@@ -340,11 +300,10 @@
     "contato": "(75) 99876-5431",
     "observacoes": "Investigação de febre de origem desconhecida. Hemocultura e marcadores inflamatórios.",
     "examesSelecionados": [
-      "Cultura de Secreção (Cultura)",
       "Hemograma Completo (HC)",
       "PCR (Proteína C Reativa)",
-      "Painel Viral Respiratório (PCR Viral)",
-      "VHS (Velocidade de Hemossedimentação)"
+      "VHS (Velocidade de Hemossedimentação)",
+      "Cultura de Secreção (Cultura)"
     ]
   },
   {
@@ -355,13 +314,7 @@
     "contato": "(75) 95432-1099",
     "observacoes": "Controle de medicação anticonvulsivante. Verificar nível sérico do fármaco.",
     "examesSelecionados": [
-      "Cortisol (Cort)",
       "Fenitoína (Difenil-hidantoína)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Meta-Hemoglobina (MetHb)",
-      "Pesquisa de Leishmania (Leishmania)",
-      "Urinocultura com Antibiograma (Urocultura c/ ATB)",
-      "VDRL (Sífilis)",
       "Ácido Valproico (Valproato)"
     ]
   },
@@ -373,14 +326,9 @@
     "contato": "(75) 91234-5670",
     "observacoes": "Histórico de gota. Monitorar ácido úrico e função renal.",
     "examesSelecionados": [
-      "Anti-HBs (Anticorpo Anti-HBs)",
-      "Creatinina (Creat)",
-      "Gama GT (GGT)",
-      "TGO (AST)",
-      "Triglicerídeos (TG)",
+      "Ácido Úrico (AU)",
       "Ureia (BUN)",
-      "VHS (Velocidade de Hemossedimentação)",
-      "Ácido Úrico (AU)"
+      "Creatinina (Creat)"
     ]
   },
   {
@@ -391,11 +339,11 @@
     "contato": "(75) 99876-5431",
     "observacoes": "Acompanhamento de infecção hepática. Avaliar marcadores virais e função hepática.",
     "examesSelecionados": [
-      "Anti-HCV (Anticorpo Anti-Hepatite C)",
-      "Bilirrubinas Totais e Frações (BTF)",
       "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Anti-HCV (Anticorpo Anti-Hepatite C)",
       "TGO (AST)",
-      "TGP (ALT)"
+      "TGP (ALT)",
+      "Bilirrubinas Totais e Frações (BTF)"
     ]
   },
   {
@@ -406,11 +354,9 @@
     "contato": "(75) 95432-1091",
     "observacoes": "Suspeita de doença autoimune. Investigar FAN e marcadores inflamatórios.",
     "examesSelecionados": [
-      "Apolipoproteína A1 (ApoA1)",
       "FAN (Fator Antinúcleo)",
       "PCR (Proteína C Reativa)",
-      "VHS (Velocidade de Hemossedimentação)",
-      "Ácido Fólico (Folato)"
+      "VHS (Velocidade de Hemossedimentação)"
     ]
   },
   {
@@ -422,12 +368,9 @@
     "observacoes": "Monitoramento de osteoporose. Avaliar cálcio e vitamina D.",
     "examesSelecionados": [
       "Cálcio Total (Ca Total)",
-      "Eritrossedimentação (ESR)",
+      "Vitamina D (25-OH Vitamina D)",
       "Fósforo (P)",
-      "Hepatite A IgG (Anti-HAV IgG)",
-      "Paratormônio (PTH)",
-      "Troponina I (TnI)",
-      "Vitamina D (25-OH Vitamina D)"
+      "Paratormônio (PTH)"
     ]
   },
   {
@@ -438,12 +381,7 @@
     "contato": "(75) 97654-3212",
     "observacoes": "Acompanhamento pediátrico. Verificar hemograma e zinco.",
     "examesSelecionados": [
-      "Cromo (Cr)",
-      "Estradiol (E2)",
-      "Glicemia Pós-Prandial (GPP)",
       "Hemograma Completo (HC)",
-      "K (Potássio)",
-      "Na (Sódio)",
       "Zinco (Zn)"
     ]
   },
@@ -455,14 +393,9 @@
     "contato": "(75) 93210-9871",
     "observacoes": "Queixas neurológicas. Investigar chumbo e cromo.",
     "examesSelecionados": [
-      "Alfa-1 Glicoproteína Ácida (AGP)",
-      "Bilirrubinas Totais e Frações (BTF)",
       "Chumbo (Pb)",
       "Cromo (Cr)",
-      "Cálcio Total (Ca Total)",
-      "Hemograma Completo (HC)",
-      "Homocisteína (Hcy)",
-      "Proteínas Totais e Frações (PTF)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -473,11 +406,10 @@
     "contato": "(75) 98765-4322",
     "observacoes": "Avaliação de risco trombótico. Pesquisar Fator V Leiden e D-Dímero.",
     "examesSelecionados": [
-      "D-Dímero (D-Dimer)",
       "Fator V Leiden (FVL)",
+      "D-Dímero (D-Dimer)",
       "Tempo de Protrombina (TP)",
-      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
-      "Troponina I (TnI)"
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)"
     ]
   },
   {
@@ -488,13 +420,9 @@
     "contato": "(75) 92109-8761",
     "observacoes": "Sintomas de febre e mal-estar em viajante. Pesquisar malária.",
     "examesSelecionados": [
-      "Anti-HCV (Anticorpo Anti-Hepatite C)",
-      "Beta-HCG (HCG Quantitativo)",
-      "Hemograma Completo (HC)",
-      "PCR (Proteína C Reativa)",
-      "Pesquisa de Leishmania (Leishmania)",
       "Pesquisa de Malária (Gota Espessa)",
-      "Ácido Úrico (AU)"
+      "Hemograma Completo (HC)",
+      "PCR (Proteína C Reativa)"
     ]
   },
   {
@@ -505,14 +433,12 @@
     "contato": "(75) 96543-2102",
     "observacoes": "Check-up esportivo. Avaliar eletrólitos e função muscular.",
     "examesSelecionados": [
-      "Cloro (Cl)",
-      "Creatinina (Creat)",
-      "Lactato (Ácido Lático)",
-      "Magnésio (Mg)",
-      "Pesquisa de Criptococos (Tinta da China)",
-      "Pesquisa de Tuberculose (Cultura para TB)",
+      "Sódio (Na)",
       "Potássio (K)",
-      "Sódio (Na)"
+      "Cloro (Cl)",
+      "Magnésio (Mg)",
+      "Creatinina (Creat)",
+      "Lactato (Ácido Lático)"
     ]
   },
   {
@@ -524,10 +450,7 @@
     "observacoes": "Acompanhamento de paciente com AIDS. Monitorar carga viral e linfócitos.",
     "examesSelecionados": [
       "Anti-HIV 1 e 2 (HIV)",
-      "Glicemia (Glicose Sérica)",
-      "Hemograma Completo (HC)",
-      "LH (Hormônio Luteinizante)",
-      "Lítio (Li)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -538,11 +461,8 @@
     "contato": "(75) 95432-1092",
     "observacoes": "Suspeita de sífilis. Realizar testes de triagem e confirmatório.",
     "examesSelecionados": [
-      "Contagem de Reticulócitos (RET)",
-      "FTA-Abs (Sífilis (Teste Confirmatório))",
-      "Paratormônio (PTH)",
       "VDRL (Sífilis)",
-      "Ácido Valproico (Valproato)"
+      "FTA-Abs (Sífilis (Teste Confirmatório))"
     ]
   },
   {
@@ -553,10 +473,8 @@
     "contato": "(75) 91098-7652",
     "observacoes": "Queixas de tosse persistente e emagrecimento. Investigar tuberculose.",
     "examesSelecionados": [
-      "Cobre (Cu)",
       "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
       "Pesquisa de Tuberculose (Cultura para TB)",
-      "Proteínas Totais e Frações (PTF)",
       "VHS (Velocidade de Hemossedimentação)"
     ]
   },
@@ -569,14 +487,8 @@
     "observacoes": "Acompanhamento de gestação. Verificar beta-HCG e hormônios.",
     "examesSelecionados": [
       "Beta-HCG (HCG Quantitativo)",
-      "Estradiol (E2)",
-      "FAN (Fator Antinúcleo)",
-      "FSH (Hormônio Folículo Estimulante)",
-      "Fosfatase Alcalina (FA)",
-      "Glicemia Pós-Prandial (GPP)",
-      "Pesquisa de Leishmania (Leishmania)",
       "Progesterona (Prog)",
-      "Triglicerídeos (TG)"
+      "Estradiol (E2)"
     ]
   },
   {
@@ -587,14 +499,7 @@
     "contato": "(75) 93210-9872",
     "observacoes": "Suspeita de infecção fúngica. Coleta para micológico direto.",
     "examesSelecionados": [
-      "Amônia (NH3)",
-      "Bacterioscopia (Gram)",
-      "Cromo (Cr)",
-      "Microalbuminúria (MAU)",
-      "Pesquisa de Fungos (Micológico Direto)",
-      "TSH (Hormônio Estimulador da Tireoide)",
-      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
-      "Triglicerídeos (TG)"
+      "Pesquisa de Fungos (Micológico Direto)"
     ]
   },
   {
@@ -605,11 +510,8 @@
     "contato": "(75) 98765-4323",
     "observacoes": "Sintomas de leishmaniose em área endêmica. Pesquisar parasita.",
     "examesSelecionados": [
-      "Glicemia (Glicose Sérica)",
-      "Hemograma Completo (HC)",
       "Pesquisa de Leishmania (Leishmania)",
-      "Proteínas Totais e Frações (PTF)",
-      "T4 Livre (Tiroxina Livre)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -621,9 +523,7 @@
     "observacoes": "Acompanhamento de paciente com doença crônica. Verificar alfa-1 glicoproteína e eletroforese.",
     "examesSelecionados": [
       "Alfa-1 Glicoproteína Ácida (AGP)",
-      "D-Dímero (D-Dimer)",
       "Eletroforese de Proteínas (Eletroforese)",
-      "Pesquisa de Tuberculose (Cultura para TB)",
       "Proteínas Totais e Frações (PTF)"
     ]
   },
@@ -636,13 +536,7 @@
     "observacoes": "Investigação de tumor. Avaliar alfa-fetoproteína.",
     "examesSelecionados": [
       "Alfa-Fetoproteína (AFP)",
-      "Anti-HIV 1 e 2 (HIV)",
-      "Contagem de Reticulócitos (RET)",
-      "Glicemia Pós-Prandial (GPP)",
-      "Hemograma Completo (HC)",
-      "Microalbuminúria (MAU)",
-      "Tempo de Protrombina (TP)",
-      "Ácido Úrico (AU)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -654,13 +548,8 @@
     "observacoes": "Sintomas de infecção bacteriana. Realizar bacterioscopia e hemograma.",
     "examesSelecionados": [
       "Bacterioscopia (Gram)",
-      "Eritrossedimentação (ESR)",
       "Hemograma Completo (HC)",
-      "Homocisteína (Hcy)",
-      "Insulina (Ins)",
-      "PCR (Proteína C Reativa)",
-      "Paratormônio (PTH)",
-      "Pesquisa de Criptococos (Tinta da China)"
+      "PCR (Proteína C Reativa)"
     ]
   },
   {
@@ -671,15 +560,7 @@
     "contato": "(75) 95432-1093",
     "observacoes": "Acompanhamento de paciente com bipolaridade. Verificar nível de lítio.",
     "examesSelecionados": [
-      "Albumina (Alb)",
-      "Cálcio Total (Ca Total)",
-      "FSH (Hormônio Folículo Estimulante)",
-      "Gama GT (GGT)",
-      "Hemograma Completo (HC)",
-      "Lítio (Li)",
-      "Microalbuminúria (MAU)",
-      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
-      "Ácido Úrico (AU)"
+      "Lítio (Li)"
     ]
   },
   {
@@ -690,13 +571,8 @@
     "contato": "(75) 91234-5671",
     "observacoes": "Queixas de dor torácica. Avaliar troponina para infarto.",
     "examesSelecionados": [
-      "Coombs Indireto (CI)",
-      "Ferritina (Ferr)",
-      "Hemograma Completo (HC)",
       "Troponina I (TnI)",
-      "Urinocultura com Antibiograma (Urocultura c/ ATB)",
-      "VDRL (Sífilis)",
-      "VHS (Velocidade de Hemossedimentação)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -707,15 +583,9 @@
     "contato": "(75) 99876-5434",
     "observacoes": "Acompanhamento de criança com anemia. Verificar hemograma e ferro.",
     "examesSelecionados": [
-      "Alfa-Fetoproteína (AFP)",
-      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
-      "Contagem de Reticulócitos (RET)",
-      "Fenitoína (Difenil-hidantoína)",
-      "Ferritina (Ferr)",
-      "Ferro Sérico (Fe Sérico)",
-      "Gama GT (GGT)",
       "Hemograma Completo (HC)",
-      "Progesterona (Prog)"
+      "Ferro Sérico (Fe Sérico)",
+      "Ferritina (Ferr)"
     ]
   },
   {
@@ -726,11 +596,9 @@
     "contato": "(75) 95432-1094",
     "observacoes": "Queixas respiratórias. Solicitar painel viral e PCR.",
     "examesSelecionados": [
-      "Hemograma Completo (HC)",
-      "PCR (Proteína C Reativa)",
       "Painel Viral Respiratório (PCR Viral)",
-      "Testosterona Livre (Testo Livre)",
-      "Ácido Valproico (Valproato)"
+      "PCR (Proteína C Reativa)",
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -741,14 +609,8 @@
     "contato": "(75) 91098-7653",
     "observacoes": "Monitoramento de doença renal crônica. Verificar microalbuminúria.",
     "examesSelecionados": [
-      "Anti-HIV 1 e 2 (HIV)",
-      "Creatinina (Creat)",
-      "Cultura de Secreção (Cultura)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Lipase (Lip)",
       "Microalbuminúria (MAU)",
-      "Pesquisa de Leishmania (Leishmania)",
-      "Tempo de Protrombina (TP)",
+      "Creatinina (Creat)",
       "Ureia (BUN)"
     ]
   },
@@ -760,11 +622,9 @@
     "contato": "(75) 97654-3214",
     "observacoes": "Suspeita de problemas na coagulação. Avaliar Tempo de Protrombina e TTPA.",
     "examesSelecionados": [
-      "Fibrinogênio (Fibrin)",
-      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
       "Tempo de Protrombina (TP)",
       "Tempo de Tromboplastina Parcial Ativada (TTPA)",
-      "VDRL (Sífilis)"
+      "Fibrinogênio (Fibrin)"
     ]
   },
   {
@@ -775,15 +635,9 @@
     "contato": "(75) 93210-9873",
     "observacoes": "Acompanhamento de paciente com problema de tireoide. Verificar Tireoglobulina e anticorpos.",
     "examesSelecionados": [
-      "Anti-HCV (Anticorpo Anti-Hepatite C)",
+      "Tireoglobulina (TG)",
       "Anticorpos Anti-Tireoglobulina (Anti-TG)",
-      "Chumbo (Pb)",
-      "Lactato (Ácido Lático)",
-      "Paratormônio (PTH)",
-      "Progesterona (Prog)",
-      "TSH (Hormônio Estimulador da Tireoide)",
-      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
-      "Tireoglobulina (TG)"
+      "TSH (Hormônio Estimulador da Tireoide)"
     ]
   },
   {
@@ -794,15 +648,9 @@
     "contato": "(75) 98765-4324",
     "observacoes": "Histórico de problemas cardíacos. Avaliar homocisteína e colesterol.",
     "examesSelecionados": [
-      "ASLO (Anti-Estreptolisina O)",
-      "Colesterol Total (CT)",
-      "FAN (Fator Antinúcleo)",
-      "HDL-Colesterol (Colesterol de Alta Densidade)",
       "Homocisteína (Hcy)",
-      "LH (Hormônio Luteinizante)",
-      "PSA Livre (Antígeno Prostático Específico Livre)",
-      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
-      "Ácido Úrico (AU)"
+      "Colesterol Total (CT)",
+      "HDL-Colesterol (Colesterol de Alta Densidade)"
     ]
   },
   {
@@ -813,11 +661,9 @@
     "contato": "(75) 92109-8763",
     "observacoes": "Suspeita de infecção grave. Avaliar Procalcitonina e hemograma.",
     "examesSelecionados": [
-      "Albumina (Alb)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Procalcitonina (PCT)",
       "Hemograma Completo (HC)",
-      "PCR (Proteína C Reativa)",
-      "Procalcitonina (PCT)"
+      "PCR (Proteína C Reativa)"
     ]
   },
   {
@@ -828,11 +674,9 @@
     "contato": "(75) 96543-2104",
     "observacoes": "Avaliação de saúde infantil. Verificar zinco e cobre.",
     "examesSelecionados": [
-      "Anti-HBs (Anticorpo Anti-HBs)",
-      "Bacterioscopia (Gram)",
+      "Zinco (Zn)",
       "Cobre (Cu)",
-      "Hemograma Completo (HC)",
-      "Zinco (Zn)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -844,13 +688,9 @@
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar amônia e função hepática.",
     "examesSelecionados": [
       "Amônia (NH3)",
-      "Bilirrubinas Totais e Frações (BTF)",
-      "PSA Total (Antígeno Prostático Específico Total)",
-      "Painel Viral Respiratório (PCR Viral)",
       "TGO (AST)",
       "TGP (ALT)",
-      "Transferrina (Transf)",
-      "Urina Tipo I (EAS)"
+      "Bilirrubinas Totais e Frações (BTF)"
     ]
   },
   {
@@ -861,10 +701,7 @@
     "contato": "(75) 95432-1095",
     "observacoes": "Suspeita de trombofilia. Investigar Fator V Leiden.",
     "examesSelecionados": [
-      "Estradiol (E2)",
       "Fator V Leiden (FVL)",
-      "Fenitoína (Difenil-hidantoína)",
-      "Pesquisa de Fungos (Micológico Direto)",
       "Tempo de Protrombina (TP)"
     ]
   },
@@ -876,11 +713,9 @@
     "contato": "(75) 91234-5672",
     "observacoes": "Acompanhamento de paciente com lúpus. Verificar FAN e eletroforese.",
     "examesSelecionados": [
-      "Eletroforese de Proteínas (Eletroforese)",
       "FAN (Fator Antinúcleo)",
-      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
-      "Proteínas Totais e Frações (PTF)",
-      "VHS (Velocidade de Hemossedimentação)"
+      "Eletroforese de Proteínas (Eletroforese)",
+      "Proteínas Totais e Frações (PTF)"
     ]
   },
   {
@@ -892,10 +727,7 @@
     "observacoes": "Monitoramento de toxicidade por metal pesado. Verificar chumbo.",
     "examesSelecionados": [
       "Chumbo (Pb)",
-      "Coombs Indireto (CI)",
-      "Hemograma Completo (HC)",
-      "Pesquisa de Leishmania (Leishmania)",
-      "VDRL (Sífilis)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -906,11 +738,10 @@
     "contato": "(75) 95432-1096",
     "observacoes": "Suspeita de hepatite. Avaliar marcadores virais.",
     "examesSelecionados": [
-      "Anti-HCV (Anticorpo Anti-Hepatite C)",
-      "Fator Reumatoide (FR)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Hepatite A IgM (Anti-HAV IgM)",
       "Hepatite A IgG (Anti-HAV IgG)",
-      "Hepatite A IgM (Anti-HAV IgM)"
+      "HBsAg (Antígeno de Superfície da Hepatite B)",
+      "Anti-HCV (Anticorpo Anti-Hepatite C)"
     ]
   },
   {
@@ -921,15 +752,9 @@
     "contato": "(75) 91098-7654",
     "observacoes": "Controle de diabetes. Avaliar insulina e glicemia.",
     "examesSelecionados": [
-      "Anti-HCV (Anticorpo Anti-Hepatite C)",
-      "Cortisol (Cort)",
-      "Glicemia (Glicose Sérica)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
       "Insulina (Ins)",
-      "PSA Livre (Antígeno Prostático Específico Livre)",
-      "Pesquisa de Criptococos (Tinta da China)",
-      "Pesquisa de Tuberculose (Cultura para TB)",
-      "Procalcitonina (PCT)"
+      "Glicemia (Glicose Sérica)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)"
     ]
   },
   {
@@ -940,10 +765,7 @@
     "contato": "(75) 97654-3215",
     "observacoes": "Investigação de anemia. Avaliar cadeias leves e hemograma.",
     "examesSelecionados": [
-      "Alfa-1 Glicoproteína Ácida (AGP)",
       "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
-      "Contagem de Reticulócitos (RET)",
-      "Fibrinogênio (Fibrin)",
       "Hemograma Completo (HC)"
     ]
   },
@@ -955,13 +777,8 @@
     "contato": "(75) 93210-9874",
     "observacoes": "Acompanhamento de função pulmonar. Avaliar Meta-Hemoglobina.",
     "examesSelecionados": [
-      "ASLO (Anti-Estreptolisina O)",
-      "Contagem de Reticulócitos (RET)",
-      "Coombs Direto (CD)",
-      "Estradiol (E2)",
-      "Hemograma Completo (HC)",
       "Meta-Hemoglobina (MetHb)",
-      "Peptídeo Natriurético Cerebral (BNP)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -972,11 +789,7 @@
     "contato": "(75) 98765-4325",
     "observacoes": "Suspeita de infecção fúngica sistêmica. Pesquisar Criptococos.",
     "examesSelecionados": [
-      "Cortisol (Cort)",
-      "Ferro Sérico (Fe Sérico)",
-      "K (Potássio)",
-      "Pesquisa de Criptococos (Tinta da China)",
-      "Tempo de Protrombina (TP)"
+      "Pesquisa de Criptococos (Tinta da China)"
     ]
   },
   {
@@ -987,11 +800,9 @@
     "contato": "(75) 92109-8764",
     "observacoes": "Acompanhamento pós-transfusional. Avaliar Coombs.",
     "examesSelecionados": [
-      "ASLO (Anti-Estreptolisina O)",
       "Coombs Direto (CD)",
       "Coombs Indireto (CI)",
-      "Hemograma Completo (HC)",
-      "Na (Sódio)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -1002,15 +813,9 @@
     "contato": "(75) 96543-2105",
     "observacoes": "Controle de cálcio e fósforo. Avaliar cálcio iônico.",
     "examesSelecionados": [
-      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
-      "Bacterioscopia (Gram)",
-      "Cromo (Cr)",
-      "Cálcio Iônico (Ca Iônico)",
       "Cálcio Total (Ca Total)",
-      "Ferro Sérico (Fe Sérico)",
-      "Fósforo (P)",
-      "Glicemia Pós-Prandial (GPP)",
-      "Ácido Valproico (Valproato)"
+      "Cálcio Iônico (Ca Iônico)",
+      "Fósforo (P)"
     ]
   },
   {
@@ -1021,14 +826,8 @@
     "contato": "(75) 99876-5435",
     "observacoes": "Acompanhamento de coagulação. Avaliar tempo de protrombina e TTPA.",
     "examesSelecionados": [
-      "Cultura de Secreção (Cultura)",
-      "Eletroforese de Proteínas (Eletroforese)",
-      "HDL-Colesterol (Colesterol de Alta Densidade)",
-      "Pesquisa de Leishmania (Leishmania)",
-      "Prolactina (PRL)",
       "Tempo de Protrombina (TP)",
-      "Tempo de Tromboplastina Parcial Ativada (TTPA)",
-      "Ureia (BUN)"
+      "Tempo de Tromboplastina Parcial Ativada (TTPA)"
     ]
   },
   {
@@ -1041,9 +840,7 @@
     "examesSelecionados": [
       "Apolipoproteína A1 (ApoA1)",
       "Apolipoproteína B (ApoB)",
-      "Colesterol Total (CT)",
-      "Cálcio Total (Ca Total)",
-      "Peptídeo Natriurético Cerebral (BNP)"
+      "Colesterol Total (CT)"
     ]
   },
   {
@@ -1054,14 +851,10 @@
     "contato": "(75) 91098-7655",
     "observacoes": "Queixas de tontura e fadiga. Avaliar anemia e deficiências.",
     "examesSelecionados": [
-      "Contagem de Reticulócitos (RET)",
-      "Cálcio Iônico (Ca Iônico)",
-      "Ferro Sérico (Fe Sérico)",
       "Hemograma Completo (HC)",
-      "K (Potássio)",
-      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)",
       "Vitamina B12 (Cobalamina)",
-      "Ácido Fólico (Folato)"
+      "Ácido Fólico (Folato)",
+      "Ferro Sérico (Fe Sérico)"
     ]
   },
   {
@@ -1072,11 +865,10 @@
     "contato": "(75) 97654-3216",
     "observacoes": "Acompanhamento de função renal e hepática. Checape de rotina.",
     "examesSelecionados": [
+      "Ureia (BUN)",
       "Creatinina (Creat)",
-      "Pesquisa de Criptococos (Tinta da China)",
       "TGO (AST)",
-      "TGP (ALT)",
-      "Ureia (BUN)"
+      "TGP (ALT)"
     ]
   },
   {
@@ -1087,9 +879,6 @@
     "contato": "(75) 93210-9875",
     "observacoes": "Sintomas de infecção. Avaliar marcadores inflamatórios.",
     "examesSelecionados": [
-      "ASLO (Anti-Estreptolisina O)",
-      "Cultura de Secreção (Cultura)",
-      "Ferritina (Ferr)",
       "PCR (Proteína C Reativa)",
       "VHS (Velocidade de Hemossedimentação)"
     ]
@@ -1102,13 +891,9 @@
     "contato": "(75) 98765-4326",
     "observacoes": "Controle de diabetes. Avaliar glicemia de jejum e pós-prandial.",
     "examesSelecionados": [
-      "Anti-HCV (Anticorpo Anti-Hepatite C)",
-      "Creatinina (Creat)",
-      "Ferro Sérico (Fe Sérico)",
-      "Glicemia Pós-Prandial (GPP)",
       "Glicemia de Jejum (GJ)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Tempo de Protrombina (TP)"
+      "Glicemia Pós-Prandial (GPP)",
+      "Glicosilada (Hemoglobina Glicada, HbA1c)"
     ]
   },
   {
@@ -1120,10 +905,7 @@
     "observacoes": "Acompanhamento de HIV. Verificar anti-HIV.",
     "examesSelecionados": [
       "Anti-HIV 1 e 2 (HIV)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "Hemograma Completo (HC)",
-      "Mg (Magnésio)",
-      "Pesquisa de Sangue Oculto nas Fezes (PSOMF)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -1134,11 +916,7 @@
     "contato": "(75) 96543-2106",
     "observacoes": "Suspeita de doença autoimune. Investigar FAN.",
     "examesSelecionados": [
-      "Coombs Indireto (CI)",
-      "FAN (Fator Antinúcleo)",
-      "Fosfatase Alcalina (FA)",
-      "Glicemia (Glicose Sérica)",
-      "Urocultura (Cultura de Urina)"
+      "FAN (Fator Antinúcleo)"
     ]
   },
   {
@@ -1149,15 +927,9 @@
     "contato": "(75) 99876-5437",
     "observacoes": "Acompanhamento de função tireoidiana. Verificar TSH e T3.",
     "examesSelecionados": [
-      "Apolipoproteína B (ApoB)",
-      "FSH (Hormônio Folículo Estimulante)",
-      "Fator Reumatoide (FR)",
-      "Glicemia (Glicose Sérica)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "T3 Total (Triiodotironina Total)",
-      "T4 Livre (Tiroxina Livre)",
       "TSH (Hormônio Estimulador da Tireoide)",
-      "Tempo de Tromboplastina Parcial Ativada (TTPA)"
+      "T3 Total (Triiodotironina Total)",
+      "T4 Livre (Tiroxina Livre)"
     ]
   },
   {
@@ -1168,11 +940,10 @@
     "contato": "(75) 95432-1097",
     "observacoes": "Acompanhamento de paciente com problema hepático. Avaliar função hepática.",
     "examesSelecionados": [
-      "Fosfatase Alcalina (FA)",
-      "Gama GT (GGT)",
       "TGO (AST)",
       "TGP (ALT)",
-      "VDRL (Sífilis)"
+      "Gama GT (GGT)",
+      "Fosfatase Alcalina (FA)"
     ]
   },
   {
@@ -1183,11 +954,8 @@
     "contato": "(75) 91234-5673",
     "observacoes": "Avaliação de saúde do homem. Verificar testosterona.",
     "examesSelecionados": [
-      "ASLO (Anti-Estreptolisina O)",
-      "Lactato (Ácido Lático)",
-      "Procalcitonina (PCT)",
-      "Testosterona Livre (Testo Livre)",
-      "Testosterona Total (Testo Total)"
+      "Testosterona Total (Testo Total)",
+      "Testosterona Livre (Testo Livre)"
     ]
   },
   {
@@ -1198,11 +966,8 @@
     "contato": "(75) 99876-5438",
     "observacoes": "Queixas de cansaço. Investigar Ferritina e Hemograma.",
     "examesSelecionados": [
-      "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
-      "Contagem de Reticulócitos (RET)",
       "Ferritina (Ferr)",
-      "Hemograma Completo (HC)",
-      "TSH (Hormônio Estimulador da Tireoide)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -1213,13 +978,8 @@
     "contato": "(75) 95432-1098",
     "observacoes": "Acompanhamento de criança. Avaliar vitaminas.",
     "examesSelecionados": [
-      "Fator V Leiden (FVL)",
-      "Fibrinogênio (Fibrin)",
-      "Glicemia de Jejum (GJ)",
-      "Procalcitonina (PCT)",
-      "Tireoglobulina (TG)",
-      "Vitamina B12 (Cobalamina)",
-      "Vitamina D (25-OH Vitamina D)"
+      "Vitamina D (25-OH Vitamina D)",
+      "Vitamina B12 (Cobalamina)"
     ]
   },
   {
@@ -1230,14 +990,8 @@
     "contato": "(75) 91098-7655",
     "observacoes": "Sintomas de infecção bacteriana. Solicitar PCR e Hemograma.",
     "examesSelecionados": [
-      "Alfa-Fetoproteína (AFP)",
-      "Colesterol Total (CT)",
-      "Coombs Direto (CD)",
-      "Fenitoína (Difenil-hidantoína)",
-      "Hemograma Completo (HC)",
       "PCR (Proteína C Reativa)",
-      "Pesquisa de Fungos (Micológico Direto)",
-      "Troponina I (TnI)",
+      "Hemograma Completo (HC)",
       "VHS (Velocidade de Hemossedimentação)"
     ]
   },
@@ -1249,11 +1003,8 @@
     "contato": "(75) 97654-3217",
     "observacoes": "Acompanhamento de gestante. Avaliar TSH e hemograma.",
     "examesSelecionados": [
-      "Fibrinogênio (Fibrin)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Hemograma Completo (HC)",
-      "Pesquisa de Malária (Gota Espessa)",
-      "TSH (Hormônio Estimulador da Tireoide)"
+      "TSH (Hormônio Estimulador da Tireoide)",
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -1265,10 +1016,8 @@
     "observacoes": "Queixas de dor abdominal. Avaliar amilase e lipase.",
     "examesSelecionados": [
       "Amilase (Amil)",
-      "Eritrossedimentação (ESR)",
-      "Hemograma Completo (HC)",
       "Lipase (Lip)",
-      "T3 Total (Triiodotironina Total)"
+      "Hemograma Completo (HC)"
     ]
   },
   {
@@ -1279,14 +1028,9 @@
     "contato": "(75) 98765-4327",
     "observacoes": "Avaliação de paciente com diabetes. Glicemia e colesterol.",
     "examesSelecionados": [
-      "Anti-HBs (Anticorpo Anti-HBs)",
-      "Anti-HIV 1 e 2 (HIV)",
-      "Chumbo (Pb)",
-      "Colesterol Total (CT)",
-      "D-Dímero (D-Dimer)",
       "Glicemia (Glicose Sérica)",
-      "Triglicerídeos (TG)",
-      "Vitamina B12 (Cobalamina)"
+      "Colesterol Total (CT)",
+      "Triglicerídeos (TG)"
     ]
   },
   {
@@ -1298,10 +1042,9 @@
     "observacoes": "Controle de hipertensão. Perfil lipídico e função renal.",
     "examesSelecionados": [
       "Colesterol Total (CT)",
-      "Coombs Direto (CD)",
-      "Creatinina (Creat)",
       "LDL-Colesterol (Colesterol de Baixa Densidade)",
-      "Ureia (BUN)"
+      "Ureia (BUN)",
+      "Creatinina (Creat)"
     ]
   },
   {
@@ -1312,11 +1055,10 @@
     "contato": "(75) 96543-2107",
     "observacoes": "Queixas de tontura. Investigar anemia e eletrólitos.",
     "examesSelecionados": [
-      "Cloro (Cl)",
-      "Contagem de Reticulócitos (RET)",
       "Hemograma Completo (HC)",
+      "Sódio (Na)",
       "Potássio (K)",
-      "Sódio (Na)"
+      "Cloro (Cl)"
     ]
   },
   {
@@ -1327,14 +1069,8 @@
     "contato": "(75) 99876-5438",
     "observacoes": "Acompanhamento de função renal em criança. Verificar ureia e creatinina.",
     "examesSelecionados": [
-      "Bacterioscopia (Gram)",
-      "Cadeias Leves Kappa e Lambda (Cadeias Leves)",
-      "Creatinina (Creat)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "Insulina (Ins)",
-      "TGP (ALT)",
       "Ureia (BUN)",
-      "VDRL (Sífilis)"
+      "Creatinina (Creat)"
     ]
   },
   {
@@ -1345,15 +1081,7 @@
     "contato": "(75) 95432-1099",
     "observacoes": "Suspeita de problemas na tireoide. Avaliar TSH.",
     "examesSelecionados": [
-      "Alfa-Fetoproteína (AFP)",
-      "Fenitoína (Difenil-hidantoína)",
-      "Gama GT (GGT)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "Lítio (Li)",
-      "TSH (Hormônio Estimulador da Tireoide)",
-      "VHS (Velocidade de Hemossedimentação)",
-      "Ácido Fólico (Folato)"
+      "TSH (Hormônio Estimulador da Tireoide)"
     ]
   },
   {
@@ -1365,12 +1093,6 @@
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar bilirrubinas.",
     "examesSelecionados": [
       "Bilirrubinas Totais e Frações (BTF)",
-      "Colesterol Total (CT)",
-      "Cultura de Fezes (Coprocultura)",
-      "Cultura de Secreção (Cultura)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "Pesquisa de Tuberculose (Cultura para TB)",
-      "Proteínas Totais e Frações (PTF)",
       "TGO (AST)",
       "TGP (ALT)"
     ]
@@ -1383,11 +1105,7 @@
     "contato": "(75) 97654-3218",
     "observacoes": "Queixas de dor articular. Investigar FR.",
     "examesSelecionados": [
-      "Fator Reumatoide (FR)",
-      "Gama GT (GGT)",
-      "Glicemia de Jejum (GJ)",
-      "HBsAg (Antígeno de Superfície da Hepatite B)",
-      "T3 Total (Triiodotironina Total)"
+      "Fator Reumatoide (FR)"
     ]
   },
   {
@@ -1398,14 +1116,9 @@
     "contato": "(75) 93210-9877",
     "observacoes": "Acompanhamento de rotina. Avaliar hemograma e perfil lipídico.",
     "examesSelecionados": [
-      "Colesterol Total (CT)",
-      "Coombs Indireto (CI)",
       "Hemograma Completo (HC)",
-      "PSA Livre (Antígeno Prostático Específico Livre)",
-      "Proteínas Totais e Frações (PTF)",
-      "Tireoglobulina (TG)",
-      "Triglicerídeos (TG)",
-      "Ureia (BUN)"
+      "Colesterol Total (CT)",
+      "Triglicerídeos (TG)"
     ]
   },
   {
@@ -1416,11 +1129,9 @@
     "contato": "(75) 98765-4328",
     "observacoes": "Sintomas de infecção urinária. Solicitar Urina Tipo I e urocultura.",
     "examesSelecionados": [
-      "K (Potássio)",
-      "PCR (Proteína C Reativa)",
-      "Peptídeo Natriurético Cerebral (BNP)",
       "Urina Tipo I (EAS)",
-      "Urocultura (Cultura de Urina)"
+      "Urocultura (Cultura de Urina)",
+      "PCR (Proteína C Reativa)"
     ]
   },
   {
@@ -1431,11 +1142,8 @@
     "contato": "(75) 92109-8767",
     "observacoes": "Acompanhamento de criança com desnutrição. Avaliar proteínas totais.",
     "examesSelecionados": [
-      "Albumina (Alb)",
-      "D-Dímero (D-Dimer)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
       "Proteínas Totais e Frações (PTF)",
-      "T3 Total (Triiodotironina Total)"
+      "Albumina (Alb)"
     ]
   },
   {
@@ -1446,11 +1154,8 @@
     "contato": "(75) 96543-2108",
     "observacoes": "Suspeita de problemas renais. Investigar ureia e creatinina.",
     "examesSelecionados": [
-      "Anti-HBs (Anticorpo Anti-HBs)",
-      "Creatinina (Creat)",
-      "Painel Viral Respiratório (PCR Viral)",
-      "Transferrina (Transf)",
-      "Ureia (BUN)"
+      "Ureia (BUN)",
+      "Creatinina (Creat)"
     ]
   },
   {
@@ -1461,14 +1166,7 @@
     "contato": "(75) 99876-5439",
     "observacoes": "Acompanhamento de paciente com AIDS. Verificar Anti-HIV.",
     "examesSelecionados": [
-      "Anti-HIV 1 e 2 (HIV)",
-      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
-      "Cromo (Cr)",
-      "Glicemia (Glicose Sérica)",
-      "Glicemia de Jejum (GJ)",
-      "Hemograma Completo (HC)",
-      "Lítio (Li)",
-      "Triglicerídeos (TG)"
+      "Anti-HIV 1 e 2 (HIV)"
     ]
   },
   {
@@ -1479,11 +1177,7 @@
     "contato": "(75) 95432-1099",
     "observacoes": "Sintomas de doença celíaca. Avaliar marcadores.",
     "examesSelecionados": [
-      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)",
-      "Bacterioscopia (Gram)",
-      "Coombs Indireto (CI)",
-      "Glicemia (Glicose Sérica)",
-      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)"
+      "Anticorpos Anti-TPO (Anti-Tireoperoxidase)"
     ]
   },
   {
@@ -1494,14 +1188,8 @@
     "contato": "(75) 91234-5675",
     "observacoes": "Queixas de cansaço. Investigar tireoide.",
     "examesSelecionados": [
-      "Bilirrubinas Totais e Frações (BTF)",
-      "Contagem de Reticulócitos (RET)",
-      "Hemograma Completo (HC)",
-      "Na (Sódio)",
-      "Prolactina (PRL)",
-      "T4 Livre (Tiroxina Livre)",
       "TSH (Hormônio Estimulador da Tireoide)",
-      "Tempo de Tromboplastina Parcial Ativada (TTPA)"
+      "T4 Livre (Tiroxina Livre)"
     ]
   },
   {
@@ -1512,11 +1200,8 @@
     "contato": "(75) 97654-3219",
     "observacoes": "Acompanhamento de função hepática. Verificar enzimas.",
     "examesSelecionados": [
-      "Colesterol Total (CT)",
-      "PSA Total (Antígeno Prostático Específico Total)",
       "TGO (AST)",
-      "TGP (ALT)",
-      "Tireoglobulina (TG)"
+      "TGP (ALT)"
     ]
   },
   {
@@ -1527,13 +1212,7 @@
     "contato": "(75) 93210-9878",
     "observacoes": "Sintomas de infecção. Avaliar PCR.",
     "examesSelecionados": [
-      "Amilase (Amil)",
-      "Cultura de Fezes (Coprocultura)",
-      "Eritrossedimentação (ESR)",
-      "Fibrinogênio (Fibrin)",
-      "PCR (Proteína C Reativa)",
-      "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)",
-      "VDRL (Sífilis)"
+      "PCR (Proteína C Reativa)"
     ]
   },
   {
@@ -1544,14 +1223,7 @@
     "contato": "(75) 98765-4329",
     "observacoes": "Controle de diabetes. Avaliar glicemia.",
     "examesSelecionados": [
-      "Alfa-Fetoproteína (AFP)",
-      "Anti-HIV 1 e 2 (HIV)",
-      "Apolipoproteína A1 (ApoA1)",
-      "Cálcio Iônico (Ca Iônico)",
-      "FSH (Hormônio Folículo Estimulante)",
-      "Glicemia (Glicose Sérica)",
-      "Pesquisa de Leishmania (Leishmania)",
-      "Vitamina B12 (Cobalamina)"
+      "Glicemia (Glicose Sérica)"
     ]
   },
   {
@@ -1562,10 +1234,6 @@
     "contato": "(75) 92109-8768",
     "observacoes": "Acompanhamento de paciente com gota. Avaliar ácido úrico.",
     "examesSelecionados": [
-      "Homocisteína (Hcy)",
-      "Lactato (Ácido Lático)",
-      "PCR (Proteína C Reativa)",
-      "Pesquisa de Criptococos (Tinta da China)",
       "Ácido Úrico (AU)"
     ]
   },
@@ -1577,10 +1245,6 @@
     "contato": "(75) 96543-2109",
     "observacoes": "Queixas de dor. Avaliar VHS.",
     "examesSelecionados": [
-      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
-      "Ferritina (Ferr)",
-      "Testosterona Total (Testo Total)",
-      "Transferrina (Transf)",
       "VHS (Velocidade de Hemossedimentação)"
     ]
   },
@@ -1592,13 +1256,7 @@
     "contato": "(75) 99876-5430",
     "observacoes": "Acompanhamento de paciente com diabetes. Avaliar Hemoglobina Glicada.",
     "examesSelecionados": [
-      "Contagem de Reticulócitos (RET)",
-      "Cromo (Cr)",
-      "Fenitoína (Difenil-hidantoína)",
-      "Glicosilada (Hemoglobina Glicada, HbA1c)",
-      "Painel Viral Respiratório (PCR Viral)",
-      "Proteínas Totais e Frações (PTF)",
-      "Urina Tipo I (EAS)"
+      "Glicosilada (Hemoglobina Glicada, HbA1c)"
     ]
   },
   {
@@ -1609,14 +1267,7 @@
     "contato": "(75) 95432-1090",
     "observacoes": "Queixas de tosse. Avaliar painel viral.",
     "examesSelecionados": [
-      "Colesterol Total (CT)",
-      "Coombs Indireto (CI)",
-      "Creatinina (Creat)",
-      "Hepatite A IgM (Anti-HAV IgM)",
-      "Painel Viral Respiratório (PCR Viral)",
-      "Pesquisa de Malária (Gota Espessa)",
-      "Testosterona Total (Testo Total)",
-      "Zinco (Zn)"
+      "Painel Viral Respiratório (PCR Viral)"
     ]
   },
   {
@@ -1627,11 +1278,7 @@
     "contato": "(75) 91234-5670",
     "observacoes": "Acompanhamento de paciente com doença hepática. Avaliar Alfa-1 Glicoproteína.",
     "examesSelecionados": [
-      "Alfa-1 Glicoproteína Ácida (AGP)",
-      "Anticorpos Anti-Tireoglobulina (Anti-TG)",
-      "Coombs Direto (CD)",
-      "Pesquisa de Fungos (Micológico Direto)",
-      "Vitamina B12 (Cobalamina)"
+      "Alfa-1 Glicoproteína Ácida (AGP)"
     ]
   },
   {
@@ -1642,13 +1289,7 @@
     "contato": "(75) 97654-3210",
     "observacoes": "Suspeita de tumor. Avaliar Alfa-Fetoproteína.",
     "examesSelecionados": [
-      "Alfa-Fetoproteína (AFP)",
-      "Amônia (NH3)",
-      "Beta-HCG (HCG Quantitativo)",
-      "Estradiol (E2)",
-      "Lítio (Li)",
-      "Peptídeo Natriurético Cerebral (BNP)",
-      "Pesquisa de Leishmania (Leishmania)"
+      "Alfa-Fetoproteína (AFP)"
     ]
   }
 ]
