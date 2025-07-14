@@ -63,6 +63,8 @@
         
         <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
         
+        <button onclick="carregarPacienteFicticio()">Gerar Paciente Aleatório</button>
+
         <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
     </div>
 
@@ -97,16 +99,21 @@
     </script>
 
     <script>
-        // Definir a senha para limpar o histórico (a mesma do script.js principal)
-        const SENHA_LIMPAR_HISTORICO = "sislab";
+        // Definir a senha base para limpar o histórico (nova lógica para senha dinâmica)
+        const SENHA_BASE_SISLAB_ADMIN = "sislab";
 
         // A função de limpar histórico, agora na página admin
         async function limparHistoricoAdmin() {
-            const senhaDigitada = prompt("Para limpar o histórico, digite a senha:");
+            const now = new Date();
+            const hour = now.getHours().toString().padStart(2, '0');
+            const minute = now.getMinutes().toString().padStart(2, '0');
+            const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
+
+            const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB_ADMIN} + HHMM, ex: ${SENHA_BASE_SISLAB_ADMIN}${hour}${minute}):`);
             if (senhaDigitada === null) {
                 return;
             }
-            if (senhaDigitada === SENHA_LIMPAR_HISTORICO) {
+            if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
                 if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
                     alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
                     return;
@@ -118,7 +125,7 @@
 
                 try {
                     const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-                    const batchSize = 100; // Apaga em lotes de 100
+                    const batchSize = 100;
                     
                     const deleteQueryBatch = async (dbInstance, queryToDelete) => {
                         const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
@@ -126,7 +133,7 @@
                             return 0;
                         }
                         const batch = window.firebaseFirestoreWriteBatch(dbInstance);
-                        snapshot.docs.forEach(d => { // Usar 'd' ou 'doc' para evitar conflito com window.doc
+                        snapshot.docs.forEach(d => {
                             batch.delete(d.ref);
                         });
                         await batch.commit();
@@ -141,10 +148,9 @@
                         totalDeleted += deletedCount;
                         console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
                         await new Promise(resolve => setTimeout(resolve, 50)); 
-                    } while (deletedCount === batchSize); // Continua apagando se o lote estiver completo
+                    } while (deletedCount === batchSize);
 
                     alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
-                    // Não há histórico para mostrar nesta página, apenas um alerta de sucesso.
                 } catch (error) {
                     console.error("Erro ao limpar histórico do Firebase:", error);
                     alert("Erro ao limpar histórico do Firebase. Verifique o console e regras do Firestore.");
@@ -157,11 +163,26 @@
 
         // NOVO: Função para exibir o Log Geral de Inventário
         async function mostrarLogGeralInventario() {
-            // Esta função pode abrir uma nova página HTML (ex: log_inventario.html)
-            // ou um modal grande para exibir o log.
-            // Por simplicidade na primeira fase, podemos redirecionar para uma página ainda a ser criada.
             alert("Redirecionando para a página do Log Geral de Inventário (a ser implementada).");
             window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
+        }
+
+        // NOVO: Função para carregar paciente fictício
+        async function carregarPacienteFicticio() {
+            try {
+                const response = await fetch('pacientes_aleatorios.json');
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar pacientes_aleatorios.json: ${response.statusText}`);
+                }
+                const pacientes = await response.json();
+                const paciente = pacientes[Math.floor(Math.random() * pacientes.length)];
+                localStorage.setItem('pacienteFicticio', JSON.stringify(paciente));
+                alert("Paciente aleatório carregado. Você será redirecionado.");
+                window.location.href = 'index.html?preencher=ficticio';
+            } catch (err) {
+                console.error("Erro ao carregar paciente fictício:", err);
+                alert("Erro ao carregar paciente fictício. Verifique se o arquivo JSON está acessível.");
+            }
         }
     </script>
 
