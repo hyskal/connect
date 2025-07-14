@@ -1,14 +1,18 @@
-// VERSÃO: 2.0.6a
+// VERSÃO: 2.0.9
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
 // - Removido: Mensagens de console.log de depuração da função checkCpfInHistory (temporárias da v2.0.3-debug).
 // - NOVO: Implementação de senha dinâmica (sislab + HHMM) para ações sensíveis.
-// - NOVO: Botão "Gerar Paciente Aleatório" na página admin.html que carrega dados para index.html.
+// - MODIFICADO: Lógica de "Gerar Paciente Aleatório" movida para index.html.
+//   - O botão em admin.html agora apenas abre index.html com um parâmetro.
+//   - O script.js do index.html agora sorteia e carrega o paciente aleatório a cada recarga com o parâmetro.
 // - NOVO: Função preencherCamposComCadastro para carregar dados de paciente fictício ou histórico.
 // - CORREÇÃO: Ajuste na função atualizarListaExamesCompleta para evitar desmarcação instantânea de exames ao carregar paciente.
 // - CORREÇÃO: Garantia de que carregarExames() é aguardada no window.onload para que a lista de exames esteja pronta antes de preencher o formulário.
 // - CORREÇÃO: Refatoração da função carregarCadastroFirebase para usar preencherCamposComCadastro de forma mais limpa.
+// - MELHORIA: Adicionado try/catch global no window.onload para capturar e alertar sobre erros críticos de inicialização.
+// - DIAGNÓSTICO: Adicionados logs no console para depurar o carregamento de paciente aleatório.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -76,36 +80,62 @@ const dddsValidos = [
 ];
 
 window.onload = async () => { // Torna a função onload assíncrona
-    await carregarExames(); // AGORA, aguarda a lista de exames ser carregada e renderizada
+    try {
+        console.log("window.onload: Iniciando carregamento da página.");
+        await carregarExames(); // AGORA, aguarda a lista de exames ser carregada e renderizada
+        console.log("window.onload: carregarExames() concluído.");
 
-    document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
-    document.getElementById('cpf').addEventListener('input', formatarCPF);
-    document.getElementById('contato').addEventListener('input', formatarContato);
+        document.getElementById('data_nasc').addEventListener('change', atualizarIdade);
+        document.getElementById('cpf').addEventListener('input', formatarCPF);
+        document.getElementById('contato').addEventListener('input', formatarContato);
 
-    document.getElementById('data_nasc').addEventListener('blur', validateAge);
-    document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
-    document.getElementById('contato').addEventListener('blur', validateContact);
+        document.getElementById('data_nasc').addEventListener('blur', validateAge);
+        document.getElementById('cpf').addEventListener('blur', validateCpfAndCheckHistory);
+        document.getElementById('contato').addEventListener('blur', validateContact);
 
-    document.getElementById('exames').addEventListener('change', (event) => {
-        if (event.target.classList.contains('exame')) {
-            atualizarExamesSelecionadosDisplay();
+        document.getElementById('exames').addEventListener('change', (event) => {
+            if (event.target.classList.contains('exame')) {
+                atualizarExamesSelecionadosDisplay();
+            }
+        });
+
+        // --- NOVO: Lógica para gerar e carregar paciente aleatório se o parâmetro estiver na URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("window.onload: Parâmetros da URL:", urlParams.toString());
+        if (urlParams.get('gerar') === 'ficticio') {
+            console.log("window.onload: Parâmetro 'gerar=ficticio' detectado. Chamando gerarECarregarPacienteAleatorio().");
+            await gerarECarregarPacienteAleatorio();
+        } else {
+            console.log("window.onload: Parâmetro 'gerar=ficticio' NÃO detectado. Não gerando paciente aleatório.");
         }
-    });
+        // --- FIM NOVO ---
 
-    // --- NOVO: Carregar paciente fictício se houver ---
-    // Este bloco agora só será executado DEPOIS que carregarExames() for concluído.
-    const pacienteFicticio = localStorage.getItem('pacienteFicticio');
-    if (pacienteFicticio) {
-        try {
-            const cadastro = JSON.parse(pacienteFicticio);
-            preencherCamposComCadastro(cadastro);
-            localStorage.removeItem('pacienteFicticio');
-        } catch (e) {
-            console.error("Erro ao carregar paciente fictício:", e);
-        }
+    } catch (error) {
+        console.error("Erro crítico na inicialização da página:", error);
+        alert("Ocorreu um erro crítico ao carregar a página. Por favor, verifique o console para mais detalhes.");
     }
-    // --- FIM NOVO ---
 };
+
+// NOVO: Função para gerar e carregar paciente aleatório
+async function gerarECarregarPacienteAleatorio() {
+    console.log("gerarECarregarPacienteAleatorio: Iniciando geração de paciente.");
+    try {
+        const response = await fetch('pacientes_aleatorios.json');
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar pacientes_aleatorios.json: ${response.statusText}`);
+        }
+        const pacientes = await response.json();
+        const paciente = pacientes[Math.floor(Math.random() * pacientes.length)];
+        
+        console.log("gerarECarregarPacienteAleatorio: Paciente sorteado:", paciente);
+        preencherCamposComCadastro(paciente); // Esta função tem um 'confirm' que pode interromper.
+        alert("Paciente aleatório gerado e carregado no formulário!");
+    } catch (err) {
+        console.error("gerarECarregarPacienteAleatorio: Erro ao gerar/carregar paciente aleatório:", err);
+        alert("Erro ao gerar/carregar paciente aleatório. Verifique se o arquivo JSON está acessível e formatado corretamente.");
+    }
+}
+
 
 function carregarExames() {
     const timestamp = new Date().getTime();
@@ -114,27 +144,28 @@ function carregarExames() {
     // Retorna a Promise para que window.onload possa aguardar
     return fetch(gistRawUrl)
         .then(response => {
-            console.log("Conteúdo Gist/Local - Status da resposta:", response.status); 
+            console.log("carregarExames: Conteúdo Gist/Local - Status da resposta:", response.status); 
             if (!response.ok) {
-                console.warn(`Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
+                console.warn(`carregarExames: Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
+                // Tenta carregar do arquivo local caso a Gist falhe
                 return fetch(`lista-de-exames.txt?t=${timestamp}`); 
             }
             return response.text();
         })
         .then(text => {
-            console.log("Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); 
+            console.log("carregarExames: Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); 
             listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-            console.log("listaExames após processamento:", listaExames); 
+            console.log("carregarExames: listaExames após processamento:", listaExames); 
             
             if (listaExames.length === 0) {
-                console.warn("A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
+                console.warn("carregarExames: A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
             }
 
             atualizarListaExamesCompleta(); // Removeu a chamada direta de atualizarExamesSelecionadosDisplay aqui
             configurarPesquisa();
         })
         .catch(error => {
-            console.error("Erro FATAL ao carregar lista de exames:", error);
+            console.error("carregarExames: Erro FATAL ao carregar lista de exames:", error);
             alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
             // Re-lança o erro para que o await em window.onload possa capturá-lo
             throw error; 
@@ -142,6 +173,7 @@ function carregarExames() {
 }
 
 function atualizarListaExamesCompleta() {
+    console.log("atualizarListaExamesCompleta: Reconstruindo lista de checkboxes de exames.");
     const container = document.getElementById('exames');
     container.innerHTML = "";
 
@@ -156,6 +188,7 @@ function atualizarListaExamesCompleta() {
 }
 
 function configurarPesquisa() {
+    console.log("configurarPesquisa: Configurando eventos de pesquisa.");
     const inputPesquisa = document.getElementById('pesquisaExame');
     const sugestoesBox = document.getElementById('sugestoes');
 
@@ -199,23 +232,35 @@ function configurarPesquisa() {
 }
 
 function marcarExame(exameNome) {
+    console.log("marcarExame: Tentando marcar o exame:", exameNome);
     const examesContainer = document.getElementById('exames');
     const checkboxExistente = examesContainer.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
 
     if (checkboxExistente) {
         checkboxExistente.checked = true;
+        console.log("marcarExame: Checkbox existente marcado:", exameNome);
         checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
+        // Se o exame não estiver na lista de exames disponíveis (listaExames), adiciona-o e marca
+        console.log("marcarExame: Checkbox não existente, adicionando e marcando:", exameNome);
         const label = document.createElement('label');
         label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
         examesContainer.appendChild(label);
         examesContainer.appendChild(document.createElement('br'));
         label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Adiciona o exame à listaExames para que ele seja pesquisável futuramente
+        if (!listaExames.includes(exameNome)) {
+            listaExames.push(exameNome);
+            listaExames.sort(); // Opcional: manter a lista ordenada
+            console.log("marcarExame: Exame adicionado à listaExames:", exameNome);
+        }
     }
     atualizarExamesSelecionadosDisplay();
 }
 
 function atualizarExamesSelecionadosDisplay() {
+    console.log("atualizarExamesSelecionadosDisplay: Atualizando exibição de exames selecionados.");
     const displayContainer = document.getElementById('examesSelecionadosDisplay');
     const selectedExams = Array.from(document.querySelectorAll('#exames .exame:checked'));
     
@@ -223,6 +268,7 @@ function atualizarExamesSelecionadosDisplay() {
 
     if (selectedExams.length === 0) {
         displayContainer.innerHTML = "<p>Nenhum exame selecionado.</p>";
+        console.log("atualizarExamesSelecionadosDisplay: Nenhum exame selecionado.");
         return;
     }
 
@@ -243,9 +289,11 @@ function atualizarExamesSelecionadosDisplay() {
             removerExameDisplay(exameParaRemover);
         });
     });
+    console.log("atualizarExamesSelecionadosDisplay: Exames exibidos:", selectedExams.map(cb => cb.value));
 }
 
 function removerExameDisplay(exameNome) {
+    console.log("removerExameDisplay: Removendo exame:", exameNome);
     const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
     if (checkbox) {
         checkbox.checked = false;
@@ -254,6 +302,7 @@ function removerExameDisplay(exameNome) {
 }
 
 function showError(elementId, message) {
+    console.log(`showError: Erro para ${elementId}: ${message}`);
     const inputElement = document.getElementById(elementId);
     const errorDiv = document.getElementById(`${elementId}-error`);
     if (inputElement && errorDiv) {
@@ -263,6 +312,7 @@ function showError(elementId, message) {
 }
 
 function clearError(elementId) {
+    console.log(`clearError: Limpando erro para ${elementId}.`);
     const inputElement = document.getElementById(elementId);
     const errorDiv = document.getElementById(`${elementId}-error`);
     if (inputElement && errorDiv) {
@@ -297,6 +347,7 @@ function validarDataNascimento(dataString) {
 }
 
 function atualizarIdade() {
+    console.log("atualizarIdade: Validando idade.");
     validateAge();
 }
 
@@ -349,6 +400,7 @@ function formatarCPF() {
 }
 
 function validateCpfAndCheckHistory() {
+    console.log("validateCpfAndCheckHistory: Validando CPF e checando histórico.");
     const inputCPF = document.getElementById('cpf');
     const cpf = inputCPF.value.replace(/\D/g, '');
 
@@ -384,10 +436,9 @@ function validarCPF(cpf) {
 
 // checkCpfInHistory agora busca no banco de dados
 async function checkCpfInHistory(cpf) {
-    // LOGS DE DEPURACAO AQUI
-    console.log("Iniciando verificação de CPF no histórico para:", cpf); 
+    console.log("checkCpfInHistory: Iniciando verificação de CPF no histórico para:", cpf); 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.warn("Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
+        console.warn("checkCpfInHistory: Banco de dados não inicializado ou disponível. Verificação de CPF no histórico desabilitada.");
         return;
     }
     
@@ -396,7 +447,7 @@ async function checkCpfInHistory(cpf) {
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         // Constrói a query usando as funções globalizadas
         const cpfFormatado = formatarCPFParaBusca(cpf); 
-        console.log("CPF formatado para busca:", cpfFormatado); 
+        console.log("checkCpfInHistory: CPF formatado para busca:", cpfFormatado); 
 
         const q = window.firebaseFirestoreQuery(historicoRef,
                                window.firebaseFirestoreWhere('cpf', '==', cpfFormatado),
@@ -405,12 +456,12 @@ async function checkCpfInHistory(cpf) {
 
         // Executa a query usando a função globalizada
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        console.log("Query Snapshot (docs.length):", querySnapshot.docs.length); 
+        console.log("checkCpfInHistory: Query Snapshot (docs.length):", querySnapshot.docs.length); 
 
         if (!querySnapshot.empty) {
             const ultimoCadastroDoc = querySnapshot.docs[0];
             const ultimoCadastro = ultimoCadastroDoc.data();
-            console.log("CPF encontrado! Último cadastro:", ultimoCadastro); 
+            console.log("checkCpfInHistory: CPF encontrado! Último cadastro:", ultimoCadastro); 
             
             const confirmLoad = confirm(
                 `CPF (${ultimoCadastro.cpf}) encontrado no histórico para:\n\n` +
@@ -423,13 +474,16 @@ async function checkCpfInHistory(cpf) {
             );
 
             if (confirmLoad) {
+                console.log("checkCpfInHistory: Confirmação para carregar dados do histórico recebida. Chamando preencherCamposComCadastro.");
                 preencherCamposComCadastro(ultimoCadastro); // Agora chama a nova função
+            } else {
+                console.log("checkCpfInHistory: Confirmação para carregar dados do histórico NEGADA.");
             }
         } else {
-            console.log("CPF não encontrado no banco de dados. Prossiga com o cadastro.");
+            console.log("checkCpfInHistory: CPF não encontrado no banco de dados. Prossiga com o cadastro.");
         }
     } catch (error) {
-        console.error("Erro ao verificar CPF no banco de dados:", error);
+        console.error("checkCpfInHistory: Erro ao verificar CPF no banco de dados:", error);
         alert("Erro ao buscar histórico de CPF. Verifique sua conexão e regras do banco de dados.");
     }
 }
@@ -442,17 +496,21 @@ function formatarCPFParaBusca(cpfComMascara) {
 // MODIFICADO: preencherCamposComCadastro agora substitui carregarDadosBasicos
 // E é mais robusta para carregar dados do histórico ou paciente fictício
 function preencherCamposComCadastro(p) {
+    console.log("preencherCamposComCadastro: Iniciando preenchimento com dados:", p);
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
 
     if (nomeAtual || cpfAtual) {
+        console.log("preencherCamposComCadastro: Formulário não está vazio. Solicitando confirmação.");
         const confirmarSubstituicao = confirm("Existem dados no formulário que serão substituídos. Deseja continuar?");
         if (!confirmarSubstituicao) {
+            console.log("preencherCamposComCadastro: Substituição negada pelo usuário. Retornando.");
             return;
         }
     }
 
     // Limpa os campos antes de preencher
+    console.log("preencherCamposComCadastro: Limpando campos do formulário.");
     document.getElementById('nome').value = '';
     document.getElementById('cpf').value = '';
     document.getElementById('data_nasc').value = '';
@@ -464,6 +522,7 @@ function preencherCamposComCadastro(p) {
     document.getElementById('examesNaoListados').value = '';
 
     // Limpa todos os checkboxes de exames
+    console.log("preencherCamposComCadastro: Desmarcando todos os exames.");
     document.querySelectorAll('#exames input[type="checkbox"]').forEach(cb => cb.checked = false);
 
     clearError('data_nasc');
@@ -471,6 +530,7 @@ function preencherCamposComCadastro(p) {
     clearError('contato');
 
     // Preenche os campos com os dados do paciente
+    console.log("preencherCamposComCadastro: Preenchendo campos com novos dados.");
     document.getElementById('nome').value = p.nome || '';
     document.getElementById('cpf').value = p.cpf || '';
     document.getElementById('data_nasc').value = p.dataNasc || '';
@@ -483,25 +543,32 @@ function preencherCamposComCadastro(p) {
 
     // Dispara o evento change para recalcular a idade se a data de nascimento for carregada
     if (p.dataNasc) {
+        console.log("preencherCamposComCadastro: Disparando evento 'change' na data de nascimento.");
         document.getElementById('data_nasc').dispatchEvent(new Event('change'));
     }
 
     // Marca os exames selecionados
     if (Array.isArray(p.examesSelecionados)) {
+        console.log("preencherCamposComCadastro: Marcando exames selecionados:", p.examesSelecionados);
         p.examesSelecionados.forEach(exameNome => {
             const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
             if (checkbox) {
                 checkbox.checked = true;
+                console.log(`preencherCamposComCadastro: Checkbox para "${exameNome}" encontrado e marcado.`);
             } else {
                 // Se o exame não estiver na lista de exames disponíveis, adicioná-lo dinamicamente
+                console.warn(`preencherCamposComCadastro: Checkbox para "${exameNome}" NÃO encontrado. Tentando adicionar dinamicamente.`);
                 marcarExame(exameNome);
             }
         });
+    } else {
+        console.log("preencherCamposComCadastro: Nenhum exame selecionado para marcar ou formato inválido.");
     }
     atualizarExamesSelecionadosDisplay(); // Atualiza o display dos exames selecionados
 
     alert(`Dados de ${p.nome} carregados com sucesso!`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.log("preencherCamposComCadastro: Preenchimento concluído.");
 }
 
 function formatarContato() {
@@ -548,6 +615,7 @@ function validateContact() {
 }
 
 function coletarDados() {
+    console.log("coletarDados: Coletando e validando dados do formulário.");
     const isAgeValid = validateAge();
     const cpfLimpo = document.getElementById('cpf').value.replace(/\D/g, '');
     const isCpfFormatValid = validarCPF(cpfLimpo);
@@ -558,6 +626,7 @@ function coletarDados() {
     }
 
     if (!isAgeValid || !isCpfFormatValid || !isContactValid) {
+        console.error("coletarDados: Erros de validação encontrados.");
         throw new Error("Por favor, corrija os erros nos campos antes de prosseguir.");
     }
 
@@ -572,22 +641,26 @@ function coletarDados() {
     const exames = Array.from(document.querySelectorAll('#exames .exame:checked')).map(e => e.value);
     const examesNaoListados = document.getElementById('examesNaoListados').value.trim();
 
-    if (!nome) throw new Error("Preencha o campo: Nome.");
-    if (!sexo) throw new Error("Selecione o sexo.");
-    if (exames.length === 0 && !examesNaoListados) throw new Error("Selecione pelo menos um exame ou preencha 'Acrescentar Exames não Listados'.");
+    if (!nome) { console.error("coletarDados: Nome vazio."); throw new Error("Preencha o campo: Nome."); }
+    if (!sexo) { console.error("coletarDados: Sexo não selecionado."); throw new Error("Selecione o sexo."); }
+    if (exames.length === 0 && !examesNaoListados) { console.error("coletarDados: Nenhum exame selecionado."); throw new Error("Selecione pelo menos um exame ou preencha 'Acrescentar Exames não Listados'."); }
 
+    console.log("coletarDados: Dados coletados com sucesso.");
     return { nome, cpf, dataNasc, idade: document.getElementById('idade').value, sexo, endereco, contato, observacoes, exames, examesNaoListados };
 }
 
 // Salvar Protocolo de Atendimento - Salva no banco de dados e gera protocolo sequencial
 async function salvarProtocoloAtendimento() {
+    console.log("salvarProtocoloAtendimento: Iniciando salvamento do protocolo.");
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Banco de dados não inicializado. Verifique a configuração.");
+        console.error("salvarProtocoloAtendimento: Firestore não disponível.");
         return;
     }
     
     try {
         const dados = coletarDados(); // Coleta dados e validações
+        console.log("salvarProtocoloAtendimento: Dados coletados para salvamento:", dados);
 
         // --- Geração do número de protocolo sequencial buscando do banco de dados ---
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
@@ -596,6 +669,7 @@ async function salvarProtocoloAtendimento() {
             window.firebaseFirestoreOrderBy('protocolo', 'desc'),
             window.firebaseFirestoreLimit(1)
         );
+        console.log("salvarProtocoloAtendimento: Buscando último protocolo.");
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
 
         let lastProtocolNumber = 0;
@@ -604,6 +678,9 @@ async function salvarProtocoloAtendimento() {
             const lastProtocoloCompleto = lastDoc.data().protocolo;
             // Extrai o número sequencial (parte antes do primeiro '-')
             lastProtocolNumber = parseInt(lastProtocoloCompleto.split('-')[0]) || 0;
+            console.log("salvarProtocoloAtendimento: Último protocolo encontrado:", lastProtocoloCompleto, "Número:", lastProtocolNumber);
+        } else {
+            console.log("salvarProtocoloAtendimento: Nenhum protocolo anterior encontrado. Começando do 0.");
         }
         
         const newProtocolNumber = (lastProtocolNumber + 1).toString().padStart(4, '0');
@@ -616,16 +693,19 @@ async function salvarProtocoloAtendimento() {
         
         // Formato: 0001-HHMMDDMM (Ex: 0001-23143006)
         const protocolo = `${newProtocolNumber}-${hour}${minute}${day}${month}`;
+        console.log("salvarProtocoloAtendimento: Novo protocolo gerado:", protocolo);
         
         dados.protocolo = protocolo; // Adiciona o protocolo aos dados do cadastro
         dados.timestampServidor = window.firebaseFirestoreServerTimestamp(); // Adiciona timestamp do servidor para ordenação
 
 
         // Salva o cadastro no banco de dados
+        console.log("salvarProtocoloAtendimento: Salvando documento no Firestore.");
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
-        console.log("Documento salvo no banco de dados com protocolo: ", dados.protocolo);
+        console.log("salvarProtocoloAtendimento: Documento salvo no banco de dados com protocolo: ", dados.protocolo);
         
         // --- Geração do PDF ---
+        console.log("salvarProtocoloAtendimento: Gerando PDF.");
         const doc = new jsPDF();
         const [ano, mes, dia] = dados.dataNasc.split('-');
         const dataNascFormatada = `${dia}/${mes}/${ano}`;
@@ -740,19 +820,20 @@ async function salvarProtocoloAtendimento() {
         limparCampos(); // Limpa os campos após salvar e gerar PDF
         mostrarHistorico(); // Atualiza a lista do histórico para mostrar o novo protocolo do banco de dados
     } catch (error) {
-        console.error("Erro ao salvar protocolo no banco de dados:", error);
+        console.error("salvarProtocoloAtendimento: Erro ao salvar protocolo no banco de dados:", error);
         alert("Erro ao salvar protocolo. Verifique o console para detalhes (regras do banco de dados, conexão, etc.).");
     }
 }
 
 // MODIFICADO: mostrarHistorico agora lê do banco de dados
 async function mostrarHistorico() {
+    console.log("mostrarHistorico: Carregando histórico.");
     const historicoDiv = document.getElementById('historico');
     historicoDiv.innerHTML = "<p>Carregando histórico do banco de dados...</p>"; // Feedback de carregamento
 
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         historicoDiv.innerHTML = "<p>Banco de dados não inicializado. Verifique a configuração.</p>";
-        console.warn("Banco de dados não inicializado. Não foi possível carregar o histórico.");
+        console.warn("mostrarHistorico: Banco de dados não inicializado. Não foi possível carregar o histórico.");
         return;
     }
 
@@ -764,9 +845,11 @@ async function mostrarHistorico() {
             window.firebaseFirestoreOrderBy('protocolo', 'desc')
         ); 
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
+        console.log("mostrarHistorico: Query Snapshot (docs.length):", querySnapshot.docs.length);
 
         if (querySnapshot.empty) {
             historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado no banco de dados.</p>";
+            console.log("mostrarHistorico: Nenhum cadastro encontrado.");
             return;
         }
 
@@ -788,9 +871,10 @@ async function mostrarHistorico() {
         });
         html += "</ul>";
         historicoDiv.innerHTML = html;
+        console.log("mostrarHistorico: Histórico carregado e exibido.");
 
     } catch (error) {
-        console.error("Erro ao carregar histórico do banco de dados:", error);
+        console.error("mostrarHistorico: Erro ao carregar histórico do banco de dados:", error);
         historicoDiv.innerHTML = "<p>Erro ao carregar histórico. Verifique sua conexão e regras do banco de dados.</p>";
         alert("Erro ao carregar histórico do banco de dados. Consulte o console.");
     }
@@ -798,8 +882,9 @@ async function mostrarHistorico() {
 
 // carregarCadastroFirebase agora lê um documento específico do banco de dados pelo seu ID
 async function carregarCadastroFirebase(docId) {
+    console.log("carregarCadastroFirebase: Carregando cadastro do Firebase com ID:", docId);
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        console.warn("Banco de dados não inicializado. Carregamento de cadastro desabilitado.");
+        console.warn("carregarCadastroFirebase: Banco de dados não inicializado. Carregamento de cadastro desabilitado.");
         return;
     }
 
@@ -810,18 +895,21 @@ async function carregarCadastroFirebase(docId) {
 
         if (!docSnap.exists) {
             alert("Cadastro não encontrado no banco de dados.");
+            console.warn("carregarCadastroFirebase: Documento não encontrado para ID:", docId);
             return;
         }
 
         const cadastro = docSnap.data();
+        console.log("carregarCadastroFirebase: Cadastro encontrado:", cadastro);
 
         // A verificação de dados existentes e o prompt de confirmação será feito dentro de preencherCamposComCadastro
         // e preencherCamposComCadastro também limpa os campos antes de preencher.
         preencherCamposComCadastro(cadastro);
         // O alert e o scroll para o topo já estão dentro de preencherCamposComCadastro
+        console.log("carregarCadastroFirebase: Chamada para preencherCamposComCadastro concluída.");
 
     } catch (error) {
-        console.error("Erro ao carregar cadastro do banco de dados:", error);
+        console.error("carregarCadastroFirebase: Erro ao carregar cadastro do banco de dados:", error);
         alert("Erro ao carregar cadastro do banco de dados. Verifique o console.");
     }
 }
@@ -830,6 +918,7 @@ async function carregarCadastroFirebase(docId) {
 // O HTML agora deve chamar carregarCadastroFirebase(doc.id) diretamente.
 
 function limparCampos(showAlert = true) {
+    console.log("limparCampos: Limpando todos os campos do formulário.");
     document.getElementById('nome').value = '';
     document.getElementById('cpf').value = '';
     document.getElementById('data_nasc').value = '';
@@ -856,10 +945,12 @@ function limparCampos(showAlert = true) {
     if (showAlert) {
         alert("Campos limpos para um novo cadastro!");
     }
+    console.log("limparCampos: Campos limpos.");
 }
 
 // MODIFICADO: limparHistorico agora interage com o banco de dados e usa senha dinâmica
 async function limparHistorico() {
+    console.log("limparHistorico: Iniciando processo de limpeza de histórico.");
     const now = new Date(); // Obter a data e hora atuais
     const hour = now.getHours().toString().padStart(2, '0'); // Obter a hora formatada
     const minute = now.getMinutes().toString().padStart(2, '0'); // Obter o minuto formatado
@@ -867,15 +958,19 @@ async function limparHistorico() {
 
     const senhaDigitada = prompt(`Para limpar o histórico, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`); // Mensagem para o usuário
     if (senhaDigitada === null) {
+        console.log("limparHistorico: Usuário cancelou a entrada da senha.");
         return;
     }
     if (senhaDigitada === SENHA_DINAMICA_ESPERADA) { // Comparar com a senha dinâmica
+        console.log("limparHistorico: Senha correta. Prosseguindo com a limpeza.");
         if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
             alert("Banco de dados não inicializado. Limpeza de histórico desabilitada.");
+            console.error("limparHistorico: Firestore não disponível.");
             return;
         }
         const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do banco de dados? Esta ação é irreversível e apagará todos os dados de pacientes!");
         if (!confirmDeleteAll) {
+            console.log("limparHistorico: Usuário cancelou a confirmação de exclusão total.");
             return;
         }
 
@@ -900,30 +995,35 @@ async function limparHistorico() {
             let totalDeleted = 0;
             let deletedCount;
             do {
+                console.log("limparHistorico: Iniciando lote de exclusão.");
                 const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize)); // Cria uma nova query com limite em cada iteração
                 deletedCount = await deleteQueryBatch(window.firestoreDb, q);
                 totalDeleted += deletedCount;
-                console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
+                console.log(`limparHistorico: Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
                 // Adicione um pequeno atraso para evitar hitting rate limits do Firestore em deletes muito rápidos
                 await new Promise(resolve => setTimeout(resolve, 50)); 
             } while (deletedCount > 0); // Continua apagando enquanto houver documentos
 
             alert(`Histórico apagado com sucesso do banco de dados! Total de ${totalDeleted} registros.`);
+            console.log("limparHistorico: Limpeza de histórico concluída.");
             mostrarHistorico(); // Atualiza a exibição após a exclusão
         } catch (error) {
-            console.error("Erro ao limpar histórico do banco de dados:", error);
+            console.error("limparHistorico: Erro ao limpar histórico do banco de dados:", error);
             alert("Erro ao limpar histórico do banco de dados. Verifique o console e regras do Firestore.");
         }
 
     } else {
         alert('Senha incorreta. Histórico não foi limpo.');
+        console.log("limparHistorico: Senha incorreta.");
     }
 }
 
 // MODIFICADO: Imprimir Histórico (agora lê do banco de dados)
 async function imprimirHistorico() {
+    console.log("imprimirHistorico: Iniciando impressão do histórico.");
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
         alert("Banco de dados não inicializado. Não é possível imprimir o histórico.");
+        console.error("imprimirHistorico: Firestore não disponível.");
         return;
     }
 
@@ -931,16 +1031,19 @@ async function imprimirHistorico() {
     try {
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
         const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'desc')); 
+        console.log("imprimirHistorico: Buscando cadastros para impressão.");
         const querySnapshot = await window.firebaseFirestoreGetDocs(q);
         cadastros = querySnapshot.docs.map(doc => doc.data());
+        console.log("imprimirHistorico: Cadastros encontrados para impressão:", cadastros.length);
     } catch (error) {
-        console.error("Erro ao carregar histórico para impressão:", error);
+        console.error("imprimirHistorico: Erro ao carregar histórico para impressão:", error);
         alert("Erro ao carregar histórico para impressão. Verifique sua conexão e regras do banco de dados.");
         return;
     }
 
     if (cadastros.length === 0) {
         alert("Não há histórico para imprimir.");
+        console.log("imprimirHistorico: Nenhum histórico para imprimir.");
         return;
     }
 
@@ -1006,12 +1109,14 @@ async function imprimirHistorico() {
 
     printWindow.onload = function() {
         printWindow.print();
+        console.log("imprimirHistorico: Janela de impressão aberta e print() chamado.");
     };
 }
 
 // Removida a função imprimirTela (para imprimir o layout HTML) foi removida conforme sua solicitação.
 
 function editarListaExamesComSenha() {
+    console.log("editarListaExamesComSenha: Solicitando senha para edição de lista de exames.");
     const now = new Date();
     const hour = now.getHours().toString().padStart(2, '0');
     const minute = now.getMinutes().toString().padStart(2, '0');
@@ -1019,22 +1124,27 @@ function editarListaExamesComSenha() {
 
     const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha (${SENHA_BASE_SISLAB} + HHMM, ex: ${SENHA_BASE_SISLAB}${hour}${minute}):`);
     if (senhaDigitada === null) {
+        console.log("editarListaExamesComSenha: Usuário cancelou a entrada da senha.");
         return;
     }
     if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+        console.log("editarListaExamesComSenha: Senha correta. Carregando lista para edição.");
         carregarListaExamesParaEdicao();
     } else {
         alert('Senha incorreta. Edição não permitida.');
+        console.log("editarListaExamesComSenha: Senha incorreta.");
     }
 }
 
 async function carregarListaExamesParaEdicao() {
+    console.log("carregarListaExamesParaEdicao: Iniciando carregamento da lista de exames para edição.");
     const editorElement = document.getElementById('editorExames');
     const textarea = document.getElementById('listaExamesEditor');
 
     try {
         const timestamp = new Date().getTime();
         const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
+        console.log("carregarListaExamesParaEdicao: Buscando Gist em:", gistRawUrl);
         const response = await fetch(gistRawUrl);
 
         if (!response.ok) {
@@ -1046,24 +1156,28 @@ async function carregarListaExamesParaEdicao() {
         textarea.value = fileContent;
         editorElement.style.display = 'block';
         alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.');
+        console.log("carregarListaExamesParaEdicao: Lista de exames carregada e editor exibido.");
 
     } catch (error) {
-        console.error("Erro ao carregar lista de exames da Gist:", error);
+        console.error("carregarListaExamesParaEdicao: Erro ao carregar lista de exames da Gist:", error);
         alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID.");
     }
 }
 
 async function salvarListaExamesNoGitHub() {
+    console.log("salvarListaExamesNoGitHub: Iniciando salvamento da lista de exames no GitHub.");
     const textarea = document.getElementById('listaExamesEditor');
     const novoConteudo = textarea.value;
 
     const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização.");
     if (!confirmSave) {
+        console.log("salvarListaExamesNoGitHub: Usuário cancelou o salvamento.");
         return;
     }
 
     try {
         const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
+        console.log("salvarListaExamesNoGitHub: Enviando PATCH para Gist API:", gistApiUrl);
         
         const response = await fetch(gistApiUrl, {
             method: 'PATCH',
@@ -1089,8 +1203,9 @@ async function salvarListaExamesNoGitHub() {
         alert('Lista de exames atualizada com sucesso na Gist!');
         document.getElementById('editorExames').style.display = 'none';
         carregarExames();
+        console.log("salvarListaExamesNoGitHub: Lista de exames salva e editor ocultado.");
     } catch (error) {
-        console.error("Erro ao salvar lista de exames na Gist:", error);
+        console.error("salvarListaExamesNoGitHub: Erro ao salvar lista de exames na Gist:", error);
         alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
     }
 }
