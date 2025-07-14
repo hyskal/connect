@@ -1,17 +1,11 @@
-<!-- 
-  Changelog SISLAB index.html
-  - [2025-07-13] Adicionado controle de senha dinâmica (sislabHHMM) no botão Acessar Admin
-  - [2025-07-13] Suporte a impressão automática de paciente fictício ao acessar ?imprimir=ficticio
--->
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>SISLAB 2.0.4 - Cadastro de Exames (CETEP/LNAB)</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-   /* Seção 1: Estilos Gerais do Corpo e Títulos */
+    <meta charset="UTF-8">
+    <title>SISLAB 2.0.4 - Cadastro de Exames (CETEP/LNAB)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Seção 1: Estilos Gerais do Corpo e Títulos */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -494,7 +488,7 @@
                 min-width: unset; /* Remove a largura mínima para se ajustar totalmente */
             }
         }
-  </style>
+    </style>
 </head>
 <body>
 
@@ -597,108 +591,74 @@
         </div>
     </div>
 
-  <div class="action-buttons-container nao-imprimir">
-    <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
-    <button onclick="mostrarHistorico()">Ver Histórico</button>
-    <button onclick="imprimirHistorico()">Imprimir Histórico</button>
-    <button onclick="limparCampos()">Limpar Campos</button>
-    <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
-    <button onclick="acessarAdminProtegido()">Acessar Admin</button>
-  </div>
+    <div class="action-buttons-container nao-imprimir">
+        <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
+        <button onclick="mostrarHistorico()">Ver Histórico</button>
+        <button onclick="imprimirHistorico()">Imprimir Histórico</button>
+        <button onclick="limparCampos()">Limpar Campos</button>
+        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
+        <button onclick="window.location.href='admin.html'">Acessar Admin</button> 
+    </div>
 
-  <!-- Editor de Exames -->
-  <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-    <h3>Editar Lista de Exames</h3>
-    <textarea id="listaExamesEditor" rows="15" style="width:100%; border:1px solid #ccc; padding:10px; box-sizing:border-box;"></textarea><br>
-    <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
-    <button onclick="document.getElementById('editorExames').style.display='none';">Cancelar</button>
-  </div>
+    <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3>Editar Lista de Exames</h3>
+        <textarea id="listaExamesEditor" rows="15" style="width:100%; border:1px solid #ccc; padding:10px; box-sizing:border-box;"></textarea><br>
+        <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
+        <button onclick="document.getElementById('editorExames').style.display='none';">Cancelar</button>
+    </div>
 
-  <div id="historico" class="nao-imprimir"></div>
-  <div class="print-footer" id="printFooter"></div>
+    <div id="historico" class="nao-imprimir"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    <div class="print-footer" id="printFooter"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
-      authDomain: "sislab-cetep.firebaseapp.com",
-      projectId: "sislab-cetep",
-      storageBucket: "sislab-cetep.firebasestorage.app",
-      messagingSenderId: "958611861664",
-      appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5"
-    };
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        // Importar TODOS os módulos do Firestore que serão usados
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        // Não é necessário importar Analytics se você não o usa neste script específico
+        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+            authDomain: "sislab-cetep.firebaseapp.com",
+            projectId: "sislab-cetep",
+            storageBucket: "sislab-cetep.firebasestorage.app",
+            messagingSenderId: "958611861664",
+            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+            // measurementId: "G-3TL54MWJFS" // Descomente se for usar Analytics globalmente
+        };
 
-    window.firebaseApp = app;
-    window.firestoreDb = db;
-    window.firebaseFirestoreCollection = collection;
-    window.firebaseFirestoreAddDoc = addDoc;
-    window.firebaseFirestoreGetDocs = getDocs;
-    window.firebaseFirestoreQuery = query;
-    window.firebaseFirestoreOrderBy = orderBy;
-    window.firebaseFirestoreLimit = limit;
-    window.firebaseFirestoreDeleteDoc = deleteDoc;
-    window.firebaseFirestoreDoc = doc;
-    window.firebaseFirestoreWriteBatch = writeBatch;
-    window.firebaseFirestoreWhere = where;
-    window.firebaseFirestoreServerTimestamp = serverTimestamp;
-    window.firebaseFirestoreGetDoc = getDoc;
-    window.firebaseFirestoreFieldValue = FieldValue;
-  </script>
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app); // Inicializa o Firestore
+        // const analytics = getAnalytics(app); // Inicializa o Analytics se measurementId estiver configurado
 
-  <script>
-    // Verifica se veio ?imprimir=ficticio na URL
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('imprimir') === 'ficticio') {
-        const paciente = localStorage.getItem('pacienteFicticio');
-        if (paciente) {
-          preencherFormulario(JSON.parse(paciente));
-          setTimeout(() => {
-            salvarProtocoloAtendimento();
-          }, 500);
-        }
-      }
-    });
+        // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
+        // Isso permite que o script.js (que é um script 'clássico') as use
+        window.firebaseApp = app;
+        window.firestoreDb = db;
+        // window.firebaseAnalytics = analytics; // Torna Analytics global se for usar
 
-    // Acesso com senha dinâmica sislabHHMM
-    function acessarAdminProtegido() {
-      const senha = prompt("Digite a senha para acessar o painel administrativo:");
-      if (!senha) return;
-      const agora = new Date();
-      const hhmm = agora.getHours().toString().padStart(2, '0') + agora.getMinutes().toString().padStart(2, '0');
-      const senhaEsperada = 'sislab' + hhmm;
-      if (senha === senhaEsperada) {
-        window.location.href = 'admin.html';
-      } else {
-        alert("Senha incorreta.");
-      }
-    }
+        // Funções do Firestore para usar no script.js
+        window.firebaseFirestoreCollection = collection;
+        window.firebaseFirestoreAddDoc = addDoc;
+        window.firebaseFirestoreGetDocs = getDocs;
+        window.firebaseFirestoreQuery = query;
+        window.firebaseFirestoreOrderBy = orderBy;
+        window.firebaseFirestoreLimit = limit;
+        window.firebaseFirestoreDeleteDoc = deleteDoc;
+        window.firebaseFirestoreDoc = doc;
+        window.firebaseFirestoreWriteBatch = writeBatch;
+        window.firebaseFirestoreWhere = where; 
+        window.firebaseFirestoreServerTimestamp = serverTimestamp; 
+        window.firebaseFirestoreGetDoc = getDoc;
+        // Se precisar de FieldValue (para timestamp), importe também
+        window.firebaseFirestoreFieldValue = FieldValue; 
 
-    function preencherFormulario(paciente) {
-      document.getElementById('nome').value = paciente.nome || "";
-      document.getElementById('data_nasc').value = paciente.dataNasc || "";
-      document.getElementById('cpf').value = paciente.cpf || "";
-      document.getElementById('endereco').value = paciente.endereco || "";
-      document.getElementById('contato').value = paciente.contato || "";
-      document.getElementById('observacoes').value = paciente.observacoes || "";
-      if (paciente.sexo) {
-        document.getElementById('sexo').value = paciente.sexo;
-      }
+    </script>
+    <script src="script.js"></script>
 
-      // Marca os exames no formulário
-      if (Array.isArray(paciente.examesSelecionados)) {
-        paciente.examesSelecionados.forEach(exame => marcarExame(exame));
-      }
-
-      atualizarExamesSelecionadosDisplay();
-    }
-  </script>
-
-  <script src="script.js"></script>
 </body>
 </html>
