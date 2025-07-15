@@ -1,14 +1,17 @@
-// VERSÃO: 1.0.3 (script_inv.js)
+// VERSÃO: 1.0.4 (script_inv.js)
 // CHANGELOG:
-// - Removido: A validação obrigatória do nome do operador para a geração do relatório de log.
-// - Atualizado: O cabeçalho do relatório de log agora usa "Desconhecido" se o nome do operador não for fornecido.
-// - Estrutura: Código mantido dividido em 10 sessões.
+// - Adicionado: Mais logs de depuração detalhados para rastrear o fluxo de execução e valores de variáveis.
+// - Verificado: Lógica de importação e uso de funções de sislab_utils.js.
+// - Reforçado: Verificações de datas e construção de queries.
 
 // Seção 1: Importações e Configuração Inicial
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { jsPDF } from "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+// Importa as funções de sislab_utils.js. Garanta que este arquivo existe e exporta essas funções.
 import { formatDateTimeToDisplay, formatDateToDisplay, getOperadorNameFromInput } from './sislab_utils.js';
+
+console.log("DEBUG(script_inv.js): Seção 1 - Importações e Configuração Inicial carregada.");
 
 // Sua configuração do Firebase (a mesma do index.html e inventario.html)
 const firebaseConfig = {
@@ -23,97 +26,161 @@ const firebaseConfig = {
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+console.log("DEBUG(script_inv.js): Firebase inicializado. DB object:", db);
+
 
 // Seção 2: Variáveis de Estado Globais
 let currentLogFilterOperation = 'all'; // 'all' para todas as operações por padrão
+console.log("DEBUG(script_inv.js): Seção 2 - Variáveis de Estado Globais definidas.");
 
 // Seção 3: Funções Auxiliares de Depuração e UI
 function updateDebugFilterStatus(status) {
     const debugElement = document.getElementById('debug-filter-status');
     if (debugElement) {
         debugElement.textContent = `Status do Filtro Atual: ${status}`;
+        console.log(`DEBUG(script_inv.js): Status de depuração UI atualizado para: "${status}"`);
+    } else {
+        console.warn("DEBUG(script_inv.js): Elemento 'debug-filter-status' não encontrado no DOM.");
     }
 }
+console.log("DEBUG(script_inv.js): Seção 3 - Funções Auxiliares de Depuração e UI carregadas.");
 
 // Seção 4: Event Listeners Iniciais (DOMContentLoaded)
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DEBUG(script_inv.js): DOMContentLoaded - Iniciando setup da página de Log de Inventário.");
 
-    // Event listener para o filtro de operação
-    document.getElementById('filterOperationType').addEventListener('change', (event) => {
-        currentLogFilterOperation = event.target.value;
-        console.log(`DEBUG(script_inv.js): Filtro de operação alterado para: "${currentLogFilterOperation}"`);
-        updateDebugFilterStatus(currentLogFilterOperation);
-        listarLogGeralInventario();
-    });
+    const filterOperationTypeElement = document.getElementById('filterOperationType');
+    const printLogReportBtnElement = document.getElementById('printLogReportBtn');
+    const filterStartDateElement = document.getElementById('filterStartDate');
+    const filterEndDateElement = document.getElementById('filterEndDate');
 
-    // Event listener para o botão de impressão
-    document.getElementById('printLogReportBtn').addEventListener('click', imprimirRelatorioLogGeral);
+    if (filterOperationTypeElement) {
+        filterOperationTypeElement.addEventListener('change', (event) => {
+            currentLogFilterOperation = event.target.value;
+            console.log(`DEBUG(script_inv.js): Filtro de operação alterado para: "${currentLogFilterOperation}"`);
+            updateDebugFilterStatus(currentLogFilterOperation);
+            listarLogGeralInventario();
+        });
+        console.log("DEBUG(script_inv.js): Event listener para 'filterOperationType' adicionado.");
+    } else {
+        console.error("DEBUG(script_inv.js): Elemento 'filterOperationType' não encontrado. Verifique o HTML.");
+    }
 
-    // Event listeners para os campos de data (opcional: recarregar ao mudar data)
-    document.getElementById('filterStartDate').addEventListener('change', () => {
-        console.log("DEBUG: Data inicial alterada. Recarregando logs.");
-        listarLogGeralInventario();
-    });
-    document.getElementById('filterEndDate').addEventListener('change', () => {
-        console.log("DEBUG: Data final alterada. Recarregando logs.");
-        listarLogGeralInventario();
-    });
+    if (printLogReportBtnElement) {
+        printLogReportBtnElement.addEventListener('click', imprimirRelatorioLogGeral);
+        console.log("DEBUG(script_inv.js): Event listener para 'printLogReportBtn' adicionado.");
+    } else {
+        console.error("DEBUG(script_inv.js): Elemento 'printLogReportBtn' não encontrado. Verifique o HTML.");
+    }
 
+    if (filterStartDateElement) {
+        filterStartDateElement.addEventListener('change', () => {
+            console.log("DEBUG(script_inv.js): Data inicial alterada. Recarregando logs.");
+            listarLogGeralInventario();
+        });
+        console.log("DEBUG(script_inv.js): Event listener para 'filterStartDate' adicionado.");
+    } else {
+        console.warn("DEBUG(script_inv.js): Elemento 'filterStartDate' não encontrado. Filtro por data inicial pode não funcionar.");
+    }
+
+    if (filterEndDateElement) {
+        filterEndDateElement.addEventListener('change', () => {
+            console.log("DEBUG(script_inv.js): Data final alterada. Recarregando logs.");
+            listarLogGeralInventario();
+        });
+        console.log("DEBUG(script_inv.js): Event listener para 'filterEndDate' adicionado.");
+    } else {
+        console.warn("DEBUG(script_inv.js): Elemento 'filterEndDate' não encontrado. Filtro por data final pode não funcionar.");
+    }
 
     updateDebugFilterStatus(currentLogFilterOperation); // Define o status inicial no HTML
     listarLogGeralInventario(); // Carrega o log inicialmente
+    console.log("DEBUG(script_inv.js): DOMContentLoaded - Setup inicial concluído, chamando listarLogGeralInventario().");
 });
 
 // Seção 5: Lógica de Listagem da Tabela (listarLogGeralInventario)
 async function listarLogGeralInventario() {
-    console.log(`DEBUG(script_inv.js): Iniciando listarLogGeralInventario com filtro: "${currentLogFilterOperation}"`);
+    console.log(`DEBUG(listarLogGeralInventario): Iniciando com filtro de operação: "${currentLogFilterOperation}"`);
     const logTableBody = document.querySelector('#inventoryLogTable tbody');
+    if (!logTableBody) {
+        console.error("DEBUG(listarLogGeralInventario): Elemento '#inventoryLogTable tbody' não encontrado. Não é possível exibir logs.");
+        return;
+    }
     logTableBody.innerHTML = '<tr><td colspan="9">Carregando logs...</td></tr>';
 
     if (typeof db === 'undefined' || !db) {
-        console.error("DEBUG(LogGeral): Erro - Banco de dados não inicializado.");
+        console.error("DEBUG(listarLogGeralInventario): Erro - Banco de dados não inicializado ou inacessível.");
         logTableBody.innerHTML = '<tr><td colspan="9">Banco de dados não inicializado.</td></tr>';
         return;
     }
 
     try {
         const logRef = collection(db, 'log_inventario_v3');
-        let q;
-
-        const startDateInput = document.getElementById('filterStartDate').value;
-        const endDateInput = document.getElementById('filterEndDate').value;
-
-        // Validação básica das datas
-        const startDate = startDateInput ? new Date(startDateInput + 'T00:00:00') : null;
-        const endDate = endDateInput ? new Date(endDateInput + 'T23:59:59') : null;
-
         let queryConstraints = [];
+
+        const startDateInput = document.getElementById('filterStartDate')?.value;
+        const endDateInput = document.getElementById('filterEndDate')?.value;
+
+        console.log(`DEBUG(listarLogGeralInventario): Valores de input de data: Start="${startDateInput}", End="${endDateInput}"`);
+
+        // Validação e conversão de datas para Timestamp do Firebase
+        let startDate = null;
+        let endDate = null;
+
+        if (startDateInput) {
+            try {
+                startDate = Timestamp.fromDate(new Date(startDateInput + 'T00:00:00'));
+                console.log(`DEBUG(listarLogGeralInventario): Data inicial convertida para Timestamp: ${startDate.toDate().toISOString()}`);
+            } catch (e) {
+                console.error("DEBUG(listarLogGeralInventario): Erro ao parsear data inicial:", e);
+                alert("Erro ao processar a data inicial. Verifique o formato.");
+                return;
+            }
+        }
+        if (endDateInput) {
+            try {
+                endDate = Timestamp.fromDate(new Date(endDateInput + 'T23:59:59'));
+                console.log(`DEBUG(listarLogGeralInventario): Data final convertida para Timestamp: ${endDate.toDate().toISOString()}`);
+            } catch (e) {
+                console.error("DEBUG(listarLogGeralInventario): Erro ao parsear data final:", e);
+                alert("Erro ao processar a data final. Verifique o formato.");
+                return;
+            }
+        }
+
+        if (startDate && endDate && startDate.toDate() > endDate.toDate()) {
+            alert("Erro: A 'Data Inicial' não pode ser posterior à 'Data Final'.");
+            logTableBody.innerHTML = '<tr><td colspan="9">Erro de período: Data Inicial > Data Final.</td></tr>';
+            console.warn("DEBUG(listarLogGeralInventario): Validação de data falhou: Data inicial > Data final.");
+            return;
+        }
 
         if (currentLogFilterOperation !== 'all') {
             queryConstraints.push(where('tipoMovimento', '==', currentLogFilterOperation));
-            console.log(`DEBUG(LogGeral): Adicionando filtro por tipo de movimento: "${currentLogFilterOperation}"`);
+            console.log(`DEBUG(listarLogGeralInventario): Adicionando 'where' para tipoMovimento: "${currentLogFilterOperation}"`);
         }
 
         if (startDate) {
             queryConstraints.push(where('dataHoraMovimento', '>=', startDate));
-            console.log(`DEBUG(LogGeral): Adicionando filtro por data inicial: "${startDate.toISOString()}"`);
+            console.log(`DEBUG(listarLogGeralInventario): Adicionando 'where' para dataHoraMovimento >= ${startDate.toDate().toISOString()}`);
         }
         if (endDate) {
             queryConstraints.push(where('dataHoraMovimento', '<=', endDate));
-            console.log(`DEBUG(LogGeral): Adicionando filtro por data final: "${endDate.toISOString()}"`);
+            console.log(`DEBUG(listarLogGeralInventario): Adicionando 'where' para dataHoraMovimento <= ${endDate.toDate().toISOString()}`);
         }
 
         queryConstraints.push(orderBy('dataHoraMovimento', 'desc'));
-        console.log("DEBUG(LogGeral): Adicionando ordenação por dataHoraMovimento (decrescente).");
+        console.log("DEBUG(listarLogGeralInventario): Adicionando 'orderBy' para dataHoraMovimento (desc).");
+        console.log("DEBUG(listarLogGeralInventario): Restrições de query final:", queryConstraints);
 
-        q = query(logRef, ...queryConstraints);
-        console.log("DEBUG(LogGeral): Query Firebase construída.");
+        const q = query(logRef, ...queryConstraints);
+        console.log("DEBUG(listarLogGeralInventario): Query Firebase construída:", q);
 
-        console.log("DEBUG(LogGeral): Executando query no Firebase Firestore...");
+        console.log("DEBUG(listarLogGeralInventario): Executando getDocs no Firebase Firestore...");
         const querySnapshot = await getDocs(q);
         const logs = querySnapshot.docs.map(doc => doc.data());
-        console.log(`DEBUG(LogGeral): Query executada. ${logs.length} logs encontrados.`);
+        console.log(`DEBUG(listarLogGeralInventario): Query executada. ${logs.length} logs encontrados.`);
+        // console.log("DEBUG(listarLogGeralInventario): Dados brutos dos logs:", logs); // Descomente para ver os dados completos
 
         if (logs.length === 0) {
             let noRecordsMessage = "Nenhum registro de movimentação encontrado.";
@@ -121,20 +188,23 @@ async function listarLogGeralInventario() {
                 noRecordsMessage = `Nenhum registro de '${currentLogFilterOperation}' encontrado.`;
             }
             if (startDate || endDate) {
-                const startStr = startDate ? formatDateToDisplay(startDate) : '';
-                const endStr = endDate ? formatDateToDisplay(endDate) : '';
+                const startStr = startDate ? formatDateToDisplay(startDate.toDate()) : '';
+                const endStr = endDate ? formatDateToDisplay(endDate.toDate()) : '';
                 noRecordsMessage += ` para o período ${startStr} - ${endStr}.`;
             }
             logTableBody.innerHTML = `<tr><td colspan="9">${noRecordsMessage}</td></tr>`;
-            console.log(`DEBUG(LogGeral): Exibindo mensagem de nenhum registro: "${noRecordsMessage}"`);
+            console.log(`DEBUG(listarLogGeralInventario): Exibindo mensagem de nenhum registro: "${noRecordsMessage}"`);
             return;
         }
 
         logTableBody.innerHTML = ''; // Limpa antes de preencher
         logs.forEach((log) => {
             const row = logTableBody.insertRow();
-            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/A';
-
+            // Verifica se log.dataHoraMovimento é um Timestamp do Firebase e o converte para Date
+            const dataHoraObj = log.dataHoraMovimento instanceof Timestamp ? log.dataHoraMovimento.toDate() : (log.dataHoraMovimento ? new Date(log.dataHoraMovimento) : null);
+            const dataHoraFormatada = dataHoraObj ? formatDateTimeToDisplay(dataHoraObj) : 'N/A';
+            
+            // console.log(`DEBUG(listarLogGeralInventario): Processando log:`, log); // Descomente para depurar linha a linha
             row.insertCell(0).textContent = log.itemCod || 'N/A';
             row.insertCell(1).textContent = log.itemNome || 'N/A';
             row.insertCell(2).textContent = log.tipoMovimento || 'N/A';
@@ -145,36 +215,60 @@ async function listarLogGeralInventario() {
             row.insertCell(7).textContent = dataHoraFormatada;
             row.insertCell(8).textContent = log.observacoesMovimento || '';
         });
-        console.log("DEBUG(LogGeral): Logs carregados e exibidos na tabela.");
+        console.log("DEBUG(listarLogGeralInventario): Logs carregados e exibidos na tabela com sucesso.");
 
     } catch (error) {
-        console.error("DEBUG(LogGeral): Erro FATAL ao carregar log geral de inventário:", error);
-        logTableBody.innerHTML = '<tr><td colspan="9">Erro ao carregar log. Verifique o console para detalhes técnicos.</td></tr>';
+        console.error("DEBUG(listarLogGeralInventario): Erro FATAL ao carregar log geral de inventário:", error);
+        logTableBody.innerHTML = `<tr><td colspan="9">Erro ao carregar log: ${error.message}. Verifique o console.</td></tr>`;
+        // Adiciona um alerta para o usuário ver o erro imediatamente
+        alert(`Erro ao carregar logs: ${error.message}. Verifique o console para detalhes.`);
     }
 }
 
 // Seção 6: Função de Impressão do Relatório (imprimirRelatorioLogGeral)
 async function imprimirRelatorioLogGeral() {
-    console.log("DEBUG(RelatorioLog): Iniciando geração de Relatório de Log Geral.");
-    // Obtém o nome do operador. Não é obrigatório para impressão, usará "Desconhecido" se vazio.
-    const operador = getOperadorNameFromInput() || 'Desconhecido'; 
-    console.log(`DEBUG(RelatorioLog): Operador para o relatório: "${operador}"`);
+    console.log("DEBUG(imprimirRelatorioLogGeral): Iniciando geração de Relatório de Log Geral.");
+    
+    // Tenta obter o nome do operador. Se getOperadorNameFromInput() não existir ou retornar nulo, usa 'Desconhecido'.
+    const operador = typeof getOperadorNameFromInput === 'function' ? (getOperadorNameFromInput() || 'Desconhecido') : 'Desconhecido';
+    console.log(`DEBUG(imprimirRelatorioLogGeral): Operador para o relatório: "${operador}"`);
 
-    const startDateInput = document.getElementById('filterStartDate').value;
-    const endDateInput = document.getElementById('filterEndDate').value;
+    const startDateInput = document.getElementById('filterStartDate')?.value;
+    const endDateInput = document.getElementById('filterEndDate')?.value;
 
-    const startDate = startDateInput ? new Date(startDateInput + 'T00:00:00') : null;
-    const endDate = endDateInput ? new Date(endDateInput + 'T23:59:59') : null;
+    console.log(`DEBUG(imprimirRelatorioLogGeral): Valores de input de data para relatório: Start="${startDateInput}", End="${endDateInput}"`);
 
-    if (startDate && endDate && startDate > endDate) {
-        alert("Erro: A 'Data Inicial' não pode ser posterior à 'Data Final'.");
-        console.warn("DEBUG(RelatorioLog): Validação de data falhou: Data inicial > Data final.");
+    let startDate = null;
+    let endDate = null;
+
+    if (startDateInput) {
+        try {
+            startDate = Timestamp.fromDate(new Date(startDateInput + 'T00:00:00'));
+        } catch (e) {
+            console.error("DEBUG(imprimirRelatorioLogGeral): Erro ao parsear data inicial para relatório:", e);
+            alert("Erro ao processar a data inicial para o relatório. Verifique o formato.");
+            return;
+        }
+    }
+    if (endDateInput) {
+        try {
+            endDate = Timestamp.fromDate(new Date(endDateInput + 'T23:59:59'));
+        } catch (e) {
+            console.error("DEBUG(imprimirRelatorioLogGeral): Erro ao parsear data final para relatório:", e);
+            alert("Erro ao processar a data final para o relatório. Verifique o formato.");
+            return;
+        }
+    }
+
+    if (startDate && endDate && startDate.toDate() > endDate.toDate()) {
+        alert("Erro: A 'Data Inicial' não pode ser posterior à 'Data Final' para o relatório.");
+        console.warn("DEBUG(imprimirRelatorioLogGeral): Validação de data falhou para relatório: Data inicial > Data final.");
         return;
     }
 
     if (typeof db === 'undefined' || !db) {
         alert("Banco de dados não inicializado. Não é possível imprimir o relatório de log.");
-        console.error("DEBUG(RelatorioLog): Erro: Firestore DB não inicializado.");
+        console.error("DEBUG(imprimirRelatorioLogGeral): Erro: Firestore DB não inicializado.");
         return;
     }
 
@@ -195,28 +289,35 @@ async function imprimirRelatorioLogGeral() {
         queryConstraints.push(orderBy('dataHoraMovimento', 'asc')); // Ordem ascendente para o relatório
 
         const q = query(logRef, ...queryConstraints);
-        console.log("DEBUG(RelatorioLog): Query Firestore para relatório construída.");
+        console.log("DEBUG(imprimirRelatorioLogGeral): Query Firestore para relatório construída:", q);
 
         const querySnapshot = await getDocs(q);
         logsRelatorio = querySnapshot.docs.map(doc => doc.data());
-        console.log(`DEBUG(RelatorioLog): Logs carregados do Firestore para o relatório: ${logsRelatorio.length} logs.`);
+        console.log(`DEBUG(imprimirRelatorioLogGeral): Logs carregados do Firestore para o relatório: ${logsRelatorio.length} logs.`);
 
     } catch (error) {
-        console.error("DEBUG(RelatorioLog): Erro ao carregar logs para o relatório de log:", error);
+        console.error("DEBUG(imprimirRelatorioLogGeral): Erro ao carregar logs para o relatório de log:", error);
         alert("Erro ao carregar logs para o relatório de log. Verifique o console.");
         return;
     }
 
     if (logsRelatorio.length === 0) {
-        let noRecordsMessage = "Não há registros de movimentação para o período e filtro selecionados.";
+        let noRecordsMessage = "Não há registros de movimentação para o período e filtro selecionados para o relatório.";
         alert(noRecordsMessage);
-        console.log("DEBUG(RelatorioLog): Nenhum log encontrado para o relatório.");
+        console.log("DEBUG(imprimirRelatorioLogGeral): Nenhum log encontrado para o relatório.");
+        return;
+    }
+
+    // Verifica se jsPDF está disponível
+    if (typeof jsPDF === 'undefined') {
+        console.error("DEBUG(imprimirRelatorioLogGeral): jsPDF não está carregado. Verifique a importação do CDN.");
+        alert("Erro: Biblioteca de PDF não carregada. Tente recarregar a página.");
         return;
     }
 
     const doc = new jsPDF();
     let currentY = 15;
-    console.log("DEBUG(RelatorioLog): jsPDF inicializado. Gerando cabeçalho do PDF.");
+    console.log("DEBUG(imprimirRelatorioLogGeral): jsPDF inicializado. Gerando cabeçalho do PDF.");
 
     // Gerar Cabeçalho do PDF
     currentY = gerarCabecalhoPdf(doc, currentY, operador);
@@ -229,11 +330,11 @@ async function imprimirRelatorioLogGeral() {
     }
     let dateRangeText = "";
     if (startDate && endDate) {
-        dateRangeText = `Período: ${formatDateToDisplay(startDate)} a ${formatDateToDisplay(endDate)}`;
+        dateRangeText = `Período: ${formatDateToDisplay(startDate.toDate())} a ${formatDateToDisplay(endDate.toDate())}`;
     } else if (startDate) {
-        dateRangeText = `A partir de: ${formatDateToDisplay(startDate)}`;
+        dateRangeText = `A partir de: ${formatDateToDisplay(startDate.toDate())}`;
     } else if (endDate) {
-        dateRangeText = `Até: ${formatDateToDisplay(endDate)}`;
+        dateRangeText = `Até: ${formatDateToDisplay(endDate.toDate())}`;
     }
     
     doc.text(reportTitle, 105, currentY, null, null, "center");
@@ -247,7 +348,7 @@ async function imprimirRelatorioLogGeral() {
     doc.setLineWidth(0.2);
     doc.line(20, currentY, 190, currentY);
     currentY += 10;
-    console.log("DEBUG(RelatorioLog): Título do PDF gerado.");
+    console.log("DEBUG(imprimirRelatorioLogGeral): Título do PDF gerado.");
 
     // Conteúdo: Logs do Inventário
     currentY = gerarConteudoTabelaLogPdf(doc, currentY, logsRelatorio, operador); // Passar operador para repetição de cabeçalho
@@ -255,17 +356,17 @@ async function imprimirRelatorioLogGeral() {
     // Rodapé do PDF
     gerarRodapePdf(doc, operador);
 
-    console.log("DEBUG(RelatorioLog): Geração do relatório concluída. Tentando abrir o PDF.");
+    console.log("DEBUG(imprimirRelatorioLogGeral): Geração do relatório concluída. Tentando abrir o PDF.");
     try {
         doc.output('dataurlnewwindow', { filename: `Relatorio_Log_Inventario_${formatDateToDisplay(new Date()).replace(/\//g, '-')}.pdf` });
-        console.log("DEBUG(RelatorioLog): Chamada doc.output() bem-sucedida.");
+        console.log("DEBUG(imprimirRelatorioLogGeral): Chamada doc.output() bem-sucedida.");
         alert(`Relatório de Log de Inventário gerado com sucesso por ${operador}! Verifique a nova aba para visualizar e imprimir.`);
     } catch (outputError) {
-        console.error("DEBUG(RelatorioLog): Erro ao gerar ou abrir o PDF (doc.output):", outputError);
+        console.error("DEBUG(imprimirRelatorioLogGeral): Erro ao gerar ou abrir o PDF (doc.output):", outputError);
         alert("Erro ao gerar ou exibir o PDF. Verifique o console para detalhes.");
     }
 
-    console.log("DEBUG(RelatorioLog): Geração de relatório de log geral concluída.");
+    console.log("DEBUG(imprimirRelatorioLogGeral): Geração de relatório de log geral concluída.");
 }
 
 // Seção 7: Helper: Gerar Cabeçalho do PDF (Função Reutilizável)
@@ -298,8 +399,8 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     const colPositions = [];
     let xOffset = startX;
     colWidths.forEach(width => {
-        colPositions.push(xOffset);
-        xOffset += width;
+        xOffset += width; // Calcula a posição final da coluna
+        colPositions.push(xOffset - width); // Adiciona a posição inicial da coluna
     });
 
     // Títulos das colunas
@@ -346,7 +447,9 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
         let initialY = currentY; // Salva o Y inicial da linha para desenhar todos os textos
         let maxHeightInRow = 4; // Altura mínima de uma linha de texto
 
-        const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/A';
+        // Converte o Timestamp do Firebase para um objeto Date antes de formatar
+        const dataHoraObj = log.dataHoraMovimento instanceof Timestamp ? log.dataHoraMovimento.toDate() : (log.dataHoraMovimento ? new Date(log.dataHoraMovimento) : null);
+        const dataHoraFormatada = dataHoraObj ? formatDateTimeToDisplay(dataHoraObj) : 'N/A';
 
         // Dividir e posicionar textos longos
         const splitDescription = doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2);
@@ -386,6 +489,26 @@ function gerarRodapePdf(doc, operador) {
     }
 }
 
-// Seção 10: Validações e Utilities para Relatórios (a ser adicionada se mais validações genéricas forem necessárias)
-// Atualmente, as validações de data estão dentro de imprimirRelatorioLogGeral.
-// Futuras validações complexas ou reutilizáveis poderiam ser adicionadas aqui.
+// Seção 10: Validações e Utilities para Relatórios
+// Funções utilitárias como getOperadorNameFromInput, formatDateTimeToDisplay, formatDateToDisplay
+// são importadas de sislab_utils.js. Certifique-se de que sislab_utils.js está acessível e correto.
+// Exemplo de como sislab_utils.js deveria exportar:
+/*
+// sislab_utils.js
+export function getOperadorNameFromInput() {
+    const operadorInput = document.getElementById('operadorNameInput'); // Supondo que você tenha um input com este ID em alguma página
+    return operadorInput ? operadorInput.value : '';
+}
+
+export function formatDateTimeToDisplay(dateObj) {
+    if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
+    const date = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return `${date} ${time}`;
+}
+
+export function formatDateToDisplay(dateObj) {
+    if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
+    return dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+*/
