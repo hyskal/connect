@@ -215,6 +215,19 @@
             overflow-y: auto;
             border: 1px solid #eee; /* Borda leve para indicar área de rolagem */
         }
+
+        /* Estilo para o elemento de depuração */
+        #debug-filter-status {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #e0f7fa; /* Azul claro */
+            border: 1px solid #00bcd4; /* Ciano */
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #006064;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -249,7 +262,7 @@
             </select>
         </div>
 
-        <div class="table-scroll-container">
+        <div id="debug-filter-status"></div> <div class="table-scroll-container">
             <table id="inventoryLogTable">
                 <thead>
                     <tr>
