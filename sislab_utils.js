@@ -1,9 +1,6 @@
-// VERSÃO: 1.0.0 (sislab_utils.js)
+// VERSÃO: 1.0.1 (sislab_utils.js)
 // CHANGELOG:
-// - Novo arquivo: Criado para centralizar funções utilitárias e melhorar a modularidade do SISLAB Inventário.
-// - Movido: Funções auxiliares (validação de operador, exibição/limpeza de erros, formatação de datas e códigos) movidas de inventario_scripts.js.
-// - Movido: Função loadCategories() para carregamento dinâmico de categorias movida de inventario_scripts.js.
-// - Exportado: Todas as funções utilitárias e a constante LOCAL_FILENAME_CATEGORIES são exportadas para serem usadas por outros módulos.
+// - Alterado: getOperadorNameFromInput agora retorna null de forma segura se o elemento não for encontrado.
 
 // --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
 export const LOCAL_FILENAME_CATEGORIES = 'categorias_inventario.txt';
@@ -16,6 +13,13 @@ export const OPERATOR_NAME_STORAGE_KEY = 'sislab_inventario_operator_name';
 export function getOperadorNameFromInput() {
     console.log("DEBUG(sislab_utils): Lendo nome do operador do input..."); // DEBUG
     const operatorNameInput = document.getElementById('operatorName');
+    
+    // MODIFICAÇÃO AQUI: Verifica se o elemento existe antes de tentar acessar .value
+    if (!operatorNameInput) {
+        console.warn("DEBUG(sislab_utils): Elemento 'operatorName' não encontrado. Retornando null."); // DEBUG
+        return null; // Retorna null se o elemento não for encontrado
+    }
+
     const operador = operatorNameInput.value.trim();
 
     if (!operador) {
