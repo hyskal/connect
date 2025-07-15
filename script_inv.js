@@ -1,14 +1,13 @@
-// VERSÃO: 1.0.4 (script_inv.js)
+// VERSÃO: 1.0.5 (script_inv.js)
 // CHANGELOG:
-// - Adicionado: Mais logs de depuração detalhados para rastrear o fluxo de execução e valores de variáveis.
-// - Verificado: Lógica de importação e uso de funções de sislab_utils.js.
-// - Reforçado: Verificações de datas e construção de queries.
+// - Corrigido: Erro de importação do jsPDF. Agora jsPDF é acessado via window.jspdf.
+// - Estrutura: Código mantido dividido em 10 sessões.
 
 // Seção 1: Importações e Configuração Inicial
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { jsPDF } from "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-// Importa as funções de sislab_utils.js. Garanta que este arquivo existe e exporta essas funções.
+// REMOVIDO: import { jsPDF } from "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+// Agora jsPDF será acessado via window.jspdf, após ser carregado no HTML.
 import { formatDateTimeToDisplay, formatDateToDisplay, getOperadorNameFromInput } from './sislab_utils.js';
 
 console.log("DEBUG(script_inv.js): Seção 1 - Importações e Configuração Inicial carregada.");
@@ -308,9 +307,10 @@ async function imprimirRelatorioLogGeral() {
         return;
     }
 
-    // Verifica se jsPDF está disponível
+    // Acessa jsPDF via objeto global window
+    const jsPDF = window.jspdf.jsPDF; 
     if (typeof jsPDF === 'undefined') {
-        console.error("DEBUG(imprimirRelatorioLogGeral): jsPDF não está carregado. Verifique a importação do CDN.");
+        console.error("DEBUG(imprimirRelatorioLogGeral): jsPDF não está carregado. Verifique a importação do CDN no HTML.");
         alert("Erro: Biblioteca de PDF não carregada. Tente recarregar a página.");
         return;
     }
