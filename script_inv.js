@@ -1,13 +1,13 @@
-// VERSÃO: 1.0.5 (script_inv.js)
+// VERSÃO: 1.0.6 (script_inv.js)
 // CHANGELOG:
-// - Corrigido: Erro de importação do jsPDF. Agora jsPDF é acessado via window.jspdf.
+// - Corrigido: Erro de TypeError em getOperadorNameFromInput, agora sislab_utils.js é null-safe.
+// - Implementado: Botão "Limpar Período" para resetar filtros de data.
 // - Estrutura: Código mantido dividido em 10 sessões.
 
 // Seção 1: Importações e Configuração Inicial
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-// REMOVIDO: import { jsPDF } from "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-// Agora jsPDF será acessado via window.jspdf, após ser carregado no HTML.
+// jsPDF agora é carregado no HTML e acessado globalmente.
 import { formatDateTimeToDisplay, formatDateToDisplay, getOperadorNameFromInput } from './sislab_utils.js';
 
 console.log("DEBUG(script_inv.js): Seção 1 - Importações e Configuração Inicial carregada.");
@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const printLogReportBtnElement = document.getElementById('printLogReportBtn');
     const filterStartDateElement = document.getElementById('filterStartDate');
     const filterEndDateElement = document.getElementById('filterEndDate');
+    const clearDateFilterBtnElement = document.getElementById('clearDateFilterBtn'); // Novo botão
 
     if (filterOperationTypeElement) {
         filterOperationTypeElement.addEventListener('change', (event) => {
@@ -92,10 +93,31 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("DEBUG(script_inv.js): Elemento 'filterEndDate' não encontrado. Filtro por data final pode não funcionar.");
     }
 
+    // Event listener para o novo botão Limpar Período
+    if (clearDateFilterBtnElement) {
+        clearDateFilterBtnElement.addEventListener('click', clearDateFilters);
+        console.log("DEBUG(script_inv.js): Event listener para 'clearDateFilterBtn' adicionado.");
+    } else {
+        console.warn("DEBUG(script_inv.js): Elemento 'clearDateFilterBtn' não encontrado. Botão Limpar Período pode não funcionar.");
+    }
+
+
     updateDebugFilterStatus(currentLogFilterOperation); // Define o status inicial no HTML
     listarLogGeralInventario(); // Carrega o log inicialmente
     console.log("DEBUG(script_inv.js): DOMContentLoaded - Setup inicial concluído, chamando listarLogGeralInventario().");
 });
+
+// Nova função para limpar os filtros de data
+function clearDateFilters() {
+    console.log("DEBUG(clearDateFilters): Limpando campos de filtro de data.");
+    const filterStartDateElement = document.getElementById('filterStartDate');
+    const filterEndDateElement = document.getElementById('filterEndDate');
+
+    if (filterStartDateElement) filterStartDateElement.value = '';
+    if (filterEndDateElement) filterEndDateElement.value = '';
+
+    listarLogGeralInventario(); // Recarrega a tabela sem os filtros de data
+}
 
 // Seção 5: Lógica de Listagem da Tabela (listarLogGeralInventario)
 async function listarLogGeralInventario() {
