@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>SISLAB - Log Geral de Inventário (CETEP/LNAB)</title>
     <style>
-        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
+        /* Seção 1: Estilos Gerais e Cabeçalho */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -19,7 +19,6 @@
             background-size: 200px 200px; /* Tamanho do tile do padrão */
         }
 
-        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
         .main-header-container {
             display: flex;
             align-items: center; /* Alinha verticalmente a logo e o texto */
@@ -29,7 +28,6 @@
             flex-wrap: wrap; /* Permite quebrar em telas menores */
         }
 
-        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
         .sislab-logo {
             width: 70px; /* Largura total da logo ajustada para tubos mais finos */
             height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
@@ -53,11 +51,10 @@
             position: absolute;
             top: -7px; /* Posiciona la tampa acima do tubo */
             left: -1px; /* Ajusta a posição lateral para centralizar */
-            border-radius: 4px 4px 0 0;
+            border-radius: 44px 44px 0 0;
             box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tampa */
         }
 
-        /* Cores das tampas (Reaproveitadas do index.html) */
         .tube:nth-child(1) .tube-cap {
             background-color: #800080; /* Roxo */
         }
@@ -70,7 +67,6 @@
             background-color: #CC3333; /* Vermelho */
         }
 
-        /* Estilo para o título principal (Reaproveitado do index.html) */
         h1 {
             color: #1A2B4C;
             margin: 0;
@@ -95,12 +91,11 @@
             }
         }
 
-        h2, h3 { /* Mantém o estilo para os demais títulos */
+        h2, h3 {
             color: #1A2B4C;
             margin-bottom: 20px;
         }
 
-        /* Contêiner principal para o conteúdo da página (adaptado de .main-content-container) */
         .page-content-container {
             background-color: white;
             padding: 30px;
@@ -112,7 +107,77 @@
             margin-bottom: 20px;
         }
 
-        /* Estilos dos botões de ação (Reaproveitados do index.html) */
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .filter-container label {
+            font-weight: bold;
+            color: #334466;
+        }
+
+        .filter-container input[type="date"],
+        .filter-container select {
+            padding: 8px 10px;
+            border: 1px solid #AABBDD;
+            border-radius: 4px;
+            font-size: 0.95em;
+            background-color: #f9f9f9;
+        }
+
+        /* Seção 3: Tabela de Logs */
+        #inventoryLogTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            table-layout: fixed;
+        }
+
+        #inventoryLogTable th, #inventoryLogTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.9em;
+            vertical-align: top;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        #inventoryLogTable th:nth-child(1), #inventoryLogTable td:nth-child(1) { width: 8%; }
+        #inventoryLogTable th:nth-child(2), #inventoryLogTable td:nth-child(2) { width: 20%; }
+        #inventoryLogTable th:nth-child(3), #inventoryLogTable td:nth-child(3) { width: 12%; white-space: nowrap; }
+        #inventoryLogTable th:nth-child(4), #inventoryLogTable td:nth-child(4) { width: 8%; }
+        #inventoryLogTable th:nth-child(5), #inventoryLogTable td:nth-child(5) { width: 8%; }
+        #inventoryLogTable th:nth-child(6), #inventoryLogTable td:nth-child(6) { width: 8%; }
+        #inventoryLogTable th:nth-child(7), #inventoryLogTable td:nth-child(7) { width: 12%; }
+        #inventoryLogTable th:nth-child(8), #inventoryLogTable td:nth-child(8) { width: 15%; }
+        #inventoryLogTable th:nth-child(9), #inventoryLogTable td:nth-child(9) { width: 9%; }
+
+        #inventoryLogTable th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        #inventoryLogTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #inventoryLogTable tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .table-scroll-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+        }
+
+        /* Seção 4: Botões de Ação */
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
@@ -143,85 +208,12 @@
             background-color: #0F1D33;
         }
 
-        /* Estilos para o contêiner de filtros */
-        .filter-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-
-        .filter-container label {
-            font-weight: bold;
-            color: #334466;
-        }
-
-        .filter-container select {
-            padding: 8px 10px;
-            border: 1px solid #AABBDD;
-            border-radius: 4px;
-            font-size: 0.95em;
-            background-color: #f9f9f9;
-        }
-
-        /* Estilos para a Tabela de Log */
-        #inventoryLogTable {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            table-layout: fixed; /* Adicionado para controle de largura de coluna */
-        }
-
-        #inventoryLogTable th, #inventoryLogTable td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            font-size: 0.9em; /* Um pouco menor para caber mais info */
-            vertical-align: top;
-            box-sizing: border-box; /* Inclui padding e borda na largura total */
-            word-wrap: break-word; /* Permite quebra de palavra em colunas estreitas */
-            white-space: normal; /* Permite quebra de linha por padrão */
-        }
-
-        /* Definição das larguras das colunas do log */
-        #inventoryLogTable th:nth-child(1), #inventoryLogTable td:nth-child(1) { width: 8%; }  /* Cód. Item */
-        #inventoryLogTable th:nth-child(2), #inventoryLogTable td:nth-child(2) { width: 20%; } /* Descrição Item */
-        #inventoryLogTable th:nth-child(3), #inventoryLogTable td:nth-child(3) { width: 12%; white-space: nowrap; } /* Operação - AUMENTADO, impede quebra */
-        #inventoryLogTable th:nth-child(4), #inventoryLogTable td:nth-child(4) { width: 8%; }  /* Qtd. Mov. */
-        #inventoryLogTable th:nth-child(5), #inventoryLogTable td:nth-child(5) { width: 8%; }  /* Qtd. Antes */
-        #inventoryLogTable th:nth-child(6), #inventoryLogTable td:nth-child(6) { width: 8%; }  /* Qtd. Depois */
-        #inventoryLogTable th:nth-child(7), #inventoryLogTable td:nth-child(7) { width: 12%; } /* Operador */
-        #inventoryLogTable th:nth-child(8), #inventoryLogTable td:nth-child(8) { width: 15%; } /* Data e Hora */
-        #inventoryLogTable th:nth-child(9), #inventoryLogTable td:nth-child(9) { width: 9%; } /* Observações - REDUZIDO */
-
-
-        #inventoryLogTable th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        #inventoryLogTable tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        #inventoryLogTable tr:hover {
-            background-color: #f1f1f1;
-        }
-        
-        /* Ajuste para rolagem da tabela se for muito longa */
-        .table-scroll-container {
-            max-height: 600px; /* Altura máxima antes de rolar */
-            overflow-y: auto;
-            border: 1px solid #eee; /* Borda leve para indicar área de rolagem */
-        }
-
         /* Estilo para o elemento de depuração */
         #debug-filter-status {
             margin-top: 10px;
             padding: 8px;
-            background-color: #e0f7fa; /* Azul claro */
-            border: 1px solid #00bcd4; /* Ciano */
+            background-color: #e0f7fa;
+            border: 1px solid #00bcd4;
             border-radius: 4px;
             font-size: 0.9em;
             color: #006064;
@@ -260,9 +252,17 @@
                 <option value="REMOCAO">REMOCAO</option>
                 <option value="AJUSTE">AJUSTE</option>
             </select>
+
+            <label for="filterStartDate">Período Inicial:</label>
+            <input type="date" id="filterStartDate">
+
+            <label for="filterEndDate">Período Final:</label>
+            <input type="date" id="filterEndDate">
         </div>
 
-        <div id="debug-filter-status"></div> <div class="table-scroll-container">
+        <div id="debug-filter-status"></div>
+
+        <div class="table-scroll-container">
             <table id="inventoryLogTable">
                 <thead>
                     <tr>
@@ -285,6 +285,7 @@
     </div>
 
     <div class="action-buttons-container">
+        <button id="printLogReportBtn">Imprimir Relatório de Log</button>
         <button onclick="window.location.href='inventario.html'">Voltar para Controle de Estoque</button>
         <button onclick="window.location.href='admin.html'">Voltar para Área Administrativa</button>
     </div>
