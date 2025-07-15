@@ -1,8 +1,7 @@
-// VERSÃO: 1.0.0 (script_inv.js)
+// VERSÃO: 1.0.1 (script_inv.js)
 // CHANGELOG:
-// - Novo arquivo: Criado para centralizar funções específicas da página log_inventario.html.
-// - Movido: Toda a lógica de inicialização do Firebase e manipulação do log de inventário foi movida de log_inventario.html para este arquivo.
-// - Importações: As dependências do Firebase SDK e de sislab_utils.js são agora gerenciadas aqui.
+// - Adicionado: Elementos de depuração (console.log) para rastrear o fluxo e valores dos filtros.
+// - Adicionado: Função para atualizar um elemento HTML de depuração com o status atual do filtro.
 
 // Importa as funções do SDK do Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -28,23 +27,37 @@ const db = getFirestore(app);
 // Variável de estado para o filtro de operação
 let currentLogFilterOperation = 'all'; // 'all' para todas as operações por padrão
 
+// Função para atualizar o elemento de depuração no HTML
+function updateDebugFilterStatus(status) {
+    const debugElement = document.getElementById('debug-filter-status');
+    if (debugElement) {
+        debugElement.textContent = `Status do Filtro Atual: ${status}`;
+    }
+}
+
 // Função principal para carregar e exibir o log
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DEBUG(script_inv.js): DOMContentLoaded - Iniciando setup da página de Log de Inventário.");
+
     // Vincula o event listener do filtro
     document.getElementById('filterOperationType').addEventListener('change', (event) => {
         currentLogFilterOperation = event.target.value;
+        console.log(`DEBUG(script_inv.js): Filtro alterado para: "${currentLogFilterOperation}"`);
+        updateDebugFilterStatus(currentLogFilterOperation); // Atualiza o status no HTML
         listarLogGeralInventario(); // Recarrega a tabela com o novo filtro
     });
 
+    updateDebugFilterStatus(currentLogFilterOperation); // Define o status inicial no HTML
     listarLogGeralInventario(); // Carrega o log inicialmente
 });
 
 async function listarLogGeralInventario() {
+    console.log(`DEBUG(script_inv.js): Iniciando listarLogGeralInventario com filtro: "${currentLogFilterOperation}"`);
     const logTableBody = document.querySelector('#inventoryLogTable tbody');
     logTableBody.innerHTML = '<tr><td colspan="9">Carregando logs...</td></tr>';
 
     if (typeof db === 'undefined' || !db) {
-        console.error("DEBUG(LogGeral): Banco de dados não inicializado.");
+        console.error("DEBUG(LogGeral): Erro - Banco de dados não inicializado.");
         logTableBody.innerHTML = '<tr><td colspan="9">Banco de dados não inicializado.</td></tr>';
         return;
     }
@@ -56,12 +69,16 @@ async function listarLogGeralInventario() {
         // Constrói a query com base no filtro de operação
         if (currentLogFilterOperation === 'all') {
             q = query(logRef, orderBy('dataHoraMovimento', 'desc'));
+            console.log("DEBUG(LogGeral): Query definida para 'Todas as Operações'.");
         } else {
             q = query(logRef, where('tipoMovimento', '==', currentLogFilterOperation), orderBy('dataHoraMovimento', 'desc'));
+            console.log(`DEBUG(LogGeral): Query definida para filtro de tipo de movimento: "${currentLogFilterOperation}"`);
         }
-
+        
+        console.log("DEBUG(LogGeral): Executando query no Firebase Firestore...");
         const querySnapshot = await getDocs(q);
         const logs = querySnapshot.docs.map(doc => doc.data());
+        console.log(`DEBUG(LogGeral): Query executada. ${logs.length} logs encontrados.`);
 
         if (logs.length === 0) {
             let noRecordsMessage = "Nenhum registro de movimentação encontrado.";
@@ -69,14 +86,16 @@ async function listarLogGeralInventario() {
                 noRecordsMessage = `Nenhum registro de '${currentLogFilterOperation}' encontrado.`;
             }
             logTableBody.innerHTML = `<tr><td colspan="9">${noRecordsMessage}</td></tr>`;
+            console.log(`DEBUG(LogGeral): Exibindo mensagem de nenhum registro: "${noRecordsMessage}"`);
             return;
         }
 
         logTableBody.innerHTML = ''; // Limpa antes de preencher
-        logs.forEach(log => {
+        logs.forEach((log, index) => {
+            // console.log(`DEBUG(LogGeral): Processando log #${index}:`, log); // Pode ser muito verboso, descomente se necessário
             const row = logTableBody.insertRow();
             // Usando a função formatDateTimeToDisplay importada
-            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/A';
+            const dataHoraFormatada = log.dataHoraMovimento ? formatDateTimeToDisplay(log.dataHoraMovimento.toDate()) : 'N/A'; 
 
             row.insertCell(0).textContent = log.itemCod || 'N/A';
             row.insertCell(1).textContent = log.itemNome || 'N/A';
@@ -88,9 +107,10 @@ async function listarLogGeralInventario() {
             row.insertCell(7).textContent = dataHoraFormatada;
             row.insertCell(8).textContent = log.observacoesMovimento || '';
         });
+        console.log("DEBUG(LogGeral): Logs carregados e exibidos na tabela.");
 
     } catch (error) {
-        console.error("DEBUG(LogGeral): Erro ao carregar log geral de inventário:", error);
-        logTableBody.innerHTML = '<tr><td colspan="9">Erro ao carregar log. Verifique o console.</td></tr>';
+        console.error("DEBUG(LogGeral): Erro FATAL ao carregar log geral de inventário:", error);
+        logTableBody.innerHTML = '<tr><td colspan="9">Erro ao carregar log. Verifique o console para detalhes técnicos.</td></tr>';
     }
 }
