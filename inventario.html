@@ -1,16 +1,3 @@
-O log que você forneceu é de `inventario.html`, não de `log_inventario.html`. A mensagem "Função bloqueada." e o `console.log` confirmam que o problema está nos botões de filtro de status (`Todos`, `Críticos`, `Com Estoque`, `Sem Estoque`) na página de inventário.
-
-Ocorre que esses botões possuem um atributo `onclick="showAlert('...')"` no HTML que está sobrepondo (ou executando antes) os event listeners definidos no `inventario_scripts.js`. A função `showAlert` foi inserida ali para bloquear a funcionalidade, e agora precisamos removê-la para que os filtros funcionem.
-
-Além disso, vou reestruturar o `inventario.html` em 10 sessões, conforme a nossa nova prática, para garantir consistência em todo o projeto.
-
------
-
-### **Atualizações nos arquivos:**
-
-#### 1\. Arquivo: **`inventario.html`** (Correção dos Filtros e Reestruturação em 10 Sessões)
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -468,4 +455,3 @@ Além disso, vou reestruturar o `inventario.html` em 10 sessões, conforme a nos
     <script src="inventario_scripts.js" type="module"></script>
 </body>
 </html>
-```
