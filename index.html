@@ -147,7 +147,7 @@
             gap: 20px;
             /* **MODIFICAÇÃO AQUI: Alinhar itens pela base** */
             align-items: flex-end; /* Alinha os itens do flex container pela sua linha de base */
-            margin-bottom: 15px; /* Mantém a margem inferior para separar as linhas */
+            margin-bottom: 15px;
             width: 100%; /* Garante que a linha ocupe a largura total da coluna */
         }
 
@@ -622,7 +622,7 @@
         // Importar TODOS os módulos do Firestore que serão usados
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
         // Não é necessário importar Analytics se você não o usa neste script específico
-        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+        // import { getAnalytics } = "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
