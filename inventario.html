@@ -116,7 +116,7 @@
         .form-field input.error, .form-field textarea.error, .form-field select.error { border-color: #CC3333; box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3); }
         .error-message { color: #CC3333; font-size: 0.85em; margin-top: 5px; }
 
-        /* Seção 4: Estilos de Tabela e Controles de Inventário */
+        /* Estilos dos botões de ação (Reaproveitados do index.html) */
         .action-buttons-container {
             display: flex; flex-wrap: wrap; justify-content: center; width: 95%; max-width: 1200px;
             margin-top: 20px; padding: 20px; background-color: white; border-radius: 8px;
@@ -128,12 +128,14 @@
             background-color: #1A2B4C; color: white; cursor: pointer; font-size: 1em;
             transition: background-color 0.3s ease;
         }
+
         button:hover { background-color: #0F1D33; }
         button.highlight-button { background-color: #CC3333; font-weight: bold; padding: 12px 25px; }
         button.highlight-button:hover { background-color: #A02222; }
         button.delete-item-form-btn { background-color: #dc3545; }
         button.delete-item-form-btn:hover { background-color: #c82333; }
 
+        /* Seção 4: Estilos de Tabela e Controles de Inventário */
         #inventoryList { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd; padding: 4px; text-align: left; font-size: 0.75em;
@@ -411,13 +413,9 @@
     </div>
 
     <script type="module">
-        // Função showAlert removida daqui, pois os botões agora chamam as funções do inventario_scripts.js diretamente.
-        // Se precisar de alguma mensagem de alerta global, ela deve ser definida em sislab_utils.js
-        // ou em um script global que não conflite com as funcionalidades específicas.
-
         // Importa as funções do SDK do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
         // Sua configuração do Firebase
         const firebaseConfig = {
