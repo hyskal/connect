@@ -1,8 +1,8 @@
-// VERSÃO: 1.0.10 (script_inv.js)
+// VERSÃO: 1.0.11 (script_inv.js)
 // CHANGELOG:
 // - Melhorado: Layout do relatório PDF:
-//    - Cabeçalho da coluna "OBSERVAÇÕES" reduzido para "OBS.".
-//    - Largura da coluna "Observações" ajustada para forçar mais quebras de linha em textos longos.
+//    - Larguras de colunas reajustadas para garantir que "QTD. MOV.", "QTD. ANT.", "QTD. DEP." e "OBS." sejam exibidos sem sobreposição.
+//    - Altura de linha ajustada para melhor espaçamento vertical do texto.
 // - Estrutura: Código mantido dividido em 10 sessões.
 
 // Seção 1: Importações e Configuração Inicial
@@ -449,8 +449,8 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     const startX = 10; 
     // Larguras das colunas (somam aproximadamente 170-175 para caber bem na página A4, considerando startX e margem direita)
     // [Cód, Desc, Op, QtdMov, QtdAnt, QtdDep, Operador, DataHora, Obs]
-    const colWidths = [12, 36, 16, 10, 10, 10, 16, 26, 25]; 
-    const lineHeight = 4.5; // Altura de cada linha de texto dentro de uma célula (ajustado para melhor espaçamento)
+    const colWidths = [12, 40, 18, 15, 12, 12, 20, 28, 30]; // Ajustado conforme a discussão
+    const lineHeight = 5; // Altura de cada linha de texto dentro de uma célula (ajustado para melhor espaçamento)
     const paddingY = 2; // Espaço vertical entre a linha inferior do texto e a linha separadora da próxima linha/borda da célula
     
     // Calcular as posições X de início de cada coluna
@@ -475,7 +475,9 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     doc.text(doc.splitTextToSize("DATA E HORA", colWidths[7] - 2), colPositions[7], currentY);
     doc.text(doc.splitTextToSize("OBS.", colWidths[8] - 2), colPositions[8], currentY); // Alterado para "OBS."
 
-    currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; // Altura máxima dos títulos + padding
+    // Aumentar currentY com base na altura máxima dos cabeçalhos
+    // "DATA E HORA" é o quebra em duas linhas, então usamos sua altura
+    currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; 
     doc.setFont(undefined, 'normal');
 
     logs.forEach((log, index) => {
@@ -525,9 +527,9 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
             itemCod: log.itemCod || 'N/A',
             itemNome: doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2), 
             tipoMovimento: log.tipoMovimento || 'N/A',
-            quantidadeMovimentada: log.quantidadeMovimentada !== undefined ? `${log.quantidadeMovimentada.toString()} ${log.unidadeMedidaLog || ''}` : 'N/A',
-            quantidadeAntes: log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A',
-            quantidadeDepois: log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A',
+            quantidadeMovimentada: doc.splitTextToSize(log.quantidadeMovimentada !== undefined ? `${log.quantidadeMovimentada.toString()} ${log.unidadeMedidaLog || ''}` : 'N/A', colWidths[3] - 2),
+            quantidadeAntes: doc.splitTextToSize(log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A', colWidths[4] - 2),
+            quantidadeDepois: doc.splitTextToSize(log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A', colWidths[5] - 2),
             operador: doc.splitTextToSize(log.operador || 'Desconhecido', colWidths[6] - 2), 
             dataHora: doc.splitTextToSize(dataHoraFormatada, colWidths[7] - 2), 
             observacoes: doc.splitTextToSize(log.observacoesMovimento || '', colWidths[8] - 2), 
@@ -536,6 +538,9 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
         // Calcule a altura máxima da linha com base no conteúdo de várias linhas
         rowMaxHeight = Math.max(
             (Array.isArray(cellContents.itemNome) ? cellContents.itemNome.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.quantidadeMovimentada) ? cellContents.quantidadeMovimentada.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.quantidadeAntes) ? cellContents.quantidadeAntes.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.quantidadeDepois) ? cellContents.quantidadeDepois.length * lineHeight : lineHeight),
             (Array.isArray(cellContents.operador) ? cellContents.operador.length * lineHeight : lineHeight),
             (Array.isArray(cellContents.dataHora) ? cellContents.dataHora.length * lineHeight : lineHeight),
             (Array.isArray(cellContents.observacoes) ? cellContents.observacoes.length * lineHeight : lineHeight),
