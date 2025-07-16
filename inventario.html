@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7b - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7c - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -202,9 +202,14 @@
 
         .inventory-filters {
             display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
-            width: 100%; justify-content: flex-start; align-items: center;
+            width: 100%; justify-content: flex-start;
+            /* Alinha todos os itens ao final da sua área, para que os inputs fiquem na mesma linha de base */
+            align-items: flex-end; /* Alterado de 'center' para 'flex-end' */
         }
-        .inventory-filters .form-field { margin-bottom: 0; flex-grow: 1; min-width: 120px; }
+        .inventory-filters .form-field { margin-bottom: 0; flex-grow: 1; min-width: 120px;
+            /* Garante que o form-field se comporta como coluna para label/input e empurra o input para baixo */
+            display: flex; flex-direction: column; justify-content: flex-end;
+        }
         .inventory-filters .form-field:last-child { flex-grow: 0; }
         .inventory-filters .filter-buttons-group { display: flex; gap: 5px; flex-wrap: wrap; }
         .inventory-filters button {
@@ -349,8 +354,8 @@
                 </div>
                 <div class="filter-buttons-group">
                     <button id="filterAllItemsBtn" class="active-filter">Todos</button>
-                    <button id="filterCriticalItemsBtn">Críticos</button>
                     <button id="filterInStockItemsBtn">Com Estoque</button>
+                    <button id="filterCriticalItemsBtn">Críticos</button>
                     <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
                 </div>
             </div>
