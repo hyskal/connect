@@ -123,12 +123,24 @@
         }
 
         .filter-container input[type="date"],
-        .filter-container select {
+        .filter-container select,
+        .filter-container button { /* Adicionado para estilizar o botão Limpar Período no filtro */
             padding: 8px 10px;
             border: 1px solid #AABBDD;
             border-radius: 4px;
             font-size: 0.95em;
             background-color: #f9f9f9;
+        }
+        /* Estilo específico para o checkbox */
+        .filter-container input[type="checkbox"] {
+            margin-right: 5px;
+            transform: scale(1.2); /* Aumenta o tamanho do checkbox */
+        }
+        .filter-container label.checkbox-label {
+            display: flex;
+            align-items: center;
+            font-weight: normal; /* Para não ficar muito negrito como os labels de input */
+            color: #334466;
         }
 
         /* Seção 4: Estilos da Tabela */
@@ -261,6 +273,11 @@
             <input type="date" id="filterEndDate">
 
             <button id="clearDateFilterBtn">Limpar Período</button>
+
+            <label for="sortAlphabeticalCheckbox" class="checkbox-label">
+                <input type="checkbox" id="sortAlphabeticalCheckbox">
+                Ordenar por Nome (A-Z)
+            </label>
         </div>
 
         <div id="debug-filter-status"></div>
