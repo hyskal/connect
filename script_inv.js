@@ -1,9 +1,6 @@
-// VERSÃO: 1.0.8 (script_inv.js)
+// VERSÃO: 1.0.9 (script_inv.js)
 // CHANGELOG:
-// - Implementado: Checkbox "Ordenar por Nome (A-Z)" para ordenar itens do log alfabeticamente.
-// - Ajustado: Lógica de ordenação da query do Firebase para alternar entre data e nome.
-// - Melhorado: Formatação do relatório PDF, com ajuste de larguras de coluna e tratamento de quebras de linha para evitar sobreposição.
-// - Ajustado: Posicionamento dos títulos das colunas para melhor legibilidade.
+// - Corrigido: Erro de ReferenceError na função getOperadorNameToInput, alterado para getOperadorNameFromInput.
 // - Estrutura: Código mantido dividido em 10 sessões.
 
 // Seção 1: Importações e Configuração Inicial
@@ -276,7 +273,7 @@ async function imprimirRelatorioLogGeral() {
     console.log("DEBUG(imprimirRelatorioLogGeral): Iniciando geração de Relatório de Log Geral.");
     
     // Tenta obter o nome do operador. Se getOperadorNameFromInput() não existir ou retornar nulo, usa 'Desconhecido'.
-    const operador = typeof getOperadorNameFromInput === 'function' ? (getOperadorNameToInput() || 'Desconhecido') : 'Desconhecido';
+    const operador = typeof getOperadorNameFromInput === 'function' ? (getOperadorNameFromInput() || 'Desconhecido') : 'Desconhecido';
     console.log(`DEBUG(imprimirRelatorioLogGeral): Operador para o relatório: "${operador}"`);
 
     const startDateInput = document.getElementById('filterStartDate')?.value;
@@ -505,7 +502,7 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
             doc.text(doc.splitTextToSize("QTD. MOV.", colWidths[3] - 2), colPositions[3], currentY);
             doc.text(doc.splitTextToSize("QTD. ANT.", colWidths[4] - 2), colPositions[4], currentY);
             doc.text(doc.splitTextToSize("QTD. DEP.", colWidths[5] - 2), colPositions[5], currentY);
-            doc.text(doc.splitTextToSize("OPERADOR", colWidths[6] - 2), colPositions[6], currentY);
+            doc.text(doc.splitTextToSize("OPERADOR", colPositions[6] - 2), colPositions[6], currentY);
             doc.text(doc.splitTextToSize("DATA E HORA", colWidths[7] - 2), colPositions[7], currentY);
             doc.text(doc.splitTextToSize("OBSERVAÇÕES", colWidths[8] - 2), colPositions[8], currentY);
             currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; // Altura máxima dos títulos + padding
