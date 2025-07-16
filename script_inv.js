@@ -1,5 +1,7 @@
-// VERSÃO: 1.0.7 (script_inv.js)
+// VERSÃO: 1.0.8 (script_inv.js)
 // CHANGELOG:
+// - Implementado: Checkbox "Ordenar por Nome (A-Z)" para ordenar itens do log alfabeticamente.
+// - Ajustado: Lógica de ordenação da query do Firebase para alternar entre data e nome.
 // - Melhorado: Formatação do relatório PDF, com ajuste de larguras de coluna e tratamento de quebras de linha para evitar sobreposição.
 // - Ajustado: Posicionamento dos títulos das colunas para melhor legibilidade.
 // - Estrutura: Código mantido dividido em 10 sessões.
@@ -30,6 +32,7 @@ console.log("DEBUG(script_inv.js): Firebase inicializado. DB object:", db);
 
 // Seção 2: Variáveis de Estado Globais
 let currentLogFilterOperation = 'all'; // 'all' para todas as operações por padrão
+let sortByAlphabetical = false; // Novo estado para ordenação alfabética
 console.log("DEBUG(script_inv.js): Seção 2 - Variáveis de Estado Globais definidas.");
 
 // Seção 3: Funções Auxiliares de Depuração e UI
@@ -52,7 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const printLogReportBtnElement = document.getElementById('printLogReportBtn');
     const filterStartDateElement = document.getElementById('filterStartDate');
     const filterEndDateElement = document.getElementById('filterEndDate');
-    const clearDateFilterBtnElement = document.getElementById('clearDateFilterBtn'); // Novo botão
+    const clearDateFilterBtnElement = document.getElementById('clearDateFilterBtn');
+    const sortAlphabeticalCheckboxElement = document.getElementById('sortAlphabeticalCheckbox'); // Novo checkbox
 
     if (filterOperationTypeElement) {
         filterOperationTypeElement.addEventListener('change', (event) => {
@@ -93,12 +97,24 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("DEBUG(script_inv.js): Elemento 'filterEndDate' não encontrado. Filtro por data final pode não funcionar.");
     }
 
-    // Event listener para o novo botão Limpar Período
+    // Event listener para o botão Limpar Período
     if (clearDateFilterBtnElement) {
         clearDateFilterBtnElement.addEventListener('click', clearDateFilters);
         console.log("DEBUG(script_inv.js): Event listener para 'clearDateFilterBtn' adicionado.");
     } else {
         console.warn("DEBUG(script_inv.js): Elemento 'clearDateFilterBtn' não encontrado. Botão Limpar Período pode não funcionar.");
+    }
+
+    // Event listener para o novo checkbox de ordenação alfabética
+    if (sortAlphabeticalCheckboxElement) {
+        sortAlphabeticalCheckboxElement.addEventListener('change', (event) => {
+            sortByAlphabetical = event.target.checked;
+            console.log(`DEBUG(script_inv.js): Ordenação alfabética alterada para: "${sortByAlphabetical}"`);
+            listarLogGeralInventario(); // Recarrega a tabela com a nova ordenação
+        });
+        console.log("DEBUG(script_inv.js): Event listener para 'sortAlphabeticalCheckbox' adicionado.");
+    } else {
+        console.warn("DEBUG(script_inv.js): Elemento 'sortAlphabeticalCheckbox' não encontrado. Ordenação alfabética pode não funcionar.");
     }
 
 
@@ -121,7 +137,7 @@ function clearDateFilters() {
 
 // Seção 5: Lógica de Listagem da Tabela (listarLogGeralInventario)
 async function listarLogGeralInventario() {
-    console.log(`DEBUG(listarLogGeralInventario): Iniciando com filtro de operação: "${currentLogFilterOperation}"`);
+    console.log(`DEBUG(listarLogGeralInventario): Iniciando com filtro de operação: "${currentLogFilterOperation}", Ordenação Alfabética: ${sortByAlphabetical}`);
     const logTableBody = document.querySelector('#inventoryLogTable tbody');
     if (!logTableBody) {
         console.error("DEBUG(listarLogGeralInventario): Elemento '#inventoryLogTable tbody' não encontrado. Não é possível exibir logs.");
@@ -190,8 +206,17 @@ async function listarLogGeralInventario() {
             console.log(`DEBUG(listarLogGeralInventario): Adicionando 'where' para dataHoraMovimento <= ${endDate.toDate().toISOString()}`);
         }
 
-        queryConstraints.push(orderBy('dataHoraMovimento', 'desc'));
-        console.log("DEBUG(listarLogGeralInventario): Adicionando 'orderBy' para dataHoraMovimento (desc).");
+        // Lógica de ordenação condicional
+        if (sortByAlphabetical) {
+            queryConstraints.push(orderBy('itemNome', 'asc')); // Ordenar por nome (A-Z)
+            console.log("DEBUG(listarLogGeralInventario): Ordenando por 'itemNome' (asc).");
+            // Se houver filtros de data ou tipo de movimento, pode precisar de índice composto.
+            // O Firebase adicionará automaticamente __name__ asc como segundo orderBy se necessário
+        } else {
+            queryConstraints.push(orderBy('dataHoraMovimento', 'desc')); // Ordenação padrão por data (mais recente primeiro)
+            console.log("DEBUG(listarLogGeralInventario): Ordenando por 'dataHoraMovimento' (desc).");
+        }
+        
         console.log("DEBUG(listarLogGeralInventario): Restrições de query final:", queryConstraints);
 
         const q = query(logRef, ...queryConstraints);
@@ -251,7 +276,7 @@ async function imprimirRelatorioLogGeral() {
     console.log("DEBUG(imprimirRelatorioLogGeral): Iniciando geração de Relatório de Log Geral.");
     
     // Tenta obter o nome do operador. Se getOperadorNameFromInput() não existir ou retornar nulo, usa 'Desconhecido'.
-    const operador = typeof getOperadorNameFromInput === 'function' ? (getOperadorNameFromInput() || 'Desconhecido') : 'Desconhecido';
+    const operador = typeof getOperadorNameFromInput === 'function' ? (getOperadorNameToInput() || 'Desconhecido') : 'Desconhecido';
     console.log(`DEBUG(imprimirRelatorioLogGeral): Operador para o relatório: "${operador}"`);
 
     const startDateInput = document.getElementById('filterStartDate')?.value;
@@ -307,7 +332,12 @@ async function imprimirRelatorioLogGeral() {
         if (endDate) {
             queryConstraints.push(where('dataHoraMovimento', '<=', endDate));
         }
-        queryConstraints.push(orderBy('dataHoraMovimento', 'asc')); // Ordem ascendente para o relatório
+        // Ordenação para o relatório de impressão, mantém a lógica do `sortByAlphabetical`
+        if (sortByAlphabetical) {
+            queryConstraints.push(orderBy('itemNome', 'asc')); // Ordenar por nome (A-Z)
+        } else {
+            queryConstraints.push(orderBy('dataHoraMovimento', 'asc')); // Ordem ascendente por data para o relatório
+        }
 
         const q = query(logRef, ...queryConstraints);
         console.log("DEBUG(imprimirRelatorioLogGeral): Query Firestore para relatório construída:", q);
@@ -420,7 +450,7 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     const startX = 10; 
     // Larguras das colunas (somam aproximadamente 170-175 para caber bem na página A4, considerando startX e margem direita)
     // [Cód, Desc, Op, QtdMov, QtdAnt, QtdDep, Operador, DataHora, Obs]
-    const colWidths = [12, 36, 16, 10, 10, 10, 16, 26, 34]; // Ajustado para somar 178 (com startX=10, termina em 188. Max é 200-10=190)
+    const colWidths = [12, 36, 16, 10, 10, 10, 16, 26, 34]; 
     const lineHeight = 4.5; // Altura de cada linha de texto dentro de uma célula (ajustado para melhor espaçamento)
     const paddingY = 2; // Espaço vertical entre a linha inferior do texto e a linha separadora da próxima linha/borda da célula
     
@@ -490,16 +520,18 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
         const dataHoraFormatada = dataHoraObj ? formatDateTimeToDisplay(dataHoraObj) : 'N/A';
 
         // Conteúdo de cada célula (prepare para quebra de linha)
+        // Note que `doc.splitTextToSize` retorna um array de strings se houver quebra de linha
+        // ou a string original se não precisar quebrar.
         const cellContents = {
             itemCod: log.itemCod || 'N/A',
-            itemNome: doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2), // Descrição, potencialmente multi-linha
+            itemNome: doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2), 
             tipoMovimento: log.tipoMovimento || 'N/A',
             quantidadeMovimentada: log.quantidadeMovimentada !== undefined ? `${log.quantidadeMovimentada.toString()} ${log.unidadeMedidaLog || ''}` : 'N/A',
             quantidadeAntes: log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A',
             quantidadeDepois: log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A',
-            operador: doc.splitTextToSize(log.operador || 'Desconhecido', colWidths[6] - 2), // Operador, potencialmente multi-linha
-            dataHora: doc.splitTextToSize(dataHoraFormatada, colWidths[7] - 2), // Data e Hora, potencialmente multi-linha
-            observacoes: doc.splitTextToSize(log.observacoesMovimento || '', colWidths[8] - 2), // Observações, potencialmente multi-linha
+            operador: doc.splitTextToSize(log.operador || 'Desconhecido', colWidths[6] - 2), 
+            dataHora: doc.splitTextToSize(dataHoraFormatada, colWidths[7] - 2), 
+            observacoes: doc.splitTextToSize(log.observacoesMovimento || '', colWidths[8] - 2), 
         };
 
         // Calcule a altura máxima da linha com base no conteúdo de várias linhas
@@ -511,7 +543,7 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
             lineHeight // Garante uma altura mínima para linha única
         );
 
-        // Desenhar o conteúdo de cada célula
+        // Desenhar o conteúdo de cada célula, passando o array de strings se houver quebra de linha
         doc.text(cellContents.itemCod, colPositions[0], initialY);
         doc.text(cellContents.itemNome, colPositions[1], initialY);
         doc.text(cellContents.tipoMovimento, colPositions[2], initialY);
