@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7h - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7b - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -139,10 +139,9 @@
         #inventoryList { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd; padding: 4px; text-align: left; font-size: 0.75em;
-            white-space: nowrap; /* Mantido para outras colunas se for o caso */
-            vertical-align: top; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;
+            vertical-align: top; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box;
         }
-        #inventoryList td:nth-child(2) { white-space: normal; word-break: break-word; } /* Descrição permite quebra */
+        #inventoryList td:nth-child(2) { white-space: normal; word-break: break-word; }
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; }
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; }
@@ -153,79 +152,35 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; }
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; }
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
-        
-        /* Estilos específicos para a coluna Mov. Rápida (11ª coluna) */
-        #inventoryList th:nth-child(11) { 
-            width: 12%; 
-            text-align: center; /* Centraliza o cabeçalho "Mov. Rápida" */
-        } 
-        #inventoryList td:nth-child(11) {
-            width: 12%; 
-            display: flex; /* Transforma a célula em um flex container */
-            flex-direction: column; /* Empilha o conteúdo verticalmente */
-            align-items: center; /* Centraliza o conteúdo horizontalmente (eixo transversal) */
-            justify-content: center; /* Centraliza o conteúdo verticalmente (eixo principal) */
-            padding: 4px; /* Mantém o padding da célula */
-            box-sizing: border-box;
-            white-space: normal; /* Permite que o texto quebre linhas se houver */
-        }
+        /* Centralizando cabeçalho e conteúdo da coluna Mov. Rápida (ORIGINAL) */
+        #inventoryList th:nth-child(11) { width: 12%; text-align: center; } 
+        #inventoryList td:nth-child(11) { width: 12%; display: table-cell; } /* Voltou a ser table-cell */
         
         #inventoryList th { background-color: #f2f2f2; color: #333; }
         #inventoryList tr:nth-child(even) { background-color: #f9f9f9; }
         #inventoryList tr:hover { background-color: #f1f1f1; }
         #inventoryList td.action-buttons, #inventoryList td.direct-movement-controls { padding: 2px; }
 
-        .action-buttons-inner-container {
-            display: flex; flex-direction: column; gap: 1px; width: 100%;
-            align-items: stretch; justify-content: center;
-        }
-        #inventoryList .action-buttons button {
-            padding: 2px 4px; font-size: 0.95em; white-space: nowrap;
-            flex-grow: 1; box-sizing: border-box; text-align: center;
-        }
-        button.edit-btn { background-color: #5cb85c; }
-        button.edit-btn:hover { background-color: #4cae4c; }
-        button.delete-btn { background-color: #d9534f; }
-        button.delete-btn:hover { background-color: #c9302c; }
-        button.view-log-btn { background-color: #007bff; }
-        button.view-log-btn:hover { background-color: #0069d9; }
-
-        /* Contêiner dos botões e input de movimentação rápida */
+        /* Contêiner dos botões e input de movimentação rápida (ORIGINAL) */
         .direct-movement-controls {
-            /* Este contêiner interno agora não precisa de flexbox para empilhar,
-               pois a TD pai (#inventoryList td:nth-child(11)) já faz isso. */
-            /* Ele agora serve apenas como um agrupador de elementos que já estão empilhados pela TD flex. */
-            display: block; /* Garante que ocupe seu próprio espaço */
-            width: 100%; /* Ocupa a largura total da célula */
-            /* Removido text-align: center daqui porque a TD flex já faz o alinhamento central */
-            /* Removido min-width, flex-direction, align-items, justify-content, gap, white-space específicos daqui */
+            display: flex; /* Mantido flex para horizontal, como era antes da mudança */
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: center;
+            gap: 5px; 
+            min-width: 90px; 
+            white-space: nowrap; /* Mantido para não quebrar linha */
         }
-        .movement-input { 
-            width: 40px; 
-            text-align: center; 
-            margin: 0 auto; /* Centraliza o input se for block e com largura definida */
-            box-sizing: border-box; 
-            flex-shrink: 0; 
-            flex-grow: 0; 
-        }
+        .movement-input { width: 40px; text-align: center; margin: 0; box-sizing: border-box; flex-shrink: 0; flex-grow: 0; }
         .movement-button {
-            width: 22px; height: 22px; border-radius: 50%; 
-            display: flex; /* Mantém display flex para centralizar o "+"/"-" dentro do botão */
-            align-items: center; justify-content: center; /* Centraliza o "+"/"-" dentro do botão */
-            margin: 0 auto; /* Centraliza o botão como um bloco */
-            font-size: 0.8em;
+            width: 22px; height: 22px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 0.8em;
             box-sizing: border-box; flex-shrink: 0; flex-grow: 0; padding: 0;
         }
-        /* Ajustar margin-top para os botões e input para criar espaçamento vertical */
-        /* Aplicar gap na TD flex já lida com o espaçamento. Remover margin-top manual aqui. */
-        .direct-movement-controls .movement-button,
-        .direct-movement-controls .movement-input {
-            margin-top: 5px; /* Adiciona espaçamento vertical entre os elementos empilhados */
-        }
-        .direct-movement-controls .movement-button:first-child { /* Remover margin-top do primeiro item para não ter espaço indesejado no topo */
-            margin-top: 0;
-        }
-
+        .movement-button.plus { background-color: #28a745; }
+        .movement-button.plus:hover { background-color: #218838; }
+        .movement-button.minus { background-color: #dc3545; }
+        .movement-button.minus:hover { background-color: #c82333; }
 
         #itemLogSection {
             background-color: white; padding: 30px; border-radius: 8px;
@@ -279,19 +234,19 @@
             #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; }
             #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; }
             #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
-            /* Ajuste para coluna Mov. Rápida em telas menores */
+            /* Ajuste para coluna Mov. Rápida em telas menores (ORIGINAL) */
             #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { 
                 width: 12%; 
-                display: table-cell; 
-                text-align: center; /* Centraliza horizontalmente */
-                vertical-align: middle; /* Centraliza verticalmente */
+                display: table-cell; /* Voltou para o padrão */
+                text-align: center; /* Mantido para centralizar o cabeçalho */
+                vertical-align: top; /* Voltou para o padrão */
             }
-            #inventoryList .action-buttons-inner-container { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1px; min-width: unset; }
+            .action-buttons-inner-container { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1px; min-width: unset; }
             #inventoryList .action-buttons button { font-size: 0.6em; padding: 2px; margin: 1px; flex-shrink: 0; }
-            /* Ajuste para controles de movimentação rápida em mobile */
+            /* Ajuste para controles de movimentação rápida em mobile (ORIGINAL) */
             .direct-movement-controls { 
                 min-width: unset; 
-                flex-direction: column; /* Empilhar verticalmente no mobile também */
+                flex-direction: row; /* Voltou para o padrão */
                 gap: 1px; 
             }
             .movement-input { width: 30px; font-size: 0.65em; }
