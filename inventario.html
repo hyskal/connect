@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7d - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7e - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -154,7 +154,12 @@
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
         /* Centralizando cabeçalho e conteúdo da coluna Mov. Rápida */
         #inventoryList th:nth-child(11) { width: 12%; text-align: center; } /* Cabeçalho centralizado */
-        #inventoryList td:nth-child(11) { width: 12%; display: table-cell; text-align: center; } /* Conteúdo centralizado */
+        #inventoryList td:nth-child(11) {
+            width: 12%; 
+            display: table-cell; 
+            text-align: center; /* Conteúdo centralizado horizontalmente */
+            vertical-align: middle; /* Conteúdo centralizado verticalmente */
+        }
         
         #inventoryList th { background-color: #f2f2f2; color: #333; }
         #inventoryList tr:nth-child(even) { background-color: #f9f9f9; }
@@ -178,7 +183,8 @@
 
         .direct-movement-controls {
             display: flex; flex-direction: row; align-items: center; justify-content: center;
-            gap: 5px; min-width: 90px;
+            /* Removido min-width para permitir que o flex container ajuste sua largura ao conteúdo */
+            gap: 5px; /* Manter o espaçamento entre os elementos */
         }
         .movement-input { width: 40px; text-align: center; margin: 0; box-sizing: border-box; flex-shrink: 0; flex-grow: 0; }
         .movement-button {
