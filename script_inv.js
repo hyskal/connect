@@ -1,7 +1,7 @@
-// VERSÃO: 1.0.6 (script_inv.js)
+// VERSÃO: 1.0.7 (script_inv.js)
 // CHANGELOG:
-// - Corrigido: Erro de TypeError em getOperadorNameFromInput, agora sislab_utils.js é null-safe.
-// - Implementado: Botão "Limpar Período" para resetar filtros de data.
+// - Melhorado: Formatação do relatório PDF, com ajuste de larguras de coluna e tratamento de quebras de linha para evitar sobreposição.
+// - Ajustado: Posicionamento dos títulos das colunas para melhor legibilidade.
 // - Estrutura: Código mantido dividido em 10 sessões.
 
 // Seção 1: Importações e Configuração Inicial
@@ -416,13 +416,20 @@ function gerarCabecalhoPdf(doc, currentY, operador) {
 // Seção 8: Helper: Gerar Conteúdo da Tabela do PDF (Log Específico)
 function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     doc.setFontSize(8);
-    const startX = 5;
-    const colWidths = [12, 30, 18, 10, 10, 10, 18, 25, 30]; // Cód, Desc, Op, QtdMov, QtdAnt, QtdDep, Operador, DataHora, Obs
+    // Margem esquerda real para as colunas
+    const startX = 10; 
+    // Larguras das colunas (somam aproximadamente 170-175 para caber bem na página A4, considerando startX e margem direita)
+    // [Cód, Desc, Op, QtdMov, QtdAnt, QtdDep, Operador, DataHora, Obs]
+    const colWidths = [12, 38, 16, 10, 10, 10, 18, 28, 30]; 
+    const lineHeight = 3.5; // Altura de cada linha de texto dentro de uma célula
+    const paddingY = 2; // Espaço vertical entre a linha inferior do texto e a linha separadora da próxima linha/borda da célula
+    
+    // Calcular as posições X de início de cada coluna
     const colPositions = [];
-    let xOffset = startX;
+    let currentX = startX;
     colWidths.forEach(width => {
-        xOffset += width; // Calcula a posição final da coluna
-        colPositions.push(xOffset - width); // Adiciona a posição inicial da coluna
+        colPositions.push(currentX);
+        currentX += width;
     });
 
     // Títulos das colunas
@@ -436,13 +443,19 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     doc.text("OPERADOR", colPositions[6], currentY);
     doc.text("DATA E HORA", colPositions[7], currentY);
     doc.text("OBSERVAÇÕES", colPositions[8], currentY);
-    currentY += 4;
+    currentY += 4; // Espaço após os títulos das colunas
     doc.setFont(undefined, 'normal');
 
     logs.forEach((log, index) => {
-        if (currentY > 280) { // Quebra de página
+        // Altura limite da página antes de adicionar uma nova
+        const pageHeightLimit = 280; // Margem inferior para o rodapé
+        
+        // CUIDADO: currentY já inclui a altura da linha anterior + padding.
+        // Se currentY + altura da próxima linha (pelo menos 1 linha + padding) for maior que o limite, adicione uma nova página.
+        if (currentY + lineHeight + paddingY > pageHeightLimit) { 
             doc.addPage();
-            currentY = 15;
+            currentY = 15; // Reset Y para a nova página
+
             // Repete cabeçalho completo da página
             currentY = gerarCabecalhoPdf(doc, currentY, operadorReport); // Usa o operador que gerou o relatório
             doc.setFontSize(14);
@@ -466,36 +479,53 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
             doc.setFont(undefined, 'normal');
         }
 
-        let initialY = currentY; // Salva o Y inicial da linha para desenhar todos os textos
-        let maxHeightInRow = 4; // Altura mínima de uma linha de texto
+        let initialY = currentY; // Y de início para o conteúdo da linha atual
+        let rowMaxHeight = 0; // Altura máxima que esta linha ocupará
 
         // Converte o Timestamp do Firebase para um objeto Date antes de formatar
         const dataHoraObj = log.dataHoraMovimento instanceof Timestamp ? log.dataHoraMovimento.toDate() : (log.dataHoraMovimento ? new Date(log.dataHoraMovimento) : null);
         const dataHoraFormatada = dataHoraObj ? formatDateTimeToDisplay(dataHoraObj) : 'N/A';
 
-        // Dividir e posicionar textos longos
-        const splitDescription = doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2);
-        doc.text(splitDescription, colPositions[1], initialY);
-        maxHeightInRow = Math.max(maxHeightInRow, splitDescription.length * 3.5); // Ajuste fino para altura da linha
+        // Conteúdo de cada célula (prepare para quebra de linha)
+        const content = {
+            itemCod: log.itemCod || 'N/A',
+            itemNome: doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2), // Descrição, potencialmente multi-linha
+            tipoMovimento: log.tipoMovimento || 'N/A',
+            quantidadeMovimentada: log.quantidadeMovimentada !== undefined ? `${log.quantidadeMovimentada.toString()} ${log.unidadeMedidaLog || ''}` : 'N/A',
+            quantidadeAntes: log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A',
+            quantidadeDepois: log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A',
+            operador: doc.splitTextToSize(log.operador || 'Desconhecido', colWidths[6] - 2), // Operador, potencialmente multi-linha
+            dataHora: doc.splitTextToSize(dataHoraFormatada, colWidths[7] - 2), // Data e Hora, potencialmente multi-linha
+            observacoes: doc.splitTextToSize(log.observacoesMovimento || '', colWidths[8] - 2), // Observações, potencialmente multi-linha
+        };
 
-        const splitObs = doc.splitTextToSize(log.observacoesMovimento || '', colWidths[8] - 2);
-        doc.text(splitObs, colPositions[8], initialY);
-        maxHeightInRow = Math.max(maxHeightInRow, splitObs.length * 3.5); // Ajuste fino para altura da linha
+        // Calcule a altura máxima da linha com base no conteúdo de várias linhas
+        rowMaxHeight = Math.max(
+            (Array.isArray(content.itemNome) ? content.itemNome.length * lineHeight : lineHeight),
+            (Array.isArray(content.operador) ? content.operador.length * lineHeight : lineHeight),
+            (Array.isArray(content.dataHora) ? content.dataHora.length * lineHeight : lineHeight),
+            (Array.isArray(content.observacoes) ? content.observacoes.length * lineHeight : lineHeight),
+            lineHeight // Garante uma altura mínima para linha única
+        );
 
-        doc.text(log.itemCod || 'N/A', colPositions[0], initialY);
-        doc.text(log.tipoMovimento || 'N/A', colPositions[2], initialY);
-        doc.text(log.quantidadeMovimentada !== undefined ? `${log.quantidadeMovimentada.toString()} ${log.unidadeMedidaLog || ''}` : 'N/A', colPositions[3], initialY);
-        doc.text(log.quantidadeAntes !== undefined ? log.quantidadeAntes.toString() : 'N/A', colPositions[4], initialY);
-        doc.text(log.quantidadeDepois !== undefined ? log.quantidadeDepois.toString() : 'N/A', colPositions[5], initialY);
-        doc.text(log.operador || 'Desconhecido', colPositions[6], initialY);
-        doc.text(dataHoraFormatada, colPositions[7], initialY);
+        // Desenhar o conteúdo de cada célula
+        doc.text(content.itemCod, colPositions[0], initialY);
+        doc.text(content.itemNome, colPositions[1], initialY);
+        doc.text(content.tipoMovimento, colPositions[2], initialY);
+        doc.text(content.quantidadeMovimentada, colPositions[3], initialY);
+        doc.text(content.quantidadeAntes, colPositions[4], initialY);
+        doc.text(content.quantidadeDepois, colPositions[5], initialY);
+        doc.text(content.operador, colPositions[6], initialY);
+        doc.text(content.dataHora, colPositions[7], initialY);
+        doc.text(content.observacoes, colPositions[8], initialY);
         
-        currentY = initialY + maxHeightInRow + 2; // +2 para pequeno espaço extra
+        currentY = initialY + rowMaxHeight + paddingY; // Avança o Y para a próxima linha
 
+        // Desenha linha separadora (exceto para o último item)
         if (index < logs.length - 1) {
             doc.setLineWidth(0.1);
-            doc.line(colPositions[0], currentY, colPositions[0] + colWidths.reduce((a, b) => a + b, 0), currentY);
-            currentY += 3;
+            doc.line(colPositions[0], currentY, currentX, currentY); // Desenha a linha até o final da última coluna
+            currentY += 2; // Pequeno espaço extra após a linha para o próximo item
         }
     });
     return currentY;
@@ -514,23 +544,3 @@ function gerarRodapePdf(doc, operador) {
 // Seção 10: Validações e Utilities para Relatórios
 // Funções utilitárias como getOperadorNameFromInput, formatDateTimeToDisplay, formatDateToDisplay
 // são importadas de sislab_utils.js. Certifique-se de que sislab_utils.js está acessível e correto.
-// Exemplo de como sislab_utils.js deveria exportar:
-/*
-// sislab_utils.js
-export function getOperadorNameFromInput() {
-    const operadorInput = document.getElementById('operadorNameInput'); // Supondo que você tenha um input com este ID em alguma página
-    return operadorInput ? operadorInput.value : '';
-}
-
-export function formatDateTimeToDisplay(dateObj) {
-    if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
-    const date = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const time = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    return `${date} ${time}`;
-}
-
-export function formatDateToDisplay(dateObj) {
-    if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
-    return dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-*/
