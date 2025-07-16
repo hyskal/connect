@@ -420,8 +420,8 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     const startX = 10; 
     // Larguras das colunas (somam aproximadamente 170-175 para caber bem na página A4, considerando startX e margem direita)
     // [Cód, Desc, Op, QtdMov, QtdAnt, QtdDep, Operador, DataHora, Obs]
-    const colWidths = [12, 38, 16, 10, 10, 10, 18, 28, 30]; 
-    const lineHeight = 3.5; // Altura de cada linha de texto dentro de uma célula
+    const colWidths = [12, 36, 16, 10, 10, 10, 16, 26, 34]; // Ajustado para somar 178 (com startX=10, termina em 188. Max é 200-10=190)
+    const lineHeight = 4.5; // Altura de cada linha de texto dentro de uma célula (ajustado para melhor espaçamento)
     const paddingY = 2; // Espaço vertical entre a linha inferior do texto e a linha separadora da próxima linha/borda da célula
     
     // Calcular as posições X de início de cada coluna
@@ -434,16 +434,19 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
 
     // Títulos das colunas
     doc.setFont(undefined, 'bold');
-    doc.text("CÓD. ITEM", colPositions[0], currentY);
-    doc.text("DESCRIÇÃO ITEM", colPositions[1], currentY);
-    doc.text("OPERAÇÃO", colPositions[2], currentY);
-    doc.text("QTD. MOV.", colPositions[3], currentY);
-    doc.text("QTD. ANT.", colPositions[4], currentY);
-    doc.text("QTD. DEP.", colPositions[5], currentY);
-    doc.text("OPERADOR", colPositions[6], currentY);
-    doc.text("DATA E HORA", colPositions[7], currentY);
-    doc.text("OBSERVAÇÕES", colPositions[8], currentY);
-    currentY += 4; // Espaço após os títulos das colunas
+    // Para garantir que os títulos não sobreponham, passamos a largura máxima disponível para splitTextToSize
+    // e desenhamos o texto resultante.
+    doc.text(doc.splitTextToSize("CÓD. ITEM", colWidths[0] - 2), colPositions[0], currentY);
+    doc.text(doc.splitTextToSize("DESCRIÇÃO ITEM", colWidths[1] - 2), colPositions[1], currentY);
+    doc.text(doc.splitTextToSize("OPERAÇÃO", colWidths[2] - 2), colPositions[2], currentY);
+    doc.text(doc.splitTextToSize("QTD. MOV.", colWidths[3] - 2), colPositions[3], currentY);
+    doc.text(doc.splitTextToSize("QTD. ANT.", colWidths[4] - 2), colPositions[4], currentY);
+    doc.text(doc.splitTextToSize("QTD. DEP.", colWidths[5] - 2), colPositions[5], currentY);
+    doc.text(doc.splitTextToSize("OPERADOR", colWidths[6] - 2), colPositions[6], currentY);
+    doc.text(doc.splitTextToSize("DATA E HORA", colWidths[7] - 2), colPositions[7], currentY);
+    doc.text(doc.splitTextToSize("OBSERVAÇÕES", colWidths[8] - 2), colPositions[8], currentY);
+
+    currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; // Altura máxima dos títulos + padding
     doc.setFont(undefined, 'normal');
 
     logs.forEach((log, index) => {
@@ -466,16 +469,16 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
             currentY += 10;
             doc.setFontSize(8);
             doc.setFont(undefined, 'bold'); // Repete títulos das colunas na nova página
-            doc.text("CÓD. ITEM", colPositions[0], currentY);
-            doc.text("DESCRIÇÃO ITEM", colPositions[1], currentY);
-            doc.text("OPERAÇÃO", colPositions[2], currentY);
-            doc.text("QTD. MOV.", colPositions[3], currentY);
-            doc.text("QTD. ANT.", colPositions[4], currentY);
-            doc.text("QTD. DEP.", colPositions[5], currentY);
-            doc.text("OPERADOR", colPositions[6], currentY);
-            doc.text("DATA E HORA", colPositions[7], currentY);
-            doc.text("OBSERVAÇÕES", colPositions[8], currentY);
-            currentY += 4;
+            doc.text(doc.splitTextToSize("CÓD. ITEM", colWidths[0] - 2), colPositions[0], currentY);
+            doc.text(doc.splitTextToSize("DESCRIÇÃO ITEM", colWidths[1] - 2), colPositions[1], currentY);
+            doc.text(doc.splitTextToSize("OPERAÇÃO", colWidths[2] - 2), colPositions[2], currentY);
+            doc.text(doc.splitTextToSize("QTD. MOV.", colWidths[3] - 2), colPositions[3], currentY);
+            doc.text(doc.splitTextToSize("QTD. ANT.", colWidths[4] - 2), colPositions[4], currentY);
+            doc.text(doc.splitTextToSize("QTD. DEP.", colWidths[5] - 2), colPositions[5], currentY);
+            doc.text(doc.splitTextToSize("OPERADOR", colWidths[6] - 2), colPositions[6], currentY);
+            doc.text(doc.splitTextToSize("DATA E HORA", colWidths[7] - 2), colPositions[7], currentY);
+            doc.text(doc.splitTextToSize("OBSERVAÇÕES", colWidths[8] - 2), colPositions[8], currentY);
+            currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; // Altura máxima dos títulos + padding
             doc.setFont(undefined, 'normal');
         }
 
@@ -487,7 +490,7 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
         const dataHoraFormatada = dataHoraObj ? formatDateTimeToDisplay(dataHoraObj) : 'N/A';
 
         // Conteúdo de cada célula (prepare para quebra de linha)
-        const content = {
+        const cellContents = {
             itemCod: log.itemCod || 'N/A',
             itemNome: doc.splitTextToSize(log.itemNome || 'N/A', colWidths[1] - 2), // Descrição, potencialmente multi-linha
             tipoMovimento: log.tipoMovimento || 'N/A',
@@ -501,23 +504,23 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
 
         // Calcule a altura máxima da linha com base no conteúdo de várias linhas
         rowMaxHeight = Math.max(
-            (Array.isArray(content.itemNome) ? content.itemNome.length * lineHeight : lineHeight),
-            (Array.isArray(content.operador) ? content.operador.length * lineHeight : lineHeight),
-            (Array.isArray(content.dataHora) ? content.dataHora.length * lineHeight : lineHeight),
-            (Array.isArray(content.observacoes) ? content.observacoes.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.itemNome) ? cellContents.itemNome.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.operador) ? cellContents.operador.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.dataHora) ? cellContents.dataHora.length * lineHeight : lineHeight),
+            (Array.isArray(cellContents.observacoes) ? cellContents.observacoes.length * lineHeight : lineHeight),
             lineHeight // Garante uma altura mínima para linha única
         );
 
         // Desenhar o conteúdo de cada célula
-        doc.text(content.itemCod, colPositions[0], initialY);
-        doc.text(content.itemNome, colPositions[1], initialY);
-        doc.text(content.tipoMovimento, colPositions[2], initialY);
-        doc.text(content.quantidadeMovimentada, colPositions[3], initialY);
-        doc.text(content.quantidadeAntes, colPositions[4], initialY);
-        doc.text(content.quantidadeDepois, colPositions[5], initialY);
-        doc.text(content.operador, colPositions[6], initialY);
-        doc.text(content.dataHora, colPositions[7], initialY);
-        doc.text(content.observacoes, colPositions[8], initialY);
+        doc.text(cellContents.itemCod, colPositions[0], initialY);
+        doc.text(cellContents.itemNome, colPositions[1], initialY);
+        doc.text(cellContents.tipoMovimento, colPositions[2], initialY);
+        doc.text(cellContents.quantidadeMovimentada, colPositions[3], initialY);
+        doc.text(cellContents.quantidadeAntes, colPositions[4], initialY);
+        doc.text(cellContents.quantidadeDepois, colPositions[5], initialY);
+        doc.text(cellContents.operador, colPositions[6], initialY);
+        doc.text(cellContents.dataHora, colPositions[7], initialY);
+        doc.text(cellContents.observacoes, colPositions[8], initialY);
         
         currentY = initialY + rowMaxHeight + paddingY; // Avança o Y para a próxima linha
 
