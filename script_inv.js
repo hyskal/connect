@@ -1,6 +1,8 @@
-// VERSÃO: 1.0.9 (script_inv.js)
+// VERSÃO: 1.0.10 (script_inv.js)
 // CHANGELOG:
-// - Corrigido: Erro de ReferenceError na função getOperadorNameToInput, alterado para getOperadorNameFromInput.
+// - Melhorado: Layout do relatório PDF:
+//    - Cabeçalho da coluna "OBSERVAÇÕES" reduzido para "OBS.".
+//    - Largura da coluna "Observações" ajustada para forçar mais quebras de linha em textos longos.
 // - Estrutura: Código mantido dividido em 10 sessões.
 
 // Seção 1: Importações e Configuração Inicial
@@ -447,7 +449,7 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     const startX = 10; 
     // Larguras das colunas (somam aproximadamente 170-175 para caber bem na página A4, considerando startX e margem direita)
     // [Cód, Desc, Op, QtdMov, QtdAnt, QtdDep, Operador, DataHora, Obs]
-    const colWidths = [12, 36, 16, 10, 10, 10, 16, 26, 34]; 
+    const colWidths = [12, 36, 16, 10, 10, 10, 16, 26, 25]; 
     const lineHeight = 4.5; // Altura de cada linha de texto dentro de uma célula (ajustado para melhor espaçamento)
     const paddingY = 2; // Espaço vertical entre a linha inferior do texto e a linha separadora da próxima linha/borda da célula
     
@@ -471,7 +473,7 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
     doc.text(doc.splitTextToSize("QTD. DEP.", colWidths[5] - 2), colPositions[5], currentY);
     doc.text(doc.splitTextToSize("OPERADOR", colWidths[6] - 2), colPositions[6], currentY);
     doc.text(doc.splitTextToSize("DATA E HORA", colWidths[7] - 2), colPositions[7], currentY);
-    doc.text(doc.splitTextToSize("OBSERVAÇÕES", colWidths[8] - 2), colPositions[8], currentY);
+    doc.text(doc.splitTextToSize("OBS.", colWidths[8] - 2), colPositions[8], currentY); // Alterado para "OBS."
 
     currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; // Altura máxima dos títulos + padding
     doc.setFont(undefined, 'normal');
@@ -502,9 +504,9 @@ function gerarConteudoTabelaLogPdf(doc, currentY, logs, operadorReport) {
             doc.text(doc.splitTextToSize("QTD. MOV.", colWidths[3] - 2), colPositions[3], currentY);
             doc.text(doc.splitTextToSize("QTD. ANT.", colWidths[4] - 2), colPositions[4], currentY);
             doc.text(doc.splitTextToSize("QTD. DEP.", colWidths[5] - 2), colPositions[5], currentY);
-            doc.text(doc.splitTextToSize("OPERADOR", colPositions[6] - 2), colPositions[6], currentY);
+            doc.text(doc.splitTextToSize("OPERADOR", colWidths[6] - 2), colPositions[6], currentY);
             doc.text(doc.splitTextToSize("DATA E HORA", colWidths[7] - 2), colPositions[7], currentY);
-            doc.text(doc.splitTextToSize("OBSERVAÇÕES", colWidths[8] - 2), colPositions[8], currentY);
+            doc.text(doc.splitTextToSize("OBS.", colWidths[8] - 2), colPositions[8], currentY); // Alterado para "OBS."
             currentY += (doc.splitTextToSize("DATA E HORA", colWidths[7] - 2).length * lineHeight) + 2; // Altura máxima dos títulos + padding
             doc.setFont(undefined, 'normal');
         }
