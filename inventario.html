@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7b - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7f - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -156,9 +156,13 @@
         #inventoryList th:nth-child(11) { width: 12%; text-align: center; } /* Cabeçalho centralizado */
         #inventoryList td:nth-child(11) {
             width: 12%; 
-            display: table-cell; 
-            text-align: center; /* Conteúdo centralizado horizontalmente */
-            vertical-align: middle; /* Conteúdo centralizado verticalmente */
+            display: flex; /* Faz a célula ser um flex container */
+            flex-direction: column; /* Empilha os elementos verticalmente */
+            align-items: center; /* Centraliza horizontalmente (eixo cruzado) */
+            justify-content: center; /* Centraliza verticalmente (eixo principal) */
+            padding: 4px; /* Garante algum padding */
+            box-sizing: border-box; /* Inclui padding na largura */
+            white-space: normal; /* Permite quebras de linha */
         }
         
         #inventoryList th { background-color: #f2f2f2; color: #333; }
@@ -182,21 +186,35 @@
         button.view-log-btn:hover { background-color: #0069d9; }
 
         .direct-movement-controls {
-            /* Alterado para empilhar verticalmente os elementos e centralizá-los */
-            display: flex; 
-            flex-direction: column; /* De 'row' para 'column' */
-            align-items: center; /* Centraliza horizontalmente (eixo cruzado) */
-            justify-content: center; /* Centraliza verticalmente (eixo principal) */
-            gap: 5px; /* Espaçamento vertical entre os elementos */
-            min-width: auto; /* Removido min-width fixo para permitir ajuste ao conteúdo */
-            white-space: normal; /* Permitir quebra de linha dentro da célula se necessário */
+            /* Este contêiner interno agora não precisa de flexbox para empilhar, pois a TD pai já faz isso. */
+            /* Ele só precisa de alinhamento de texto se tiver elementos inline */
+            display: block; /* Garante que ocupe seu próprio espaço */
+            width: 100%; /* Ocupa a largura total da célula */
+            text-align: center; /* Centraliza os elementos inline dentro dele */
+            /* Removido min-width, flex-direction, align-items, justify-content, gap, white-space específicos daqui */
         }
-        .movement-input { width: 40px; text-align: center; margin: 0; box-sizing: border-box; flex-shrink: 0; flex-grow: 0; }
+        .movement-input { 
+            width: 40px; 
+            text-align: center; 
+            margin: 0 auto; /* Centraliza o input se for block e com largura definida */
+            box-sizing: border-box; 
+            flex-shrink: 0; 
+            flex-grow: 0; 
+        }
         .movement-button {
-            width: 22px; height: 22px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; font-size: 0.8em;
+            width: 22px; height: 22px; border-radius: 50%; 
+            display: block; /* Torna o botão um bloco para ser centralizado com margin:auto */
+            margin: 0 auto; /* Centraliza o botão */
+            align-items: center; justify-content: center; /* Mantido para centralizar o "+"/"-" dentro do botão */
+            font-size: 0.8em;
             box-sizing: border-box; flex-shrink: 0; flex-grow: 0; padding: 0;
         }
+        /* Ajustar margin-top para os botões e input para criar espaçamento vertical */
+        .direct-movement-controls .movement-button:not(:first-child),
+        .direct-movement-controls .movement-input {
+            margin-top: 5px; /* Adiciona espaçamento vertical entre os elementos empilhados */
+        }
+
         .movement-button.plus { background-color: #28a745; }
         .movement-button.plus:hover { background-color: #218838; }
         .movement-button.minus { background-color: #dc3545; }
