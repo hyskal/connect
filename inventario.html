@@ -1,3 +1,16 @@
+O log que você forneceu é de `inventario.html`, não de `log_inventario.html`. A mensagem "Função bloqueada." e o `console.log` confirmam que o problema está nos botões de filtro de status (`Todos`, `Críticos`, `Com Estoque`, `Sem Estoque`) na página de inventário.
+
+Ocorre que esses botões possuem um atributo `onclick="showAlert('...')"` no HTML que está sobrepondo (ou executando antes) os event listeners definidos no `inventario_scripts.js`. A função `showAlert` foi inserida ali para bloquear a funcionalidade, e agora precisamos removê-la para que os filtros funcionem.
+
+Além disso, vou reestruturar o `inventario.html` em 10 sessões, conforme a nossa nova prática, para garantir consistência em todo o projeto.
+
+-----
+
+### **Atualizações nos arquivos:**
+
+#### 1\. Arquivo: **`inventario.html`** (Correção dos Filtros e Reestruturação em 10 Sessões)
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,73 +18,60 @@
     <title>SISLAB 3.0.7b - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Seção 1: Estilos Gerais do Corpo e Títulos (Reaproveitados do index.html) */
+        /* Seção 2: Estilos Globais e Logotipo */
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            align-items: center;
             padding: 20px;
             margin: 0;
-            /* Plano de Fundo com Padrão */
-            background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
+            background-color: #E0E6EE;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
             background-repeat: repeat;
-            background-size: 200px 200px; /* Tamanho do tile do padrão */
+            background-size: 200px 200px;
         }
 
-        /* Contêiner do cabeçalho principal (logo + título) (Reaproveitado do index.html) */
         .main-header-container {
             display: flex;
-            align-items: center; /* Alinha verticalmente a logo e o texto */
-            justify-content: center; /* Centraliza horizontalmente */
-            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
-            gap: 15px; /* Espaço entre a logo e o título */
-            flex-wrap: wrap; /* Permite quebrar em telas menores */
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (Reaproveitado do index.html) */
         .sislab-logo {
-            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
-            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
+            width: 70px;
+            height: 50px;
             display: flex;
-            align-items: flex-end; /* Alinha os tubos na parte inferior */
-            justify-content: space-between; /* Espaço entre os tubos */
+            align-items: flex-end;
+            justify-content: space-between;
         }
 
         .tube {
-            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
-            width: 15px; /* Más fino */
-            height: 40px; /* Más compridos */
-            border-radius: 4px 4px 2px 2px; /* Base levemente más arredondada */
-            position: relative; /* Para posicionar la tapa */
-            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidad */
+            background-color: #f0f0f0;
+            width: 15px;
+            height: 40px;
+            border-radius: 4px 4px 2px 2px;
+            position: relative;
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
         }
 
         .tube-cap {
-            width: 17px; /* Ligeramente más ancho que el tubo para sobreponer */
-            height: 7px; /* Altura de la tapa */
+            width: 17px;
+            height: 7px;
             position: absolute;
-            top: -7px; /* Posiciona la tapa encima del tubo */
-            left: -1px; /* Ajusta la posición lateral para centralizar */
+            top: -7px;
+            left: -1px;
             border-radius: 4px 4px 0 0;
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para la tapa */
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2);
         }
 
-        /* Cores das tampas (Reaproveitadas do index.html) */
-        .tube:nth-child(1) .tube-cap {
-            background-color: #800080; /* Roxo */
-        }
+        .tube:nth-child(1) .tube-cap { background-color: #800080; }
+        .tube:nth-child(2) .tube-cap { background-color: #FFD700; }
+        .tube:nth-child(3) .tube-cap { background-color: #CC3333; }
 
-        .tube:nth-child(2) .tube-cap {
-            background-color: #FFD700; /* Amarelo dourado (más profissional) */
-        }
-
-        .tube:nth-child(3) .tube-cap {
-            background-color: #CC3333; /* Vermelho */
-        }
-
-        /* Estilo para o título principal (Reaproveitado do index.html) */
         h1 {
             color: #1A2B4C;
             margin: 0;
@@ -86,478 +86,167 @@
             white-space: nowrap;
         }
         @media (max-width: 600px) {
-            h1 {
-                font-size: 1.8em;
-                padding: 5px 10px;
-            }
-            .main-header-container {
-                flex-direction: column;
-                gap: 5px;
-            }
+            h1 { font-size: 1.8em; padding: 5px 10px; }
+            .main-header-container { flex-direction: column; gap: 5px; }
         }
 
-        h2, h3 { /* Mantém o estilo para os demais títulos */
-            color: #1A2B4C;
-            margin-bottom: 20px;
-        }
+        h2, h3 { color: #1A2B4C; margin-bottom: 20px; }
 
-        /* Contêiner da Barra de Ações do Topo (Nova) */
+        /* Seção 3: Estilos de Layout da Página */
         .top-action-bar-container {
             display: flex;
-            justify-content: space-between; /* Alinha itens nas extremidades */
-            align-items: center; /* Alinha verticalmente */
-            width: 95%;
-            max-width: 1200px;
-            background-color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            margin-bottom: 20px;
-            box-sizing: border-box;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%; max-width: 1200px;
+            background-color: white; padding: 15px 30px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 20px; box-sizing: border-box;
         }
-        .top-action-bar-container .form-field { /* Campo operador discreto */
-            margin-bottom: 0;
-            flex-basis: auto; /* Adapta-se ao conteúdo */
-            flex-grow: 0;
-            min-width: 250px; /* Largura mínima para o campo */
-        }
-        .top-action-bar-container .form-field label {
-            font-size: 0.9em; /* Fonte menor para discreto */
-            margin-bottom: 2px;
-        }
-        .top-action-bar-container .form-field input {
-            padding: 8px; /* Padding menor */
-            font-size: 0.9em; /* Fonte menor */
-            margin: 0; /* Remove margens extras */
-        }
+        .top-action-bar-container .form-field { margin-bottom: 0; flex-basis: auto; flex-grow: 0; min-width: 250px; }
+        .top-action-bar-container .form-field label { font-size: 0.9em; margin-bottom: 2px; }
+        .top-action-bar-container .form-field input { padding: 8px; font-size: 0.9em; margin: 0; }
 
-
-        /* Contêiner de Conteúdo Principal (que agora envolve o formulário e a lista de itens) */
         .main-content-area-container {
-            width: 95%;
-            max-width: 1200px;
-            margin-bottom: 20px;
-            display: flex; /* Permite organizar suas seções internas */
-            flex-direction: column; /* As seções internas serão empilhadas */
-            gap: 20px; /* Espaço entre as seções */
+            width: 95%; max-width: 1200px; margin-bottom: 20px; display: flex;
+            flex-direction: column; gap: 20px;
         }
 
-        /* Estilos base para blocos de conteúdo */
         .column {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            width: 100%; /* Ocupa 100% da largura do seu container pai */
+            background-color: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); box-sizing: border-box;
+            display: flex; flex-direction: column; width: 100%;
         }
-        /* Formulário de cadastro - Inicialmente oculto por padrão */
-        #itemFormSection {
-            display: none; /* INICIALMENTE OCULTO */
-        }
+        #itemFormSection { display: none; }
 
-        /* Estilos dos campos de formulário (Reaproveitados do index.html) */
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            gap: 20px;
-            margin-bottom: 15px;
-            width: 100%;
-        }
+        .form-row { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 20px; margin-bottom: 15px; width: 100%; }
+        .form-field { display: flex; flex-direction: column; flex-grow: 1; flex-basis: 0; min-width: 120px; }
+        .form-field.full-width { flex-basis: 100%; }
+        .form-field label { font-weight: bold; margin-bottom: 5px; color: #334466; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            flex-basis: 0;
-            min-width: 120px;
+        .form-field input[type="text"], .form-field input[type="number"], .form-field input[type="date"], .form-field textarea, .form-field select {
+            padding: 10px; border: 1px solid #AABBDD; border-radius: 4px; font-size: 1em; width: 100%; box-sizing: border-box;
         }
+        .form-field input.error, .form-field textarea.error, .form-field select.error { border-color: #CC3333; box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3); }
+        .error-message { color: #CC3333; font-size: 0.85em; margin-top: 5px; }
 
-        .form-field.full-width {
-            flex-basis: 100%;
-        }
-
-        .form-field label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #334466;
-        }
-        /* Estilo para esconder labels visualmente (para acessibilidade) */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-
-
-        .form-field input[type="text"],
-        .form-field input[type="number"],
-        .form-field input[type="date"],
-        .form-field textarea,
-        .form-field select {
-            padding: 10px;
-            border: 1px solid #AABBDD;
-            border-radius: 4px;
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Estilo para campos com erro (Reaproveitado do index.html) */
-        .form-field input.error,
-        .form-field textarea.error,
-        .form-field select.error {
-            border-color: #CC3333;
-            box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
-        }
-
-        /* Estilo para mensagens de erro (Reaproveitado do index.html) */
-        .error-message {
-            color: #CC3333;
-            font-size: 0.85em;
-            margin-top: 5px;
-        }
-
-        /* Estilos dos botões de ação (Reaproveitados do index.html) */
+        /* Seção 4: Estilos de Tabela e Controles de Inventário */
         .action-buttons-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 95%;
-            max-width: 1200px;
-            margin-top: 20px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            box-sizing: border-box;
+            display: flex; flex-wrap: wrap; justify-content: center; width: 95%; max-width: 1200px;
+            margin-top: 20px; padding: 20px; background-color: white; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); box-sizing: border-box;
         }
 
         button {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            background-color: #1A2B4C;
-            color: white;
-            cursor: pointer;
-            font-size: 1em;
+            padding: 10px 20px; margin: 5px; border: none; border-radius: 5px;
+            background-color: #1A2B4C; color: white; cursor: pointer; font-size: 1em;
             transition: background-color 0.3s ease;
         }
+        button:hover { background-color: #0F1D33; }
+        button.highlight-button { background-color: #CC3333; font-weight: bold; padding: 12px 25px; }
+        button.highlight-button:hover { background-color: #A02222; }
+        button.delete-item-form-btn { background-color: #dc3545; }
+        button.delete-item-form-btn:hover { background-color: #c82333; }
 
-        button:hover {
-            background-color: #0F1D33;
-        }
-
-        /* Estilo para botão de destaque (Reaproveitado do index.html) */
-        button.highlight-button {
-            background-color: #CC3333;
-            font-weight: bold;
-            padding: 12px 25px;
-        }
-
-        button.highlight-button:hover {
-            background-color: #A02222;
-        }
-        
-        /* Estilo para botão de exclusão no formulário */
-        button.delete-item-form-btn {
-            background-color: #dc3545;
-        }
-        button.delete-item-form-btn:hover {
-            background-color: #c82333;
-        }
-
-
-        /* Estilos para a Tabela/Lista de Itens do Inventário */
-        #inventoryList {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            table-layout: fixed;  
-        }
-
+        #inventoryList { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
         #inventoryList th, #inventoryList td {
-            border: 1px solid #ddd;
-            padding: 4px; /* Default padding for all cells */
-            text-align: left;
-            font-size: 0.75em;
-            vertical-align: top;  
-            overflow: hidden;  
-            text-overflow: ellipsis;  
-            white-space: nowrap;  
-            box-sizing: border-box;  
+            border: 1px solid #ddd; padding: 4px; text-align: left; font-size: 0.75em;
+            vertical-align: top; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box;
         }
-        #inventoryList td:nth-child(2) { /* Descrição, permite quebra de linha */
-            white-space: normal;
-            word-break: break-word;
-        }
+        #inventoryList td:nth-child(2) { white-space: normal; word-break: break-word; }
+        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; }
+        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }
+        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; }
+        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; }
+        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; }
+        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; }
+        #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; }
+        #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; }
+        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; }
+        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
+        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; display: table-cell; }
+        #inventoryList th { background-color: #f2f2f2; color: #333; }
+        #inventoryList tr:nth-child(even) { background-color: #f9f9f9; }
+        #inventoryList tr:hover { background-color: #f1f1f1; }
+        #inventoryList td.action-buttons, #inventoryList td.direct-movement-controls { padding: 2px; }
 
-
-        /* Larguras específicas das colunas da tabela de inventário */
-        #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; } /* Cód. */
-        #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; } /* Descrição */
-        #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; } /* Qtd. */
-        #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 6%; } /* Unid. */
-        #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; } /* Categoria */
-        #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; } /* Localização */
-        #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 9%; } /* Validade */
-        #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; } /* Últ. Atual. */
-        #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; } /* Últ. Operador */
-        #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações */
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada */
-
-        /* Garantir que a coluna Mov. Rápida esteja visível */
-        #inventoryList th:nth-child(11),
-        #inventoryList td:nth-child(11) {
-            display: table-cell;  
-        }
-
-        #inventoryList th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        #inventoryList tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        #inventoryList tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        /* NOVO: Resetar padding para células com controles específicos */
-        #inventoryList td.action-buttons,
-        #inventoryList td.direct-movement-controls {
-            padding: 2px; /* Reduzir o padding da célula para dar mais espaço ao conteúdo */
-        }
-
-        /* Ações - Estilos para o container interno dos botões (TEXTO MAIOR) */
         .action-buttons-inner-container {
-            display: flex;
-            flex-direction: column; /* Empilha os botões */
-            gap: 1px; /* Reduzir o espaço entre botões */
-            width: 100%; /* Ocupa toda a largura disponível da célula (menos padding da célula) */
-            align-items: stretch; /* Estica os botões para preencher a largura do container */
-            justify-content: center; /* Centraliza o grupo de botões verticalmente */
+            display: flex; flex-direction: column; gap: 1px; width: 100%;
+            align-items: stretch; justify-content: center;
         }
-
         #inventoryList .action-buttons button {
-            padding: 2px 4px; /* Ajustado para dar mais espaço ao texto no botão */
-            font-size: 0.95em; /* AUMENTADO MAIS para texto maior */
-            white-space: nowrap; /* Impede quebra de linha do texto do botão */
-            flex-grow: 1; /* Permite que o botão ocupe o espaço disponível */
-            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
-            text-align: center; /* Centraliza o texto dentro do botão */
+            padding: 2px 4px; font-size: 0.95em; white-space: nowrap;
+            flex-grow: 1; box-sizing: border-box; text-align: center;
         }
-        button.edit-btn { background-color: #5cb85c; }  
+        button.edit-btn { background-color: #5cb85c; }
         button.edit-btn:hover { background-color: #4cae4c; }
-        button.delete-btn { background-color: #d9534f; }  
+        button.delete-btn { background-color: #d9534f; }
         button.delete-btn:hover { background-color: #c9302c; }
-        button.view-log-btn { background-color: #007bff; }  
+        button.view-log-btn { background-color: #007bff; }
         button.view-log-btn:hover { background-color: #0069d9; }
 
-
-        /* Mov. Rápida - Layout horizontal (+ campo -) e botões menores */
         .direct-movement-controls {
-            display: flex;  
-            flex-direction: row; /* Elementos lado a lado */
-            align-items: center; /* Alinha verticalmente o input e botões no centro */
-            justify-content: center; /* MUDANÇA AQUI: Centraliza horizontalmente os elementos */
-            gap: 5px; /* Aumente o gap para espaçamento entre os elementos centralizados */
-            min-width: 90px; /* Ajustado para acomodar o layout horizontal */
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
+            gap: 5px; min-width: 90px;
         }
-
-        .movement-input {  
-            width: 40px; /* Ajustado o width do input para layout horizontal */
-            text-align: center; /* Centraliza o texto do input */
-            margin: 0; /* Remover margens extras */
-            box-sizing: border-box;
-            flex-shrink: 0; /* Impede o encolhimento */
-            flex-grow: 0; /* Não cresce */
-        }  
-        .movement-button {  
-            width: 22px; /* Ajustado o width dos botões */
-            height: 22px; /* Ajustado o height dos botões */
-            border-radius: 50%; /* Manter circular */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em; /* Ajustado o tamanho da fonte do +/- */
-            box-sizing: border-box;
-            flex-shrink: 0; /* Impede o encolhimento */
-            flex-grow: 0; /* Não cresce */
-            padding: 0; /* Sem padding interno para ser mais compacto */
-        }  
-        .movement-button.plus { background-color: #28a745; }  
+        .movement-input { width: 40px; text-align: center; margin: 0; box-sizing: border-box; flex-shrink: 0; flex-grow: 0; }
+        .movement-button {
+            width: 22px; height: 22px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 0.8em;
+            box-sizing: border-box; flex-shrink: 0; flex-grow: 0; padding: 0;
+        }
+        .movement-button.plus { background-color: #28a745; }
         .movement-button.plus:hover { background-color: #218838; }
-        .movement-button.minus { background-color: #dc3545; }  
+        .movement-button.minus { background-color: #dc3545; }
         .movement-button.minus:hover { background-color: #c82333; }
 
-
-        /* Estilos para a seção de log de item */
         #itemLogSection {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            box-sizing: border-box;
-            width: 95%;  
-            max-width: 1200px;
-            margin-top: 20px;
+            background-color: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); box-sizing: border-box;
+            width: 95%; max-width: 1200px; margin-top: 20px;
         }
-        #itemLogTable {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        #itemLogTable th, #itemLogTable td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            font-size: 0.85em;  
-            vertical-align: top;
-        }
-        #itemLogTable th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-        #itemLogTable tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        #itemLogTable tr:hover {
-            background-color: #f1f1f1;
-        }
-        /* Container para rolagem do log */
-        .item-log-scroll-container {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-        }
+        #itemLogTable { width: 100%; border-collapse: collapse; }
+        #itemLogTable th, #itemLogTable td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; vertical-align: top; }
+        #itemLogTable th { background-color: #f2f2f2; color: #333; }
+        #itemLogTable tr:nth-child(even) { background-color: #f9f9f9; }
+        #itemLogTable tr:hover { background-color: #f1f1f1; }
+        .item-log-scroll-container { max-height: 300px; overflow-y: auto; border: 1px solid #eee; }
 
-        /* Estilos para filtros de inventário */
         .inventory-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
-            width: 100%;
-            justify-content: flex-start;
-            align-items: center;
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
+            width: 100%; justify-content: flex-start; align-items: center;
         }
-        .inventory-filters .form-field {
-            margin-bottom: 0;  
-            flex-grow: 1;  
-            min-width: 120px;  
-        }
-        .inventory-filters .form-field:last-child {
-            flex-grow: 0;  
-        }
-        .inventory-filters .filter-buttons-group {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;  
-        }
+        .inventory-filters .form-field { margin-bottom: 0; flex-grow: 1; min-width: 120px; }
+        .inventory-filters .form-field:last-child { flex-grow: 0; }
+        .inventory-filters .filter-buttons-group { display: flex; gap: 5px; flex-wrap: wrap; }
         .inventory-filters button {
-            padding: 8px 15px;
-            font-size: 0.9em;
-            margin: 0;
-            background-color: #6c757d;  
-            flex-shrink: 0;  
+            padding: 8px 15px; font-size: 0.9em; margin: 0;
+            background-color: #6c757d;
         }
-        .inventory-filters button.active-filter {
-            background-color: #1A2B4C;  
-            font-weight: bold;
-        }
-        .inventory-filters input[type="number"]#criticalQuantityInput {
-            width: 60px;  
-            min-width: 60px;
-        }
-        .inventory-filters #filterCategory {
-            min-width: 150px;
-        }
+        .inventory-filters button.active-filter { background-color: #1A2B4C; font-weight: bold; }
+        .inventory-filters input[type="number"]#criticalQuantityInput { width: 60px; min-width: 60px; }
+        .inventory-filters #filterCategory { min-width: 150px; }
 
-
-        /* Media Query para telas menores: colunas empilham (ATUALIZADAS) */
+        /* Seção 5: Media Queries */
         @media (max-width: 900px) {
-            /* Seções Superior e Inferior empilham */
-            .top-section-container, .bottom-section-container {
-                flex-direction: column;
-                width: 95%;
-            }
-            /* Colunas dentro da seção superior empilham */
-            .top-section-container .column.operator-info,
-            .top-section-container .column.item-form {
-                flex-basis: 100%;  
-                max-width: 100%;  
-                min-width: unset;  
-            }
-            /* Ajuste para as colunas da tabela em telas pequenas */
-            #inventoryList th, #inventoryList td {
-                font-size: 0.6em; /* Fonte ainda menor em mobile para tentar caber */
-                padding: 2px;
-                white-space: normal;  
-                word-break: break-word;  
-            }
-            /* Larguras específicas para mobile, adaptando-se a 100% da coluna */
-            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; }  
-            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }  
-            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; }  
-            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 5%; }  
-            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; }  
-            #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; }  
-            #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; }  
-            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; }  
-            #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; }  
-            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; } /* Ações - AUMENTADO para mobile */
-            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; } /* Mov. Rápida - Exibido e com largura ajustada para mobile */
-            
-            /* Garantir que a coluna Mov. Rápida esteja visível no mobile */
-            #inventoryList th:nth-child(11),
-            #inventoryList td:nth-child(11) {
-                display: table-cell;  
-            }
-
-            /* Ajuste específico para botões de ação em mobile */
-            #inventoryList .action-buttons-inner-container {  
-                flex-direction: row; /* Botões em linha no mobile */
-                flex-wrap: wrap; /* Permite quebrar linha se necessário */
-                justify-content: center;  
-                align-items: center;
-                gap: 1px; /* Espaço mínimo entre botões */
-                min-width: unset; /* Remove min-width fixo para mobile */
-            }
-            #inventoryList .action-buttons button {  
-                font-size: 0.6em; /* Ajuste de tamanho para caber */
-                padding: 2px;  
-                margin: 1px;  
-                flex-shrink: 0; /* Impede encolhimento */
-            }
-            
-            /* Ajuste específico para controles de movimentação rápida em mobile */
-            .direct-movement-controls {
-                min-width: unset; /* Remove min-width fixo para mobile */
-                flex-direction: row; /* Manter layout horizontal no mobile */
-                gap: 1px; /* Espaço menor no mobile */
-            }
-            .movement-input {
-                width: 30px; /* Ainda menor para mobile */
-                font-size: 0.65em; /* Fonte menor para mobile */
-            }
-            .movement-button {
-                width: 18px; /* Ainda menor para mobile */
-                height: 18px;
-                font-size: 0.6em; /* Fonte menor para mobile */
-            }
-
+            .top-section-container, .bottom-section-container { flex-direction: column; width: 95%; }
+            .top-section-container .column.operator-info, .top-section-container .column.item-form { flex-basis: 100%; max-width: 100%; min-width: unset; }
+            #inventoryList th, #inventoryList td { font-size: 0.6em; padding: 2px; white-space: normal; word-break: break-word; }
+            #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; }
+            #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }
+            #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; }
+            #inventoryList th:nth-child(4), #inventoryList td:nth-child(4) { width: 5%; }
+            #inventoryList th:nth-child(5), #inventoryList td:nth-child(5) { width: 8%; }
+            #inventoryList th:nth-child(6), #inventoryList td:nth-child(6) { width: 9%; }
+            #inventoryList th:nth-child(7), #inventoryList td:nth-child(7) { width: 8%; }
+            #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; }
+            #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; }
+            #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; display: table-cell; }
+            #inventoryList .action-buttons-inner-container { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1px; min-width: unset; }
+            #inventoryList .action-buttons button { font-size: 0.6em; padding: 2px; margin: 1px; flex-shrink: 0; }
+            .direct-movement-controls { min-width: unset; flex-direction: row; gap: 1px; }
+            .movement-input { width: 30px; font-size: 0.65em; }
+            .movement-button { width: 18px; height: 18px; font-size: 0.6em; }
         }
     </style>
 </head>
@@ -585,7 +274,8 @@
             <input type="text" id="operatorName" placeholder="Seu nome completo">
             <div id="operatorName-error" class="error-message"></div>
         </div>
-        <button id="showAddItemFormBtn" onclick="showAlert('Cadastrar Novo Item')">Cadastrar Novo Item</button> </div>
+        <button id="showAddItemFormBtn">Cadastrar Novo Item</button>
+    </div>
 
     <div class="main-content-area-container">
         <div id="itemFormSection" class="column">
@@ -645,13 +335,13 @@
                 </div>
             </div>
             <div class="action-buttons-container" style="box-shadow:none; background-color:transparent; padding:0; justify-content: flex-end;">
-                <button id="saveItemBtn" class="highlight-button" onclick="showAlert('Salvar Item')">Salvar Item</button>
-                <button id="clearItemFormBtn" onclick="showAlert('Limpar Formulário')">Limpar Formulário</button>
-                <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;" onclick="showAlert('Excluir Item')">Excluir Item</button> <input type="hidden" id="itemIdToEdit">  
+                <button id="saveItemBtn" class="highlight-button">Salvar Item</button>
+                <button id="clearItemFormBtn">Limpar Formulário</button>
+                <button id="deleteItemFormBtn" class="delete-item-form-btn" style="display:none;">Excluir Item</button> <input type="hidden" id="itemIdToEdit">
             </div>
         </div>
 
-        <div class="column item-list">  
+        <div class="column item-list">
             <h3>Itens Atuais em Estoque:</h3>
             <div class="inventory-filters">
                 <div class="form-field" style="flex-grow: 1;">
@@ -662,33 +352,33 @@
                     <label for="filterCategory" class="sr-only">Filtrar por Categoria</label>
                     <select id="filterCategory">
                         <option value="">Todas as Categorias</option>
-                        </select>
+                    </select>
                 </div>
                 <div class="form-field" style="flex-shrink: 0; min-width: unset;">
                     <label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
                     <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
                 </div>
                 <div class="filter-buttons-group">
-                    <button id="filterAllItemsBtn" class="active-filter" onclick="showAlert('Filtrar Todos os Itens')">Todos</button>
-                    <button id="filterCriticalItemsBtn" onclick="showAlert('Filtrar Itens Críticos')">Críticos</button>
-                    <button id="filterInStockItemsBtn" onclick="showAlert('Filtrar Itens Com Estoque')">Com Estoque</button>
-                    <button id="filterOutOfStockItemsBtn" onclick="showAlert('Filtrar Itens Sem Estoque')">Sem Estoque</button>
+                    <button id="filterAllItemsBtn" class="active-filter">Todos</button>
+                    <button id="filterCriticalItemsBtn">Críticos</button>
+                    <button id="filterInStockItemsBtn">Com Estoque</button>
+                    <button id="filterOutOfStockItemsBtn">Sem Estoque</button>
                 </div>
             </div>
 
-            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;">  
+            <div class="table-scroll-container" style="max-height: 400px; overflow-y: auto;">
                 <table id="inventoryList">
                     <thead>
                         <tr>
                             <th>Cód.</th>
                             <th>Descrição</th>
                             <th>Qtd.</th>
-                            <th>Unid.</th>  
+                            <th>Unid.</th>
                             <th>Categoria</th>
-                            <th>Localização</th>  
-                            <th>Validade</th>  
-                            <th>Últ. Atual.</th>  
-                            <th>Últ. Operador</th>  
+                            <th>Localização</th>
+                            <th>Validade</th>
+                            <th>Últ. Atual.</th>
+                            <th>Últ. Operador</th>
                             <th>Ações</th>
                             <th>Mov. Rápida</th>
                         </tr>
@@ -721,34 +411,26 @@
             </table>
         </div>
         <div class="action-buttons-container" style="margin-top:20px; box-shadow:none; background-color:transparent; padding:0;">
-            <button id="closeItemLogBtn" onclick="showAlert('Fechar Histórico')">Fechar Histórico</button>
+            <button id="closeItemLogBtn">Fechar Histórico</button>
         </div>
     </div>
 
     <div class="action-buttons-container">
         <button id="printInventoryReportBtn">Imprimir Relatório de Estoque Atual</button>
-        
-        <button id="generateReplenishmentReportBtn" onclick="showAlert('Gerar Relatório de Reposição'); /* original function call can be commented out here */">Gerar Relatório de Reposição</button>
-        <button id="generateConsumptionReportBtn" onclick="showAlert('Gerar Relatório de Consumo'); /* original function call can be commented out here */">Gerar Relatório de Consumo</button>
-        <button id="generateDueDateReportBtn" onclick="showAlert('Gerar Relatório de Itens Próximos do Vencimento'); /* original function call can be commented out here */">Gerar Relatório de Itens Próximos do Vencimento</button>
-        
-        <button onclick="showAlert('Voltar para Cadastro de Exames'); return false;">Voltar para Cadastro de Exames</button>
+        <button id="generateReplenishmentReportBtn">Gerar Relatório de Reposição</button>
+        <button id="generateConsumptionReportBtn">Gerar Relatório de Consumo</button>
+        <button id="generateDueDateReportBtn">Gerar Relatório de Itens Próximos do Vencimento</button>
+        <button onclick="window.location.href='index.html'">Voltar para Cadastro de Exames</button>
     </div>
 
     <script type="module">
-        // Função para exibir o alerta de "Função indisponível no momento"
-        function showAlert(buttonName) {
-            alert("Função indisponível no momento");
-            // Adicione console.log para depuração (opcional)
-            console.log(`Botão '${buttonName}' clicado. Função bloqueada.`);
-        }
-
-        // Torna a função showAlert globalmente acessível
-        window.showAlert = showAlert;
+        // Função showAlert removida daqui, pois os botões agora chamam as funções do inventario_scripts.js diretamente.
+        // Se precisar de alguma mensagem de alerta global, ela deve ser definida em sislab_utils.js
+        // ou em um script global que não conflite com as funcionalidades específicas.
 
         // Importa as funções do SDK do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit, deleteDoc, doc, updateDoc, where, serverTimestamp, getDoc, runTransaction, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
         // Sua configuração do Firebase
         const firebaseConfig = {
@@ -786,3 +468,4 @@
     <script src="inventario_scripts.js" type="module"></script>
 </body>
 </html>
+```
