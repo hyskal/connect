@@ -1,6 +1,6 @@
-// VERSÃO: 1.0.1 (sislab_utils.js)
+// VERSÃO: 1.0.2 (sislab_utils.js)
 // CHANGELOG:
-// - Alterado: getOperadorNameFromInput agora retorna null de forma segura se o elemento não for encontrado.
+// - Alterado: formatDateTimeToDisplay agora inclui uma quebra de linha para formatar data e hora em duas linhas.
 
 // --- CONFIGURAÇÃO DO ARQUIVO LOCAL PARA CATEGORIAS ---
 export const LOCAL_FILENAME_CATEGORIES = 'categorias_inventario.txt';
@@ -86,7 +86,8 @@ export function formatDateTimeToDisplay(date) {
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
     const seconds = d.getSeconds().toString().padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    // MODIFICAÇÃO AQUI: Adiciona a quebra de linha
+    return `${day}/${month}/${year}\n${hours}:${minutes}:${seconds}`;
 }
 
 // --- Funções de Carregamento Dinâmico ---
