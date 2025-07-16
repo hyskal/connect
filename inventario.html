@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7f - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7h - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -139,9 +139,10 @@
         #inventoryList { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
         #inventoryList th, #inventoryList td {
             border: 1px solid #ddd; padding: 4px; text-align: left; font-size: 0.75em;
-            vertical-align: top; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box;
+            white-space: nowrap; /* Mantido para outras colunas se for o caso */
+            vertical-align: top; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;
         }
-        #inventoryList td:nth-child(2) { white-space: normal; word-break: break-word; }
+        #inventoryList td:nth-child(2) { white-space: normal; word-break: break-word; } /* Descrição permite quebra */
         #inventoryList th:nth-child(1), #inventoryList td:nth-child(1) { width: 4%; }
         #inventoryList th:nth-child(2), #inventoryList td:nth-child(2) { width: 17%; }
         #inventoryList th:nth-child(3), #inventoryList td:nth-child(3) { width: 4%; }
@@ -152,17 +153,21 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; }
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; }
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
-        /* Centralizando cabeçalho e conteúdo da coluna Mov. Rápida */
-        #inventoryList th:nth-child(11) { width: 12%; text-align: center; } /* Cabeçalho centralizado */
+        
+        /* Estilos específicos para a coluna Mov. Rápida (11ª coluna) */
+        #inventoryList th:nth-child(11) { 
+            width: 12%; 
+            text-align: center; /* Centraliza o cabeçalho "Mov. Rápida" */
+        } 
         #inventoryList td:nth-child(11) {
             width: 12%; 
-            display: flex; /* Faz a célula ser um flex container */
-            flex-direction: column; /* Empilha os elementos verticalmente */
-            align-items: center; /* Centraliza horizontalmente (eixo cruzado) */
-            justify-content: center; /* Centraliza verticalmente (eixo principal) */
-            padding: 4px; /* Garante algum padding */
-            box-sizing: border-box; /* Inclui padding na largura */
-            white-space: normal; /* Permite quebras de linha */
+            display: flex; /* Transforma a célula em um flex container */
+            flex-direction: column; /* Empilha o conteúdo verticalmente */
+            align-items: center; /* Centraliza o conteúdo horizontalmente (eixo transversal) */
+            justify-content: center; /* Centraliza o conteúdo verticalmente (eixo principal) */
+            padding: 4px; /* Mantém o padding da célula */
+            box-sizing: border-box;
+            white-space: normal; /* Permite que o texto quebre linhas se houver */
         }
         
         #inventoryList th { background-color: #f2f2f2; color: #333; }
@@ -185,12 +190,14 @@
         button.view-log-btn { background-color: #007bff; }
         button.view-log-btn:hover { background-color: #0069d9; }
 
+        /* Contêiner dos botões e input de movimentação rápida */
         .direct-movement-controls {
-            /* Este contêiner interno agora não precisa de flexbox para empilhar, pois a TD pai já faz isso. */
-            /* Ele só precisa de alinhamento de texto se tiver elementos inline */
+            /* Este contêiner interno agora não precisa de flexbox para empilhar,
+               pois a TD pai (#inventoryList td:nth-child(11)) já faz isso. */
+            /* Ele agora serve apenas como um agrupador de elementos que já estão empilhados pela TD flex. */
             display: block; /* Garante que ocupe seu próprio espaço */
             width: 100%; /* Ocupa a largura total da célula */
-            text-align: center; /* Centraliza os elementos inline dentro dele */
+            /* Removido text-align: center daqui porque a TD flex já faz o alinhamento central */
             /* Removido min-width, flex-direction, align-items, justify-content, gap, white-space específicos daqui */
         }
         .movement-input { 
@@ -203,22 +210,22 @@
         }
         .movement-button {
             width: 22px; height: 22px; border-radius: 50%; 
-            display: block; /* Torna o botão um bloco para ser centralizado com margin:auto */
-            margin: 0 auto; /* Centraliza o botão */
-            align-items: center; justify-content: center; /* Mantido para centralizar o "+"/"-" dentro do botão */
+            display: flex; /* Mantém display flex para centralizar o "+"/"-" dentro do botão */
+            align-items: center; justify-content: center; /* Centraliza o "+"/"-" dentro do botão */
+            margin: 0 auto; /* Centraliza o botão como um bloco */
             font-size: 0.8em;
             box-sizing: border-box; flex-shrink: 0; flex-grow: 0; padding: 0;
         }
         /* Ajustar margin-top para os botões e input para criar espaçamento vertical */
-        .direct-movement-controls .movement-button:not(:first-child),
+        /* Aplicar gap na TD flex já lida com o espaçamento. Remover margin-top manual aqui. */
+        .direct-movement-controls .movement-button,
         .direct-movement-controls .movement-input {
             margin-top: 5px; /* Adiciona espaçamento vertical entre os elementos empilhados */
         }
+        .direct-movement-controls .movement-button:first-child { /* Remover margin-top do primeiro item para não ter espaço indesejado no topo */
+            margin-top: 0;
+        }
 
-        .movement-button.plus { background-color: #28a745; }
-        .movement-button.plus:hover { background-color: #218838; }
-        .movement-button.minus { background-color: #dc3545; }
-        .movement-button.minus:hover { background-color: #c82333; }
 
         #itemLogSection {
             background-color: white; padding: 30px; border-radius: 8px;
