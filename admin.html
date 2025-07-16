@@ -99,8 +99,28 @@
     </script>
 
     <script>
-        // Definir a senha base para limpar o histórico (nova lógica para senha dinâmica)
+        // Definir a senha base para acesso administrativo
         const SENHA_BASE_SISLAB_ADMIN = "sislab";
+
+        // Função para exibir o Log Geral de Inventário, agora com camada de senha
+        async function mostrarLogGeralInventario() {
+            const now = new Date();
+            const hour = now.getHours().toString().padStart(2, '0');
+            const minute = now.getMinutes().toString().padStart(2, '0');
+            const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
+
+            const senhaDigitada = prompt(`Para acessar o Log Geral, digite a senha.`);
+            if (senhaDigitada === null) {
+                alert("Acesso cancelado.");
+                return;
+            }
+            if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+                alert("Redirecionando para a página do Log Geral de Inventário.");
+                window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
+            } else {
+                alert('Senha incorreta. Acesso negado ao Log Geral.');
+            }
+        }
 
         // A função de limpar histórico, agora na página admin
         async function limparHistoricoAdmin() {
@@ -159,12 +179,6 @@
             } else {
                 alert('Senha incorreta. Histórico não foi limpo.');
             }
-        }
-
-        // Função para exibir o Log Geral de Inventário
-        async function mostrarLogGeralInventario() {
-            alert("Redirecionando para a página do Log Geral de Inventário (a ser implementada).");
-            window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
         }
 
         // Função para abrir index.html em nova aba com parâmetro para gerar paciente aleatório
