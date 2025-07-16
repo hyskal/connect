@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7e - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7b - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -182,9 +182,14 @@
         button.view-log-btn:hover { background-color: #0069d9; }
 
         .direct-movement-controls {
-            display: flex; flex-direction: row; align-items: center; justify-content: center;
-            /* Removido min-width para permitir que o flex container ajuste sua largura ao conteúdo */
-            gap: 5px; /* Manter o espaçamento entre os elementos */
+            /* Alterado para empilhar verticalmente os elementos e centralizá-los */
+            display: flex; 
+            flex-direction: column; /* De 'row' para 'column' */
+            align-items: center; /* Centraliza horizontalmente (eixo cruzado) */
+            justify-content: center; /* Centraliza verticalmente (eixo principal) */
+            gap: 5px; /* Espaçamento vertical entre os elementos */
+            min-width: auto; /* Removido min-width fixo para permitir ajuste ao conteúdo */
+            white-space: normal; /* Permitir quebra de linha dentro da célula se necessário */
         }
         .movement-input { width: 40px; text-align: center; margin: 0; box-sizing: border-box; flex-shrink: 0; flex-grow: 0; }
         .movement-button {
@@ -249,10 +254,21 @@
             #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 10%; }
             #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 8%; }
             #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
-            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; display: table-cell; }
+            /* Ajuste para coluna Mov. Rápida em telas menores */
+            #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { 
+                width: 12%; 
+                display: table-cell; 
+                text-align: center; /* Centraliza horizontalmente */
+                vertical-align: middle; /* Centraliza verticalmente */
+            }
             #inventoryList .action-buttons-inner-container { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1px; min-width: unset; }
             #inventoryList .action-buttons button { font-size: 0.6em; padding: 2px; margin: 1px; flex-shrink: 0; }
-            .direct-movement-controls { min-width: unset; flex-direction: row; gap: 1px; }
+            /* Ajuste para controles de movimentação rápida em mobile */
+            .direct-movement-controls { 
+                min-width: unset; 
+                flex-direction: column; /* Empilhar verticalmente no mobile também */
+                gap: 1px; 
+            }
             .movement-input { width: 30px; font-size: 0.65em; }
             .movement-button { width: 18px; height: 18px; font-size: 0.6em; }
         }
