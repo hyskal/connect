@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 3.0.7c - Controle de Estoque (CETEP/LNAB)</title>
+    <title>SISLAB 3.0.7d - Controle de Estoque (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 2: Estilos Globais e Logotipo */
@@ -152,7 +152,10 @@
         #inventoryList th:nth-child(8), #inventoryList td:nth-child(8) { width: 9%; }
         #inventoryList th:nth-child(9), #inventoryList td:nth-child(9) { width: 7%; }
         #inventoryList th:nth-child(10), #inventoryList td:nth-child(10) { width: 15%; }
-        #inventoryList th:nth-child(11), #inventoryList td:nth-child(11) { width: 12%; display: table-cell; }
+        /* Centralizando cabeçalho e conteúdo da coluna Mov. Rápida */
+        #inventoryList th:nth-child(11) { width: 12%; text-align: center; } /* Cabeçalho centralizado */
+        #inventoryList td:nth-child(11) { width: 12%; display: table-cell; text-align: center; } /* Conteúdo centralizado */
+        
         #inventoryList th { background-color: #f2f2f2; color: #333; }
         #inventoryList tr:nth-child(even) { background-color: #f9f9f9; }
         #inventoryList tr:hover { background-color: #f1f1f1; }
@@ -210,6 +213,11 @@
             /* Garante que o form-field se comporta como coluna para label/input e empurra o input para baixo */
             display: flex; flex-direction: column; justify-content: flex-end;
         }
+        /* Ajuste específico para o label do Critical Quantity Input para alinhamento vertical */
+        .inventory-filters .form-field label[for="criticalQuantityInput"] {
+            padding-bottom: 7px; /* Adiciona padding para empurrar o label para cima */
+        }
+
         .inventory-filters .form-field:last-child { flex-grow: 0; }
         .inventory-filters .filter-buttons-group { display: flex; gap: 5px; flex-wrap: wrap; }
         .inventory-filters button {
@@ -349,8 +357,7 @@
                     </select>
                 </div>
                 <div class="form-field" style="flex-shrink: 0; min-width: unset;">
-                    <label for="criticalQuantityInput" style="margin-bottom: 0;">Qtd. Crítica:</label>
-                    <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
+                    <label for="criticalQuantityInput">Qtd. Crítica:</label> <input type="number" id="criticalQuantityInput" value="3" min="0" style="margin-left: 5px;">
                 </div>
                 <div class="filter-buttons-group">
                     <button id="filterAllItemsBtn" class="active-filter">Todos</button>
