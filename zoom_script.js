@@ -10,7 +10,7 @@ const ZOOM_LEVELS = {
 };
 
 // Defina aqui qual nível de zoom será aplicado por padrão (escolha entre '1', '2', '3', '4', '5')
-const DEFAULT_ZOOM_KEY = '3'; // Por padrão, inicia em 100%
+const DEFAULT_ZOOM_KEY = '2'; // Por padrão, inicia em 100%
 
 // Função para aplicar o zoom à página
 function applyPreconfiguredZoom() {
