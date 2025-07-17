@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.10 (script.js)
+// VERSÃO: 2.0.11 (script.js)
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
@@ -12,7 +12,7 @@
 // - CORREÇÃO: Refatoração da função carregarCadastroFirebase para usar preencherCamposComCadastro de forma mais limpa.
 // - MELHORIA: Adicionado try/catch global no window.onload para capturar e alertar sobre erros críticos de inicialização.
 // - DIAGNÓSTICO: Adicionados logs no console para depurar o carregamento de paciente aleatório.
-// - CORREÇÃO: Ajuste na lógica de preenchimento de exames selecionados em preencherCamposComCadastro para garantir que exames do histórico sejam marcados corretamente. (Aplicado novamente e melhorado debug)
+// - CORREÇÃO: [CRÍTICO] Corrigida a chave de acesso para exames selecionados em preencherCamposComCadastro de `p.examesSelecionados` para `p.exames`, que é a chave correta vinda do Firebase.
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -550,8 +550,9 @@ function preencherCamposComCadastro(p) {
         document.getElementById('data_nasc').dispatchEvent(new Event('change'));
     }
 
-    // Marca os exames selecionados - CORREÇÃO E MELHORIA DE DEBUG AQUI
-    const examesDoPaciente = Array.isArray(p.examesSelecionados) ? p.examesSelecionados : [];
+    // Marca os exames selecionados - CORREÇÃO CRÍTICA AQUI
+    // Usa p.exames, pois é onde os dados vêm do Firebase (e é consistente com coletarDados)
+    const examesDoPaciente = Array.isArray(p.exames) ? p.exames : []; 
     console.log("preencherCamposComCadastro: examesDoPaciente (após Array.isArray check):", examesDoPaciente);
     console.log("preencherCamposComCadastro: Tipo de examesDoPaciente:", typeof examesDoPaciente, "É Array?", Array.isArray(examesDoPaciente));
 
@@ -1216,4 +1217,4 @@ async function salvarListaExamesNoGitHub() {
         console.error("salvarListaExamesNoGitHub: Erro ao salvar lista de exames na Gist:", error);
         alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
     }
-}
+                                           }
