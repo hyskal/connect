@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.9a
+// VERSÃO: 2.0.9b
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
