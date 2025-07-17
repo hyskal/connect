@@ -10,11 +10,11 @@ const ZOOM_LEVELS = {
 };
 
 // Defina aqui qual nível de zoom será aplicado por padrão (escolha entre '1', '2', '3', '4', '5')
-const DEFAULT_ZOOM_KEY = '2'; // Por padrão, inicia em 100%
+const DEFAULT_ZOOM_KEY = '3'; // Por padrão, inicia em 100%
 
 // Função para aplicar o zoom à página
 function applyPreconfiguredZoom() {
-    const zoomPercentage = ZOOM_LEVELS[DEFAULT_ZOOM_KEY];
+    let zoomPercentage = ZOOM_LEVELS[DEFAULT_ZOOM_KEY];
 
     if (zoomPercentage === undefined) {
         console.error(`zoom_script.js: Chave de zoom padrão (${DEFAULT_ZOOM_KEY}) inválida. Usando 100% como fallback.`);
@@ -26,32 +26,30 @@ function applyPreconfiguredZoom() {
     console.log(`zoom_script.js: Aplicando zoom de ${zoomPercentage}% (Escala: ${scaleFactor}).`);
 
     // Elementos que serão escalados
+    // NOTA: document.body já é incluído no CSS com transform-origin e transition.
+    // Aplicar transform em elementos filhos ajuda a manter o fluxo do documento.
     const elementsToScale = [
-        document.body, // Escala o corpo inteiro
         document.querySelector('.main-header-container'),
-        document.querySelector('.zoom-display-container'), // O próprio display de zoom
+        document.querySelector('.zoom-display-container'),
         document.querySelector('.main-content-container'),
         document.querySelector('.action-buttons-container'),
         document.getElementById('historico'),
         document.getElementById('editorExames')
     ];
 
+    // Aplica o transform: scale() aos elementos filhos do body
     elementsToScale.forEach(element => {
         if (element) {
             element.style.transform = `scale(${scaleFactor})`;
-            // transform-origin: top center; já está no CSS para esses elementos via index.html style
         }
     });
 
-    // Ajuste da largura do body para que o conteúdo escalado não cause barras de rolagem desnecessárias
-    // Se o body é escalado, sua largura efetiva diminui em relação ao viewport.
-    // Ajustar width para 100% / scaleFactor% faz com que ele ocupe o espaço original.
-    // No entanto, é importante que o 'transform-origin' seja 'top center' no CSS para o body.
+    // Ajusta o body para o zoom principal
+    // A largura do body é ajustada no CSS, e o 'transform: scale' aqui afetará o body como um todo.
     if (document.body) {
-        document.body.style.width = `${100 / scaleFactor * 100}%`; // Retorna a largura para a proporção original do viewport
-        document.body.style.margin = `0 auto`; // Centraliza o body
+        document.body.style.transform = `scale(${scaleFactor})`;
+        // A linha problemática document.body.style.width = ... FOI REMOVIDA
     }
-
 
     // Atualiza o display do nível de zoom
     const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
