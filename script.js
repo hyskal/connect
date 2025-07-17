@@ -547,22 +547,25 @@ function preencherCamposComCadastro(p) {
     }
 
     // Marca os exames selecionados
-    if (Array.isArray(p.examesSelecionados)) {
-        console.log("preencherCamposComCadastro: Marcando exames selecionados:", p.examesSelecionados);
-        p.examesSelecionados.forEach(exameNome => {
+    const examesDoPaciente = Array.isArray(p.examesSelecionados) ? p.examesSelecionados : [];
+    
+    if (examesDoPaciente.length > 0) {
+        console.log("preencherCamposComCadastro: Marcando exames selecionados:", examesDoPaciente);
+        examesDoPaciente.forEach(exameNome => {
             const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
             if (checkbox) {
                 checkbox.checked = true;
                 console.log(`preencherCamposComCadastro: Checkbox para "${exameNome}" encontrado e marcado.`);
             } else {
-                // Se o exame não estiver na lista de exames disponíveis, adicioná-lo dinamicamente
-                console.warn(`preencherCamposComCadastro: Checkbox para "${exameNome}" NÃO encontrado. Tentando adicionar dinamicamente.`);
-                marcarExame(exameNome);
+                // Se o exame não estiver na lista de exames disponíveis, adiciona-o dinamicamente e marca
+                console.warn(`preencherCamposComCadastro: Checkbox para "${exameNome}" NÃO encontrado na lista inicial. Adicionando dinamicamente.`);
+                marcarExame(exameNome); // Esta função já adiciona ao DOM e marca
             }
         });
     } else {
-        console.log("preencherCamposComCadastro: Nenhum exame selecionado para marcar ou formato inválido.");
+        console.log("preencherCamposComCadastro: Nenhhum exame selecionado para marcar (array vazio ou inexistente).");
     }
+    atualizarExamesSelecionadosDisplay();
     atualizarExamesSelecionadosDisplay(); // Atualiza o display dos exames selecionados
 
     alert(`Dados de ${p.nome} carregados com sucesso!`);
