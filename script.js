@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.9b
+// VERSÃO: 2.0.10 (script.js)
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
@@ -12,6 +12,7 @@
 // - CORREÇÃO: Refatoração da função carregarCadastroFirebase para usar preencherCamposComCadastro de forma mais limpa.
 // - MELHORIA: Adicionado try/catch global no window.onload para capturar e alertar sobre erros críticos de inicialização.
 // - DIAGNÓSTICO: Adicionados logs no console para depurar o carregamento de paciente aleatório.
+// - CORREÇÃO: Ajuste na lógica de preenchimento de exames selecionados em preencherCamposComCadastro para garantir que exames do histórico sejam marcados corretamente. (Aplicado novamente e melhorado debug)
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -237,11 +238,11 @@ function marcarExame(exameNome) {
 
     if (checkboxExistente) {
         checkboxExistente.checked = true;
-        console.log("marcarExame: Checkbox existente marcado:", exameNome);
+        console.log("marcarExame: Checkbox existente encontrado e marcado:", exameNome);
         checkboxExistente.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
         // Se o exame não estiver na lista de exames disponíveis (listaExames), adiciona-o e marca
-        console.log("marcarExame: Checkbox não existente, adicionando e marcando:", exameNome);
+        console.log("marcarExame: Checkbox não existente para", exameNome, ". Adicionando dinamicamente e marcando.");
         const label = document.createElement('label');
         label.innerHTML = `<input type="checkbox" class="exame" value="${exameNome}" checked> ${exameNome}`;
         examesContainer.appendChild(label);
@@ -252,7 +253,7 @@ function marcarExame(exameNome) {
         if (!listaExames.includes(exameNome)) {
             listaExames.push(exameNome);
             listaExames.sort(); // Opcional: manter a lista ordenada
-            console.log("marcarExame: Exame adicionado à listaExames:", exameNome);
+            console.log("marcarExame: Exame adicionado à listaExames para futuras pesquisas:", exameNome);
         }
     }
     atualizarExamesSelecionadosDisplay();
@@ -267,7 +268,7 @@ function atualizarExamesSelecionadosDisplay() {
 
     if (selectedExams.length === 0) {
         displayContainer.innerHTML = "<p>Nenhum exame selecionado.</p>";
-        console.log("atualizarExamesSelecionadosDisplay: Nenhum exame selecionado.");
+        console.log("atualizarExamesSelecionadosDisplay: Nenhum exame selecionado para exibição.");
         return;
     }
 
@@ -296,6 +297,7 @@ function removerExameDisplay(exameNome) {
     const checkbox = document.querySelector(`#exames .exame[value="${exameNome}"]`);
     if (checkbox) {
         checkbox.checked = false;
+        console.log("removerExameDisplay: Checkbox desmarcado para:", exameNome);
     }
     atualizarExamesSelecionadosDisplay();
 }
@@ -496,6 +498,8 @@ function formatarCPFParaBusca(cpfComMascara) {
 // E é mais robusta para carregar dados do histórico ou paciente fictício
 function preencherCamposComCadastro(p) {
     console.log("preencherCamposComCadastro: Iniciando preenchimento com dados:", p);
+    console.log("preencherCamposComCadastro: Dados brutos do paciente para preenchimento:", JSON.stringify(p, null, 2));
+
     const nomeAtual = document.getElementById('nome').value.trim();
     const cpfAtual = document.getElementById('cpf').value.trim();
 
@@ -521,7 +525,7 @@ function preencherCamposComCadastro(p) {
     document.getElementById('examesNaoListados').value = '';
 
     // Limpa todos os checkboxes de exames
-    console.log("preencherCamposComCadastro: Desmarcando todos os exames.");
+    console.log("preencherCamposComCadastro: Desmarcando todos os exames existentes.");
     document.querySelectorAll('#exames input[type="checkbox"]').forEach(cb => cb.checked = false);
 
     clearError('data_nasc');
@@ -546,26 +550,28 @@ function preencherCamposComCadastro(p) {
         document.getElementById('data_nasc').dispatchEvent(new Event('change'));
     }
 
-    // Marca os exames selecionados
+    // Marca os exames selecionados - CORREÇÃO E MELHORIA DE DEBUG AQUI
     const examesDoPaciente = Array.isArray(p.examesSelecionados) ? p.examesSelecionados : [];
-    
+    console.log("preencherCamposComCadastro: examesDoPaciente (após Array.isArray check):", examesDoPaciente);
+    console.log("preencherCamposComCadastro: Tipo de examesDoPaciente:", typeof examesDoPaciente, "É Array?", Array.isArray(examesDoPaciente));
+
     if (examesDoPaciente.length > 0) {
-        console.log("preencherCamposComCadastro: Marcando exames selecionados:", examesDoPaciente);
-        examesDoPaciente.forEach(exameNome => {
+        console.log("preencherCamposComCadastro: Marcando exames selecionados. Total a marcar:", examesDoPaciente.length);
+        examesDoPaciente.forEach((exameNome, index) => {
+            console.log(`preencherCamposComCadastro: Tentando marcar exame ${index + 1}/${examesDoPaciente.length}: "${exameNome}"`);
             const checkbox = document.querySelector(`input[type="checkbox"][value="${exameNome}"]`);
             if (checkbox) {
                 checkbox.checked = true;
                 console.log(`preencherCamposComCadastro: Checkbox para "${exameNome}" encontrado e marcado.`);
             } else {
                 // Se o exame não estiver na lista de exames disponíveis, adiciona-o dinamicamente e marca
-                console.warn(`preencherCamposComCadastro: Checkbox para "${exameNome}" NÃO encontrado na lista inicial. Adicionando dinamicamente.`);
+                console.warn(`preencherCamposComCadastro: Checkbox para "${exameNome}" NÃO encontrado na lista inicial. Adicionando dinamicamente e marcando.`);
                 marcarExame(exameNome); // Esta função já adiciona ao DOM e marca
             }
         });
     } else {
-        console.log("preencherCamposComCadastro: Nenhhum exame selecionado para marcar (array vazio ou inexistente).");
+        console.log("preencherCamposComCadastro: Nenhum exame selecionado para marcar (array vazio ou inexistente).");
     }
-    atualizarExamesSelecionadosDisplay();
     atualizarExamesSelecionadosDisplay(); // Atualiza o display dos exames selecionados
 
     alert(`Dados de ${p.nome} carregados com sucesso!`);
@@ -1210,4 +1216,4 @@ async function salvarListaExamesNoGitHub() {
         console.error("salvarListaExamesNoGitHub: Erro ao salvar lista de exames na Gist:", error);
         alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
     }
-                    }
+}
