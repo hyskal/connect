@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB 2.0.6a - Cadastro de Exames (CETEP/LNAB)</title>
+    <title>SISLAB 2.0.5 - Cadastro de Exames (CETEP/LNAB)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Seção 1: Estilos Gerais do Corpo e Títulos */
@@ -12,16 +13,12 @@
             flex-direction: column;
             align-items: center; /* Centraliza o conteúdo horizontalmente */
             padding: 20px;
-            margin: 0 auto; /* Centraliza o body quando escalado */
+            margin: 0;
             /* Plano de Fundo com Padrão */
             background-color: #E0E6EE; /* Um azul marinho muito claro, quase cinza-azulado */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="10" y="50" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 10 50)">CETEP</text><text x="100" y="150" font-family="Arial, sans-serif" font-size="20" fill="%23FFFFFF" fill-opacity="0.1" transform="rotate(-20 100 150)">LNAB</text></svg>');
             background-repeat: repeat;
             background-size: 200px 200px; /* Tamanho do tile do padrão */
-
-            /* Transições e origem para o zoom em todo o body */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
         }
 
         /* Contêiner do cabeçalho principal (logo + título) */
@@ -32,9 +29,6 @@
             margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
             gap: 15px; /* Espaço entre a logo e o título */
             flex-wrap: wrap; /* Permite quebrar em telas menores */
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
         }
 
         /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos */
@@ -117,9 +111,6 @@
             width: 95%; /* Aumenta a largura para caber 3 colunas */
             max-width: 1200px; /* Aumenta o max-width */
             margin-bottom: 20px;
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
         }
 
         /* Estilos para as colunas */
@@ -133,9 +124,6 @@
             min-width: 280px; /* Largura mínima antes de quebrar a linha para 3 colunas */
             display: flex; /* Para flex-direction column dentro da coluna */
             flex-direction: column;
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
         }
 
         /* Largura específica para cada coluna */
@@ -158,8 +146,8 @@
             flex-wrap: wrap;
             justify-content: flex-start;
             gap: 20px;
-            /* Alinhamento da base para os campos */
-            align-items: flex-end;
+            /* **MODIFICAÇÃO AQUI: Alinhar itens pela base** */
+            align-items: flex-end; /* Alinha os itens do flex container pela sua linha de base */
             margin-bottom: 15px;
             width: 100%; /* Garante que a linha ocupe a largura total da coluna */
         }
@@ -171,8 +159,8 @@
             flex-grow: 1;
             flex-basis: 0;
             min-width: 120px; /* Reduz min-width para caber em 3 colunas */
-            /* Empurra o campo de entrada para a base */
-            justify-content: flex-end;
+            /* **MODIFICAÇÃO AQUI: Empurra o campo de entrada para a base** */
+            justify-content: flex-end; /* Empurra o conteúdo para o final do container flex (bottom) */
         }
 
         .form-field.full-width {
@@ -340,9 +328,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
         }
 
         button {
@@ -382,9 +367,6 @@
             max-width: 1200px; /* Ajusta o max-width */
             margin-top: 20px;
             box-sizing: border-box;
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
         }
 
         #historico h3 {
@@ -411,45 +393,6 @@
             background-color: #DDE5EE;
         }
 
-        /* Estilo para o Editor de Exames (também escalável) */
-        #editorExames {
-            display: none;
-            margin-top: 20px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
-        }
-
-        /* Nova seção para exibição do Nível de Zoom */
-        .zoom-display-container {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Centraliza o texto "Nível de Zoom: 100%" */
-            gap: 5px; /* Espaço entre o label e o span */
-            margin-bottom: 20px; /* Espaço abaixo do controle */
-            padding: 10px 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 95%; /* Adapta-se à largura do conteúdo principal */
-            max-width: 1200px;
-            box-sizing: border-box;
-            font-weight: bold;
-            color: #1A2B4C;
-            /* Transições para o zoom */
-            transition: transform 0.2s ease-in-out;
-            transform-origin: top center;
-        }
-
-        #zoomLevelDisplay {
-            font-size: 1.1em;
-        }
-
-
         /* Seção 10: Estilos para Impressão */
         @media print {
             .nao-imprimir { display: none; }
@@ -457,18 +400,12 @@
                 background-color: white;
                 position: relative; /* Para posicionar o rodapé */
                 padding-bottom: 50px; /* Espaço para o rodapé */
-                transform: none !important; /* Desabilita transform na impressão */
-                width: auto !important;
-            }
-            .main-content-container, .main-header-container, .action-buttons-container,
-            #historico, #editorExames, .zoom-display-container {
-                transform: none !important; /* Desabilita transform na impressão */
-                width: auto !important;
-                max-width: none !important;
             }
             .main-content-container {
                 flex-direction: column; /* Impressão em coluna única */
                 gap: 0;
+                width: auto;
+                max-width: none;
             }
             .column {
                 box-shadow: none;
@@ -575,10 +512,6 @@
         <h1 class="main-title">SISLAB - Cadastro de Exames (CETEP/LNAB)</h1>
     </div>
 
-    <div class="zoom-display-container">
-        Nível de Zoom: <span id="zoomLevelDisplay">100%</span>
-    </div>
-
     <div class="main-content-container">
         <div class="column left">
             <h3>Dados do Paciente:</h3>
@@ -665,9 +598,10 @@
 
     <div class="action-buttons-container nao-imprimir">
         <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
-        <button onclick="mostrarHistorico()">Ver Historico</button>
-        <button onclick="imprimirHistorico()">Imprimir Historico</button>
-        <button onclick="limparCampos()">Limpar Campos</button>
+        <button onclick="mostrarHistorico()">Ver Histórico</button>
+        <button onclick="imprimirHistorico()">Imprimir Histórico</button>
+        <button onclick="imprimirTela()">Imprimir Tela</button> <button onclick="limparCampos()">Limpar Campos</button>
+        <button onclick="limparHistorico()">Limpar Histórico</button>
         <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
         <button onclick="window.location.href='admin.html'">Acessar Admin</button>
     </div>
@@ -685,11 +619,11 @@
 
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import { initializeApp } = "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         // Importar TODOS os módulos do Firestore que serão usados
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue } = "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
         // Não é necessário importar Analytics se você não o usa neste script específico
-        // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+        // import { getAnalytics } = "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -731,7 +665,6 @@
 
     </script>
     <script src="script.js"></script>
-    <script type="module" src="zoom_script.js"></script>
 
 </body>
 </html>
