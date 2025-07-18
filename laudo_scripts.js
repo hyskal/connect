@@ -6,6 +6,7 @@
 // - NOVO: Adição de diversos pontos de depuração (console.log) para rastreamento.
 // - NOVO: Inclusão de tratamento de erros e validações básicas.
 // - NOVO: Implementação de funcionalidade para alternar modo de edição dos resultados dos exames.
+// - CORREÇÃO: Função 'calcularIdade' importada corretamente de 'sislab_utils.js'.
 
 // Seção 1: Importações e Variáveis Globais
 // As funções do Firebase são globalizadas em laudo_resultados.html.
@@ -472,7 +473,7 @@ async function saveLaudo() {
         patientId: selectedPatientData.id,
         protocolo: selectedPatientData.protocolo,
         nomePaciente: selectedPatientData.nome,
-        cpfPaciente: selectedPatientData.cpf, // CPF já está sem máscara no Firestore, mas para o laudo podemos manter formatado
+        cpfPaciente: selectedPatientData.cpf,
         examesResultados: examResults,
         observacoesGerais: observacoesLaudoGeral,
         dataEmissao: window.firebaseFirestoreServerTimestamp(), // Usa timestamp do servidor
@@ -480,7 +481,6 @@ async function saveLaudo() {
             nome: document.getElementById('responsavelTecnicoNome').textContent.replace('Dr(a). ', ''),
             registro: document.getElementById('responsavelTecnicoRegistro').textContent.replace('CRBM/CRF ', '')
         }
-        // Adicionar outros campos relevantes do paciente se precisar duplicá-los no laudo
     };
     console.log("DEBUG(saveLaudo): Objeto de dados do laudo para salvar:", laudoData);
 
@@ -698,4 +698,4 @@ function generatePdfLaudo() {
         console.error("DEBUG(generatePdfLaudo): Erro ao gerar ou abrir o PDF:", outputError);
         alert(`Erro ao gerar ou exibir o PDF: ${outputError.message}. Verifique o console.`);
     }
-                                                  }
+}
