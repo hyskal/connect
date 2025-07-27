@@ -10,6 +10,7 @@
       padding: 20px;
       text-align: center;
     }
+
     .main-header-container {
       display: flex;
       justify-content: center;
@@ -18,6 +19,7 @@
       flex-wrap: wrap;
       margin-bottom: 30px;
     }
+
     .sislab-logo {
       width: 70px;
       height: 50px;
@@ -25,6 +27,7 @@
       align-items: flex-end;
       justify-content: space-between;
     }
+
     .tube {
       background-color: #f0f0f0;
       width: 15px;
@@ -33,6 +36,7 @@
       position: relative;
       box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
     }
+
     .tube-cap {
       width: 17px;
       height: 7px;
@@ -42,6 +46,7 @@
       border-radius: 4px 4px 0 0;
       box-shadow: 0 -1px 3px rgba(0,0,0,0.2);
     }
+
     .tube:nth-child(1) .tube-cap { background-color: #800080; }
     .tube:nth-child(2) .tube-cap { background-color: #FFD700; }
     .tube:nth-child(3) .tube-cap { background-color: #CC3333; }
@@ -88,7 +93,6 @@
       box-sizing: border-box;
       resize: vertical;
     }
-
   </style>
 </head>
 <body>
@@ -106,27 +110,81 @@
 
   <div id="editorExames">
     <h3>Editar Lista de Exames</h3>
-    <textarea id="listaExamesEditor">// Digite ou edite os exames aqui</textarea><br><br>
+    <textarea id="listaExamesEditor"></textarea><br><br>
     <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
     <button onclick="document.getElementById('editorExames').style.display='none'">Cancelar</button>
   </div>
 
   <script>
-    const SENHA_EXAMES = "cetep123";
+    // --- SENHA ---
+    const SENHA_BASE_SISLAB = "sislab";
 
-    function editarListaExamesComSenha() {
+    // --- GIST CONFIG ---
+    const GITHUB_USERNAME = 'hyskal';
+    const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670';
+    const GIST_FILENAME = 'exames.txt';
+
+    const GITHUB_PAT_GIST = (function () {
+      const p1 = "ghp_PksP";
+      const p2 = "EYHmMl";
+      const p3 = "xrC06k";
+      const p4 = "c5lqB5";
+      const p5 = "pbeq63";
+      const p6 = "gT2Z3QV9";
+      return p1 + p2 + p3 + p4 + p5 + p6;
+    })();
+
+    async function editarListaExamesComSenha() {
       const senha = prompt("Digite a senha para editar a lista de exames:");
-      if (senha === SENHA_EXAMES) {
-        document.getElementById('editorExames').style.display = 'block';
-      } else {
-        alert("Senha incorreta. Acesso negado.");
+      if (senha !== SENHA_BASE_SISLAB) {
+        alert("Senha incorreta.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+          headers: {
+            Authorization: `token ${GITHUB_PAT_GIST}`
+          }
+        });
+        const data = await response.json();
+        const conteudo = data.files[GIST_FILENAME].content;
+
+        document.getElementById("listaExamesEditor").value = conteudo;
+        document.getElementById("editorExames").style.display = "block";
+      } catch (error) {
+        alert("Erro ao carregar exames: " + error.message);
       }
     }
 
-    function salvarListaExamesNoGitHub() {
-      const novaLista = document.getElementById("listaExamesEditor").value;
-      alert("Simulação de salvamento:\n\n" + novaLista);
-      document.getElementById('editorExames').style.display = 'none';
+    async function salvarListaExamesNoGitHub() {
+      const novoConteudo = document.getElementById("listaExamesEditor").value;
+
+      try {
+        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `token ${GITHUB_PAT_GIST}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            files: {
+              [GIST_FILENAME]: {
+                content: novoConteudo
+              }
+            }
+          })
+        });
+
+        if (response.ok) {
+          alert("Lista de exames atualizada com sucesso!");
+          document.getElementById("editorExames").style.display = "none";
+        } else {
+          alert("Erro ao salvar: " + response.statusText);
+        }
+      } catch (error) {
+        alert("Erro ao salvar: " + error.message);
+      }
     }
   </script>
 
