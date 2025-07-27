@@ -1,309 +1,355 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>SISLAB - Administração V2.0.12</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
-        .admin-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            text-align: center;
-            margin-bottom: 20px; /* Adicionado para espaçar do editor abaixo */
-        }
-        h1 {
-            color: #1A2B4C;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #1A2B4C; /* Cor padrão para botões admin */
-            color: white;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #0F1D33;
-        }
-        /* Estilo específico para o botão de limpar histórico, se for de "perigo" */
-        button.danger-button {
-            background-color: #CC3333; /* Vermelho para ação perigosa */
-        }
-        button.danger-button:hover {
-            background-color: #A02222;
-        }
-        p.warning {
-            color: #CC3333;
-            font-weight: bold;
-        }
-
-        /* CSS adicionado do lista-exames.html para o editor */
-        #editorExames {
-            display: none; /* Inicia oculto */
-            margin-top: 20px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            width: 90%; /* Ajuste para responsividade */
-            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
-        }
-        #editorExames h3 { /* Estilo para o h3 dentro do editor */
-            color: #1A2B4C;
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        textarea#listaExamesEditor {
-            width: 100%;
-            height: 300px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            resize: vertical;
-            margin-bottom: 15px; /* Espaço abaixo do textarea */
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</head>
-<body>
-
-    <div class="admin-container">
-        <h1>Área Administrativa SISLAB</h1>
-        <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
-        
-        <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
-        
-        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button> <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
-        
-        <button onclick="gerarNovoPacienteAleatorio()">Gerar Novo Paciente Aleatório</button>
-
-        <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
-    </div>
-
-    <div id="editorExames">
-        <h3>Editar Lista de Exames</h3>
-        <textarea id="listaExamesEditor"></textarea><br>
-        <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
-        <button onclick="document.getElementById('editorExames').style.display='none'">Cancelar</button>
-    </div>
-
-    <script type="module">
-        // Importa as funções do SDK do Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, limit, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-        
-        // Sua configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
-            authDomain: "sislab-cetep.firebaseapp.com",
-            projectId: "sislab-cetep",
-            storageBucket: "sislab-cetep.firebasestorage.app",
-            messagingSenderId: "958611861664",
-            appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
-            measurementId: "G-3TL54MWJFS" // Opcional, se não usar analytics aqui
-        };
-
-        // Inicializa o Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app); 
-
-        // Torna as instâncias e funções do Firebase acessíveis globalmente para o JavaScript desta página
-        window.firestoreDb = db;
-        window.firebaseFirestoreCollection = collection;
-        window.firebaseFirestoreGetDocs = getDocs;
-        window.firebaseFirestoreQuery = query;
-        window.firebaseFirestoreLimit = limit;
-        window.firebaseFirestoreWriteBatch = writeBatch;
-        window.firebaseFirestoreOrderBy = orderBy; 
-    </script>
-
-    <script>
-        // Definir a senha base para acesso administrativo
-        const SENHA_BASE_SISLAB_ADMIN = "sislab";
-
-        // Função para exibir o Log Geral de Inventário, agora com camada de senha
-        async function mostrarLogGeralInventario() {
-            const now = new Date();
-            const hour = now.getHours().toString().padStart(2, '0');
-            const minute = now.getMinutes().toString().padStart(2, '0');
-            const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
-
-            const senhaDigitada = prompt(`Para acessar o Log Geral, digite a senha.`);
-            if (senhaDigitada === null) {
-                alert("Acesso cancelado.");
-                return;
-            }
-            if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
-                alert("Redirecionando para a página do Log Geral de Inventário.");
-                window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
-            } else {
-                alert('Senha incorreta. Acesso negado ao Log Geral.');
-            }
-        }
-
-        // A função de limpar histórico, agora na página admin
-        async function limparHistoricoAdmin() {
-            const now = new Date();
-            const hour = now.getHours().toString().padStart(2, '0');
-            const minute = now.getMinutes().toString().padStart(2, '0');
-            const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
-
-            const senhaDigitada = prompt(`Para limpar o histórico, digite a senha`);
-            if (senhaDigitada === null) {
-                return;
-            }
-            if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
-                if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-                    alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
-                    return;
-                }
-                const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do Firebase? Esta ação é irreversível e apagará todos os dados de pacientes!");
-                if (!confirmDeleteAll) {
-                    return;
-                }
-
-                try {
-                    const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-                    const batchSize = 100;
-                    
-                    const deleteQueryBatch = async (dbInstance, queryToDelete) => {
-                        const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
-                        if (snapshot.empty) {
-                            return 0;
-                        }
-                        const batch = window.firebaseFirestoreWriteBatch(dbInstance);
-                        snapshot.docs.forEach(d => {
-                            batch.delete(d.ref);
-                        });
-                        await batch.commit();
-                        return snapshot.size;
-                    };
-
-                    let totalDeleted = 0;
-                    let deletedCount;
-                    do {
-                        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize));
-                        deletedCount = await deleteQueryBatch(window.firestoreDb, q);
-                        totalDeleted += deletedCount;
-                        console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
-                        await new Promise(resolve => setTimeout(resolve, 50)); 
-                    } while (deletedCount === batchSize);
-
-                    alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
-                } catch (error) {
-                    console.error("Erro ao limpar histórico do Firebase:", error);
-                    alert("Erro ao limpar histórico do Firebase. Verifique o console e regras do Firestore.");
-                }
-
-            } else {
-                alert('Senha incorreta. Histórico não foi limpo.');
-            }
-        }
-
-        // Função para abrir index.html em nova aba com parâmetro para gerar paciente aleatório
-        async function gerarNovoPacienteAleatorio() {
-            alert("Uma nova aba será aberta para gerar um paciente aleatório.");
-            // Abre em nova aba com o parâmetro 'gerar=ficticio'
-            window.open('index.html?gerar=ficticio', '_blank'); 
-        }
-
-        /* JavaScript migrado de lista-exames.html para controle do editor de lista de exames */
-        const GITHUB_USERNAME = 'hyskal';
-        const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670';
-        const GIST_FILENAME = 'exames.txt';
-
-        function gerarSenhaAtual() {
-            const agora = new Date();
-            const horas = agora.getHours().toString().padStart(2, '0');
-            const minutos = agora.getMinutes().toString().padStart(2, '0');
-            return 'sislab' + horas + minutos;
-        }
-
-        function tokenGist() {
-            // Token ofuscado em fragmentos
-            const a = 'ghp_';
-            const b = 'PksP';
-            const c = 'EYHmMl';
-            const d = 'xrC06k';
-            const e = 'c5lqB5';
-            const f = 'pbeq63';
-            const g = 'gT2Z3QV9';
-            return a + b + c + d + e + f + g;
-        }
-
-        async function editarListaExamesComSenha() {
-            const senhaDigitada = prompt("Digite a senha (formato: sislabHHmm):");
-            const senhaCorreta = gerarSenhaAtual();
-
-            if (senhaDigitada !== senhaCorreta) {
-                alert("Senha incorreta.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                    headers: { Authorization: `token ${tokenGist()}` }
-                });
-                const data = await response.json();
-                const conteudo = data.files[GIST_FILENAME].content;
-                document.getElementById("listaExamesEditor").value = conteudo;
-                document.getElementById("editorExames").style.display = "block";
-            } catch (error) {
-                alert("Erro ao carregar exames: " + error.message);
-            }
-        }
-
-        async function salvarListaExamesNoGitHub() {
-            const novoConteudo = document.getElementById("listaExamesEditor").value;
-
-            try {
-                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                    method: "PATCH",
-                    headers: {
-                        Authorization: `token ${tokenGist()}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        files: {
-                            [GIST_FILENAME]: {
-                                content: novoConteudo
-                            }
-                        }
-                    })
-                });
-
-                if (response.ok) {
-                    alert("Lista de exames atualizada com sucesso!");
-                    document.getElementById("editorExames").style.display = "none";
-                } else {
-                    alert("Erro ao salvar: " + response.statusText);
-                }
-            } catch (error) {
-                alert("Erro ao salvar: " + error.message);
-            }
-        }
-    </script>
-
-</body>
-</html>
+ <html lang="pt-BR">
+ <head>
+     <meta charset="UTF-8">
+     <title>SISLAB - Administração V2.0.16</title>
+     <style>
+         body {
+             font-family: Arial, sans-serif;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             justify-content: flex-start; /* Alterado para alinhar o conteúdo ao topo */
+             min-height: 100vh;
+             margin: 0;
+             background-color: #f4f4f4;
+             padding-top: 40px; /* Adicionado padding no topo para espaçamento */
+         }
+         .admin-container {
+             background-color: white;
+             padding: 30px;
+             border-radius: 8px;
+             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+             text-align: center;
+             margin-bottom: 30px; /* Aumentado o espaçamento abaixo do container */
+             width: 90%; /* Tornando o container responsivo */
+             max-width: 800px; /* Largura máxima do container */
+         }
+         h1 {
+             color: #1A2B4C;
+             margin-bottom: 20px;
+         }
+         .button-group {
+             display: flex;
+             flex-wrap: wrap;
+             justify-content: center;
+             gap: 10px;
+             margin-bottom: 20px;
+         }
+         button {
+             padding: 12px 24px; /* Aumentando o padding para melhor toque e visual */
+             border: none;
+             border-radius: 5px;
+             background-color: #1A2B4C; /* Cor padrão para botões admin */
+             color: white;
+             cursor: pointer;
+             font-size: 1em;
+             transition: background-color 0.3s ease;
+         }
+         button:hover {
+             background-color: #0F1D33;
+         }
+         button.danger-button {
+             background-color: #CC3333; /* Vermelho para ação perigosa */
+         }
+         button.danger-button:hover {
+             background-color: #A02222;
+         }
+         p.warning {
+             color: #CC3333;
+             font-weight: bold;
+             margin-bottom: 15px;
+         }
+         .tubos-container {
+             display: flex;
+             gap: 20px;
+             margin-bottom: 30px;
+         }
+         .tubo {
+             width: 80px;
+             height: 150px;
+             background-color: #eee;
+             border-radius: 10px;
+             display: flex;
+             justify-content: center;
+             align-items: flex-end;
+             color: white;
+             font-weight: bold;
+             font-size: 0.8em;
+             text-align: center;
+             padding-bottom: 10px;
+             box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+         }
+         .tubo-roxo {
+             background-color: #a0f; /* Roxo */
+         }
+         .tubo-vermelho {
+             background-color: #f00; /* Vermelho */
+         }
+         .tubo-amarelo {
+             background-color: #ff0; /* Amarelo */
+             color: #333;
+         }
+ 
+         /* CSS para o editor de lista de exames */
+         #editorExames {
+             display: none; /* Inicia oculto */
+             margin-top: 20px;
+             background-color: white;
+             padding: 20px;
+             border-radius: 8px;
+             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+             max-width: 800px;
+             margin-left: auto;
+             margin-right: auto;
+             width: 90%;
+             box-sizing: border-box;
+         }
+         #editorExames h3 {
+             color: #1A2B4C;
+             margin-top: 0;
+             margin-bottom: 20px;
+             text-align: center;
+         }
+         textarea#listaExamesEditor {
+             width: 100%;
+             height: 300px;
+             padding: 10px;
+             font-family: monospace;
+             font-size: 1em;
+             border: 1px solid #ccc;
+             box-sizing: border-box;
+             resize: vertical;
+             margin-bottom: 15px;
+         }
+         .editor-buttons {
+             display: flex;
+             justify-content: center;
+             gap: 10px;
+         }
+         .editor-buttons button {
+             padding: 10px 15px;
+         }
+     </style>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ </head>
+ <body>
+ 
+     <div class="admin-container">
+         <h1>Área Administrativa SISLAB</h1>
+         <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
+ 
+         <div class="tubos-container">
+             <div class="tubo tubo-roxo">EDTA</div>
+             <div class="tubo tubo-vermelho">Seco</div>
+             <div class="tubo tubo-amarelo">Gel</div>
+         </div>
+ 
+         <div class="button-group">
+             <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
+             <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
+             <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
+             <button onclick="gerarNovoPacienteAleatorio()">Gerar Novo Paciente Aleatório</button>
+         </div>
+ 
+         <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
+     </div>
+ 
+     <div id="editorExames">
+         <h3>Editar Lista de Exames</h3>
+         <textarea id="listaExamesEditor"></textarea><br>
+         <div class="editor-buttons">
+             <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
+             <button onclick="document.getElementById('editorExames').style.display='none'">Cancelar</button>
+         </div>
+     </div>
+ 
+     <script type="module">
+         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+         import { getFirestore, collection, getDocs, query, limit, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+ 
+         const firebaseConfig = {
+             apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+             authDomain: "sislab-cetep.firebaseapp.com",
+             projectId: "sislab-cetep",
+             storageBucket: "sislab-cetep.firebasestorage.app",
+             messagingSenderId: "958611861664",
+             appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5",
+             measurementId: "G-3TL54MWJFS"
+         };
+ 
+         const app = initializeApp(firebaseConfig);
+         const db = getFirestore(app);
+ 
+         window.firestoreDb = db;
+         window.firebaseFirestoreCollection = collection;
+         window.firebaseFirestoreGetDocs = getDocs;
+         window.firebaseFirestoreQuery = query;
+         window.firebaseFirestoreLimit = limit;
+         window.firebaseFirestoreWriteBatch = writeBatch;
+         window.firebaseFirestoreOrderBy = orderBy;
+     </script>
+ 
+     <script>
+         const SENHA_BASE_SISLAB_ADMIN = "sislab";
+ 
+         async function mostrarLogGeralInventario() {
+             const now = new Date();
+             const hour = now.getHours().toString().padStart(2, '0');
+             const minute = now.getMinutes().toString().padStart(2, '0');
+             const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
+ 
+             const senhaDigitada = prompt(`Para acessar o Log Geral, digite a senha.`);
+             if (senhaDigitada === null) {
+                 alert("Acesso cancelado.");
+                 return;
+             }
+             if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+                 alert("Redirecionando para a página do Log Geral de Inventário.");
+                 window.location.href = 'log_inventario.html';
+             } else {
+                 alert('Senha incorreta. Acesso negado ao Log Geral.');
+             }
+         }
+ 
+         async function limparHistoricoAdmin() {
+             const now = new Date();
+             const hour = now.getHours().toString().padStart(2, '0');
+             const minute = now.getMinutes().toString().padStart(2, '0');
+             const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
+ 
+             const senhaDigitada = prompt(`Para limpar o histórico, digite a senha`);
+             if (senhaDigitada === null) {
+                 return;
+             }
+             if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+                 if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
+                     alert("Firestore não inicializado. Limpeza de histórico desabilitada.");
+                     return;
+                 }
+                 const confirmDeleteAll = confirm("Tem certeza que deseja apagar TODO o histórico do Firebase? Esta ação é irreversível e apagará todos os dados de pacientes!");
+                 if (!confirmDeleteAll) {
+                     return;
+                 }
+ 
+                 try {
+                     const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
+                     const batchSize = 100;
+ 
+                     const deleteQueryBatch = async (dbInstance, queryToDelete) => {
+                         const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
+                         if (snapshot.empty) {
+                             return 0;
+                         }
+                         const batch = window.firebaseFirestoreWriteBatch(dbInstance);
+                         snapshot.docs.forEach(d => {
+                             batch.delete(d.ref);
+                         });
+                         await batch.commit();
+                         return snapshot.size;
+                     };
+ 
+                     let totalDeleted = 0;
+                     let deletedCount;
+                     do {
+                         const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreLimit(batchSize));
+                         deletedCount = await deleteQueryBatch(window.firestoreDb, q);
+                         totalDeleted += deletedCount;
+                         console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
+                         await new Promise(resolve => setTimeout(resolve, 50));
+                     } while (deletedCount === batchSize);
+ 
+                     alert(`Histórico apagado com sucesso do Firebase! Total de ${totalDeleted} registros.`);
+                 } catch (error) {
+                     console.error("Erro ao limpar histórico do Firebase:", error);
+                     alert("Erro ao limpar histórico do Firebase. Verifique o console e regras do Firestore.");
+                 }
+ 
+             } else {
+                 alert('Senha incorreta. Histórico não foi limpo.');
+             }
+         }
+ 
+         async function gerarNovoPacienteAleatorio() {
+             alert("Uma nova aba será aberta para gerar um paciente aleatório.");
+             window.open('index.html?gerar=ficticio', '_blank');
+         }
+ 
+         /* JavaScript migrado de lista-exames.html para controle do editor de lista de exames */
+         const GITHUB_USERNAME = 'hyskal';
+         const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670';
+         const GIST_FILENAME = 'exames.txt';
+ 
+         function gerarSenhaAtual() {
+             const agora = new Date();
+             const horas = agora.getHours().toString().padStart(2, '0');
+             const minutos = agora.getMinutes().toString().padStart(2, '0');
+             return 'sislab' + horas + minutos;
+         }
+ 
+         function tokenGist() {
+             const a = 'ghp_';
+             const b = 'PksP';
+             const c = 'EYHmMl';
+             const d = 'xrC06k';
+             const e = 'c5lqB5';
+             const f = 'pbeq63';
+             const g = 'gT2Z3QV9';
+             return a + b + c + d + e + f + g;
+         }
+ 
+         async function editarListaExamesComSenha() {
+             const senhaDigitada = prompt("Digite a senha (formato: sislabHHmm):");
+             const senhaCorreta = gerarSenhaAtual();
+ 
+             if (senhaDigitada !== senhaCorreta) {
+                 alert("Senha incorreta.");
+                 return;
+             }
+ 
+             try {
+                 const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                     headers: { Authorization: `token ${tokenGist()}` }
+                 });
+                 const data = await response.json();
+                 const conteudo = data.files["exames.txt"].content; // Garante que a chave seja a string "exames.txt"
+                 document.getElementById("listaExamesEditor").value = conteudo;
+                 document.getElementById("editorExames").style.display = "block";
+             } catch (error) {
+                 alert("Erro ao carregar exames: " + error.message);
+             }
+         }
+ 
+         async function salvarListaExamesNoGitHub() {
+             const novoConteudo = document.getElementById("listaExamesEditor").value;
+ 
+             try {
+                 const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                     method: "PATCH",
+                     headers: {
+                         Authorization: `token ${tokenGist()}`,
+                         "Content-Type": "application/json"
+                     },
+                     body: JSON.stringify({
+                         files: {
+                             "exames.txt": { // Garante que a chave seja a string "exames.txt"
+                                 content: novoConteudo
+                             }
+                         }
+                     })
+                 });
+ 
+                 if (response.ok) {
+                     alert("Lista de exames atualizada com sucesso!");
+                     document.getElementById("editorExames").style.display = "none";
+                 } else {
+                     alert("Erro ao salvar: " + response.statusText);
+                 }
+             } catch (error) {
+                 alert("Erro ao salvar: " + error.message);
+             }
+         }
+     </script>
+ 
+ </body>
+ </html>
