@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB - Administração V2.0.5</title>
+    <title>SISLAB - Administração V2.0.12</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,6 +20,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             text-align: center;
+            margin-bottom: 20px; /* Adicionado para espaçar do editor abaixo */
         }
         h1 {
             color: #1A2B4C;
@@ -50,6 +51,38 @@
             color: #CC3333;
             font-weight: bold;
         }
+
+        /* CSS adicionado do lista-exames.html para o editor */
+        #editorExames {
+            display: none; /* Inicia oculto */
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 90%; /* Ajuste para responsividade */
+            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+        }
+        #editorExames h3 { /* Estilo para o h3 dentro do editor */
+            color: #1A2B4C;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        textarea#listaExamesEditor {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            resize: vertical;
+            margin-bottom: 15px; /* Espaço abaixo do textarea */
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -61,11 +94,18 @@
         
         <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
         
-        <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
+        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button> <button class="danger-button" onclick="limparHistoricoAdmin()">Limpar TODO o Histórico do Firebase</button>
         
         <button onclick="gerarNovoPacienteAleatorio()">Gerar Novo Paciente Aleatório</button>
 
         <p>Voltar para o <a href="index.html">Cadastro de Exames</a></p>
+    </div>
+
+    <div id="editorExames">
+        <h3>Editar Lista de Exames</h3>
+        <textarea id="listaExamesEditor"></textarea><br>
+        <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
+        <button onclick="document.getElementById('editorExames').style.display='none'">Cancelar</button>
     </div>
 
     <script type="module">
@@ -186,6 +226,82 @@
             alert("Uma nova aba será aberta para gerar um paciente aleatório.");
             // Abre em nova aba com o parâmetro 'gerar=ficticio'
             window.open('index.html?gerar=ficticio', '_blank'); 
+        }
+
+        /* JavaScript migrado de lista-exames.html para controle do editor de lista de exames */
+        const GITHUB_USERNAME = 'hyskal';
+        const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670';
+        const GIST_FILENAME = 'exames.txt';
+
+        function gerarSenhaAtual() {
+            const agora = new Date();
+            const horas = agora.getHours().toString().padStart(2, '0');
+            const minutos = agora.getMinutes().toString().padStart(2, '0');
+            return 'sislab' + horas + minutos;
+        }
+
+        function tokenGist() {
+            // Token ofuscado em fragmentos
+            const a = 'ghp_';
+            const b = 'PksP';
+            const c = 'EYHmMl';
+            const d = 'xrC06k';
+            const e = 'c5lqB5';
+            const f = 'pbeq63';
+            const g = 'gT2Z3QV9';
+            return a + b + c + d + e + f + g;
+        }
+
+        async function editarListaExamesComSenha() {
+            const senhaDigitada = prompt("Digite a senha (formato: sislabHHmm):");
+            const senhaCorreta = gerarSenhaAtual();
+
+            if (senhaDigitada !== senhaCorreta) {
+                alert("Senha incorreta.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    headers: { Authorization: `token ${tokenGist()}` }
+                });
+                const data = await response.json();
+                const conteudo = data.files[GIST_FILENAME].content;
+                document.getElementById("listaExamesEditor").value = conteudo;
+                document.getElementById("editorExames").style.display = "block";
+            } catch (error) {
+                alert("Erro ao carregar exames: " + error.message);
+            }
+        }
+
+        async function salvarListaExamesNoGitHub() {
+            const novoConteudo = document.getElementById("listaExamesEditor").value;
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `token ${tokenGist()}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            [GIST_FILENAME]: {
+                                content: novoConteudo
+                            }
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Lista de exames atualizada com sucesso!");
+                    document.getElementById("editorExames").style.display = "none";
+                } else {
+                    alert("Erro ao salvar: " + response.statusText);
+                }
+            } catch (error) {
+                alert("Erro ao salvar: " + error.message);
+            }
         }
     </script>
 
