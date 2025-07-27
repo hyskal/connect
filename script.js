@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.11 (script.js)
+// VERSÃO: 2.0.16 (script.js)
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
@@ -13,6 +13,16 @@
 // - MELHORIA: Adicionado try/catch global no window.onload para capturar e alertar sobre erros críticos de inicialização.
 // - DIAGNÓSTICO: Adicionados logs no console para depurar o carregamento de paciente aleatório.
 // - CORREÇÃO: [CRÍTICO] Corrigida a chave de acesso para exames selecionados em preencherCamposComCadastro de `p.examesSelecionados` para `p.exames`, que é a chave correta vinda do Firebase.
+// - NOVO: Adicionado desmarcação da checkbox 'Ignorar CPF' na função limparCampos.
+// - NOVO: Definida variável global window.SISLAB_VERSION para acesso da versão.
+// - NOVO: Adicionadas checkboxes ao lado de cada protocolo no histórico.
+// - NOVO: Adicionado botão "Excluir Histórico Selecionado" e sua lógica com senha dinâmica e exclusão em lote do Firebase.
+// - CORREÇÃO: Corrigida a lógica de toggle do histórico para exigir apenas um clique para exibir/ocultar.
+// - NOVO: Adicionada a função printSelectedHistory para imprimir apenas os protocolos selecionados.
+// - NOVO: Adicionadas funções e lógica para a checkbox "Selecionar Todos/Nenhum" no histórico.
+
+// Define a versão do script para acesso global
+window.SISLAB_VERSION = "2.0.16";
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -109,6 +119,46 @@ window.onload = async () => { // Torna a função onload assíncrona
             console.log("window.onload: Parâmetro 'gerar=ficticio' NÃO detectado. Não gerando paciente aleatório.");
         }
         // --- FIM NOVO ---
+
+        // Adiciona o event listener para o novo botão de exclusão selecionada
+        const deleteSelectedHistoryBtn = document.getElementById('deleteSelectedHistoryBtn');
+        if (deleteSelectedHistoryBtn) {
+            deleteSelectedHistoryBtn.addEventListener('click', deleteSelectedHistory);
+            console.log("Event listener para 'deleteSelectedHistoryBtn' adicionado.");
+        } else {
+            console.warn("Elemento 'deleteSelectedHistoryBtn' não encontrado.");
+        }
+
+        // Adiciona o event listener para o novo botão de impressão selecionada
+        const printSelectedHistoryBtn = document.getElementById('printSelectedHistoryBtn');
+        if (printSelectedHistoryBtn) {
+            printSelectedHistoryBtn.addEventListener('click', printSelectedHistory);
+            console.log("Event listener para 'printSelectedHistoryBtn' adicionado.");
+        } else {
+            console.warn("Elemento 'printSelectedHistoryBtn' não encontrado.");
+        }
+
+        // Adiciona o event listener para a checkbox mestre "Selecionar Todos"
+        const selectAllHistoryCheckbox = document.getElementById('selectAllHistoryCheckbox');
+        if (selectAllHistoryCheckbox) {
+            selectAllHistoryCheckbox.addEventListener('change', toggleAllHistoryCheckboxes);
+            console.log("Event listener para 'selectAllHistoryCheckbox' adicionado.");
+        } else {
+            console.warn("Elemento 'selectAllHistoryCheckbox' não encontrado.");
+        }
+
+        // Adiciona o event listener delegado para as checkboxes individuais do histórico
+        const historicoList = document.querySelector('#historico ul');
+        if (historicoList) {
+            historicoList.addEventListener('change', (event) => {
+                // Certifica-se de que o evento veio de uma checkbox de histórico individual
+                if (event.target.classList.contains('history-checkbox')) {
+                    updateSelectAllMasterCheckbox();
+                }
+            });
+            console.log("Event listener para individual history checkboxes (delegado) adicionado.");
+        }
+
 
     } catch (error) {
         console.error("Erro crítico na inicialização da página:", error);
@@ -404,6 +454,14 @@ function validateCpfAndCheckHistory() {
     console.log("validateCpfAndCheckHistory: Validando CPF e checando histórico.");
     const inputCPF = document.getElementById('cpf');
     const cpf = inputCPF.value.replace(/\D/g, '');
+    const ignoreCpfChecked = document.getElementById('ignoreCpfCheckbox').checked; // Get checkbox state
+
+    if (ignoreCpfChecked) {
+        // If "Ignorar CPF" is checked, bypass CPF validation and history check
+        clearError('cpf');
+        console.log("validateCpfAndCheckHistory: Ignorando validação e histórico de CPF devido à checkbox.");
+        return true;
+    }
 
     if (cpf.length === 0) {
         clearError('cpf');
@@ -838,54 +896,79 @@ async function salvarProtocoloAtendimento() {
 async function mostrarHistorico() {
     console.log("mostrarHistorico: Carregando histórico.");
     const historicoDiv = document.getElementById('historico');
-    historicoDiv.innerHTML = "<p>Carregando histórico do banco de dados...</p>"; // Feedback de carregamento
 
-    if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        historicoDiv.innerHTML = "<p>Banco de dados não inicializado. Verifique a configuração.</p>";
-        console.warn("mostrarHistorico: Banco de dados não inicializado. Não foi possível carregar o histórico.");
-        return;
-    }
+    // Get the computed style of the element
+    const computedStyle = window.getComputedStyle(historicoDiv);
 
-    try {
-        const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-        // Consulta todos os documentos, ordenados pelo protocolo (decrescente para pegar o mais recente primeiro)
-        const q = window.firebaseFirestoreQuery(
-            historicoRef,
-            window.firebaseFirestoreOrderBy('protocolo', 'desc')
-        ); 
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        console.log("mostrarHistorico: Query Snapshot (docs.length):", querySnapshot.docs.length);
+    // If it's currently hidden, show it and load content.
+    if (computedStyle.display === 'none') {
+        historicoDiv.style.display = 'block'; // Set inline style to 'block'
+        console.log("mostrarHistorico: Histórico exibido.");
+        // Proceed with loading content
+        // Encontra o UL dentro do historicoDiv ou cria um se não existir
+        let ulElement = historicoDiv.querySelector('ul');
+        if (!ulElement) {
+            ulElement = document.createElement('ul');
+            // Anexar o ulElement ao history-container, não diretamente ao historicoDiv
+            historicoDiv.querySelector('.history-container').appendChild(ulElement);
+        }
+        ulElement.innerHTML = "<p>Carregando histórico do banco de dados...</p>"; // Feedback de carregamento
 
-        if (querySnapshot.empty) {
-            historicoDiv.innerHTML = "<p>Nenhum cadastro encontrado no banco de dados.</p>";
-            console.log("mostrarHistorico: Nenhum cadastro encontrado.");
+        if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
+            ulElement.innerHTML = "<p>Banco de dados não inicializado. Verifique a configuração.</p>";
+            console.warn("mostrarHistorico: Banco de dados não inicializado. Não foi possível carregar o histórico.");
             return;
         }
 
-        let html = "<h3>Histórico de Cadastros</h3><ul>";
-        // Mapeia os documentos para um array de dados, incluindo o ID do documento do banco de dados
-        const cadastros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        try {
+            const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
+            // Consulta todos os documentos, ordenados pelo protocolo (decrescente para pegar o mais recente primeiro)
+            const q = window.firebaseFirestoreQuery(
+                historicoRef,
+                window.firebaseFirestoreOrderBy('protocolo', 'desc')
+            ); 
+            const querySnapshot = await window.firebaseFirestoreGetDocs(q);
+            console.log("mostrarHistorico: Query Snapshot (docs.length):", querySnapshot.docs.length);
 
-        cadastros.forEach((c) => { 
-            const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
-            // AGORA: O onclick passa o ID do documento do banco de dados DIRETAMENTE
-            html += `<li onclick="carregarCadastroFirebase('${c.id}')"><b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
-            if (c.examesNaoListados) {
-                html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
+            if (querySnapshot.empty) {
+                ulElement.innerHTML = "<p>Nenhum cadastro encontrado no banco de dados.</p>";
+                console.log("mostrarHistorico: Nenhum cadastro encontrado.");
+                return;
             }
-            if (c.observacoes) {
-                html += `<br>Observações: ${c.observacoes.substring(0, 100)}${c.observacoes.length > 100 ? '...' : ''}`;
-            }
-            html += `</li>`;
-        });
-        html += "</ul>";
-        historicoDiv.innerHTML = html;
-        console.log("mostrarHistorico: Histórico carregado e exibido.");
 
-    } catch (error) {
-        console.error("mostrarHistorico: Erro ao carregar histórico do banco de dados:", error);
-        historicoDiv.innerHTML = "<p>Erro ao carregar histórico. Verifique sua conexão e regras do banco de dados.</p>";
-        alert("Erro ao carregar histórico do banco de dados. Consulte o console.");
+            let html = ""; // Começa a construir o HTML da lista
+            // Mapeia os documentos para um array de dados, incluindo o ID do documento do banco de dados
+            const cadastros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            cadastros.forEach((c) => { 
+                const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
+                // Adiciona a checkbox e a classe 'protocol-info' para o texto clicável
+                html += `<li data-doc-id="${c.id}">
+                            <input type="checkbox" class="history-checkbox" value="${c.id}">
+                            <span class="protocol-info" onclick="carregarCadastroFirebase('${c.id}')">
+                                <b>${protocoloDisplay}</b> - ${c.nome} - CPF: ${c.cpf} - Idade: ${c.idade} - Exames: ${c.exames.join(", ")}`;
+                if (c.examesNaoListados) {
+                    html += `<br>Adicionais: ${c.examesNaoListados.substring(0, 50)}${c.examesNaoListados.length > 50 ? '...' : ''}`;
+                }
+                if (c.observacoes) {
+                    html += `<br>Observações: ${c.observacoes.substring(0, 100)}${c.observacoes.length > 100 ? '...' : ''}`;
+                }
+                html += `</span></li>`; // Fecha o span e o li
+            });
+            ulElement.innerHTML = html; // Define o HTML do UL
+            console.log("mostrarHistorico: Histórico carregado e exibido.");
+            updateSelectAllMasterCheckbox(); // NOVO: Atualiza o estado da checkbox mestre após carregar a lista.
+
+        } catch (error) {
+            console.error("mostrarHistorico: Erro ao carregar histórico do banco de dados:", error);
+            ulElement.innerHTML = "<p>Erro ao carregar histórico. Verifique sua conexão e regras do banco de dados.</p>";
+            alert("Erro ao carregar histórico do banco de dados. Consulte o console.");
+        }
+    } else {
+        // If it's currently displayed, hide it.
+        historicoDiv.style.display = 'none'; // Set inline style to 'none'
+        console.log("mostrarHistorico: Histórico ocultado.");
+        // No need to load content if hiding
     }
 }
 
@@ -942,6 +1025,13 @@ function limparCampos(showAlert = true) {
     const allCheckboxes = document.querySelectorAll('.exame');
     allCheckboxes.forEach(cb => cb.checked = false);
 
+    // Desmarca a checkbox 'Ignorar CPF'
+    const ignoreCpfCheckbox = document.getElementById('ignoreCpfCheckbox');
+    if (ignoreCpfCheckbox) {
+        ignoreCpfCheckbox.checked = false;
+        console.log("limparCampos: Checkbox 'Ignorar CPF' desmarcada.");
+    }
+
     clearError('data_nasc');
     clearError('cpf');
     clearError('contato');
@@ -957,6 +1047,45 @@ function limparCampos(showAlert = true) {
     }
     console.log("limparCampos: Campos limpos.");
 }
+
+// NOVO: Função para alternar todas as checkboxes do histórico (Selecionar Todos/Nenhum)
+function toggleAllHistoryCheckboxes() {
+    console.log("toggleAllHistoryCheckboxes: Alterando estado de todas as checkboxes do histórico.");
+    const masterCheckbox = document.getElementById('selectAllHistoryCheckbox');
+    const isChecked = masterCheckbox.checked;
+    const individualCheckboxes = document.querySelectorAll('.history-checkbox');
+
+    individualCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+}
+
+// NOVO: Função para atualizar o estado da checkbox mestre "Selecionar Todos"
+function updateSelectAllMasterCheckbox() {
+    console.log("updateSelectAllMasterCheckbox: Atualizando estado da checkbox mestre.");
+    const masterCheckbox = document.getElementById('selectAllHistoryCheckbox');
+    const individualCheckboxes = document.querySelectorAll('.history-checkbox');
+
+    if (individualCheckboxes.length === 0) {
+        masterCheckbox.checked = false;
+        masterCheckbox.indeterminate = false; // Não é indeterminado se não houver itens
+        return;
+    }
+
+    const checkedCount = Array.from(individualCheckboxes).filter(cb => cb.checked).length;
+
+    if (checkedCount === 0) {
+        masterCheckbox.checked = false;
+        masterCheckbox.indeterminate = false;
+    } else if (checkedCount === individualCheckboxes.length) {
+        masterCheckbox.checked = true;
+        masterCheckbox.indeterminate = false;
+    } else {
+        masterCheckbox.checked = false;
+        masterCheckbox.indeterminate = true; // Definir como indeterminado se alguns estiverem marcados, mas não todos
+    }
+}
+
 
 // MODIFICADO: limparHistorico agora interage com o banco de dados e usa senha dinâmica
 async function limparHistorico() {
@@ -1028,32 +1157,120 @@ async function limparHistorico() {
     }
 }
 
-// MODIFICADO: Imprimir Histórico (agora lê do banco de dados)
-async function imprimirHistorico() {
-    console.log("imprimirHistorico: Iniciando impressão do histórico.");
+// NOVO: Função para excluir protocolos selecionados
+async function deleteSelectedHistory() {
+    console.log("deleteSelectedHistory: Iniciando processo de exclusão de histórico selecionado.");
+    const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute;
+
+    const senhaDigitada = prompt(`Para excluir os protocolos selecionados, digite a senha.`);
+    if (senhaDigitada === null) {
+        console.log("deleteSelectedHistory: Usuário cancelou a entrada da senha.");
+        return;
+    }
+    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+        console.log("deleteSelectedHistory: Senha correta. Prosseguindo com a exclusão.");
+        if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
+            alert("Banco de dados não inicializado. Exclusão desabilitada.");
+            console.error("deleteSelectedHistory: Firestore não disponível.");
+            return;
+        }
+
+        const selectedCheckboxes = document.querySelectorAll('.history-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert("Nenhum protocolo foi selecionado para exclusão.");
+            console.log("deleteSelectedHistory: Nenhum checkbox selecionado.");
+            return;
+        }
+
+        const confirmDelete = confirm(`Tem certeza que deseja apagar ${selectedCheckboxes.length} protocolo(s) selecionado(s)? Esta ação é irreversível.`);
+        if (!confirmDelete) {
+            console.log("deleteSelectedHistory: Usuário cancelou a confirmação de exclusão.");
+            return;
+        }
+
+        try {
+            const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
+            const batch = window.firebaseFirestoreWriteBatch(window.firestoreDb);
+            let deletedCount = 0;
+
+            selectedCheckboxes.forEach(checkbox => {
+                const docId = checkbox.value; // The value of the checkbox holds the Firebase doc ID
+                const docRef = window.firebaseFirestoreDoc(historicoRef, docId);
+                batch.delete(docRef);
+                deletedCount++;
+            });
+
+            await batch.commit();
+            alert(`${deletedCount} protocolo(s) excluído(s) com sucesso!`);
+            console.log(`deleteSelectedHistory: ${deletedCount} protocolos excluídos com sucesso.`);
+            mostrarHistorico(); // Refresh the list
+        } catch (error) {
+            console.error("deleteSelectedHistory: Erro ao excluir protocolos selecionados:", error);
+            alert("Erro ao excluir protocolos selecionados. Verifique o console e regras do Firestore.");
+        }
+
+    } else {
+        alert('Senha incorreta. Exclusão cancelada.');
+        console.log("deleteSelectedHistory: Senha incorreta.");
+    }
+}
+
+// NOVO: Função para imprimir histórico selecionado
+async function printSelectedHistory() {
+    console.log("printSelectedHistory: Iniciando impressão de histórico selecionado.");
     if (typeof window.firestoreDb === 'undefined' || !window.firestoreDb) {
-        alert("Banco de dados não inicializado. Não é possível imprimir o histórico.");
-        console.error("imprimirHistorico: Firestore não disponível.");
+        alert("Banco de dados não inicializado. Não é possível imprimir o histórico selecionado.");
+        console.error("printSelectedHistory: Firestore não disponível.");
         return;
     }
 
-    let cadastros = [];
+    const selectedCheckboxes = document.querySelectorAll('.history-checkbox:checked');
+    if (selectedCheckboxes.length === 0) {
+        alert("Nenhum protocolo foi selecionado para impressão.");
+        console.log("printSelectedHistory: Nenhum checkbox selecionado.");
+        return;
+    }
+
+    let selectedDocIds = [];
+    selectedCheckboxes.forEach(checkbox => {
+        selectedDocIds.push(checkbox.value); // Collect document IDs
+    });
+    console.log("printSelectedHistory: IDs dos documentos selecionados para impressão:", selectedDocIds);
+
+    let selectedCadastros = [];
     try {
         const historicoRef = window.firebaseFirestoreCollection(window.firestoreDb, 'historico');
-        const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'desc')); 
-        console.log("imprimirHistorico: Buscando cadastros para impressão.");
-        const querySnapshot = await window.firebaseFirestoreGetDocs(q);
-        cadastros = querySnapshot.docs.map(doc => doc.data());
-        console.log("imprimirHistorico: Cadastros encontrados para impressão:", cadastros.length);
+        // Fetch each selected document by its ID
+        for (const docId of selectedDocIds) {
+            const docRef = window.firebaseFirestoreDoc(historicoRef, docId);
+            const docSnap = await window.firebaseFirestoreGetDoc(docRef);
+            if (docSnap.exists()) {
+                selectedCadastros.push(docSnap.data());
+            } else {
+                console.warn(`printSelectedHistory: Documento com ID ${docId} não encontrado no Firestore.`);
+            }
+        }
+        // Sort the selected cadastros by protocol number for consistent report order
+        selectedCadastros.sort((a, b) => {
+            const protocolA = parseInt(a.protocolo.split('-')[0]) || 0;
+            const protocolB = parseInt(b.protocolo.split('-')[0]) || 0;
+            return protocolA - protocolB;
+        });
+
+        console.log("printSelectedHistory: Cadastros selecionados para impressão:", selectedCadastros.length);
     } catch (error) {
-        console.error("imprimirHistorico: Erro ao carregar histórico para impressão:", error);
-        alert("Erro ao carregar histórico para impressão. Verifique sua conexão e regras do banco de dados.");
+        console.error("printSelectedHistory: Erro ao carregar histórico selecionado para impressão:", error);
+        alert("Erro ao carregar histórico selecionado para impressão. Verifique sua conexão e regras do banco de dados.");
         return;
     }
 
-    if (cadastros.length === 0) {
-        alert("Não há histórico para imprimir.");
-        console.log("imprimirHistorico: Nenhum histórico para imprimir.");
+    // Reuse printing logic from imprimirHistorico, but for selectedCadastros
+    if (selectedCadastros.length === 0) {
+        alert("Não foi possível carregar os protocolos selecionados para impressão.");
+        console.log("printSelectedHistory: Nenhum cadastro válido selecionado para impressão após busca.");
         return;
     }
 
@@ -1061,7 +1278,7 @@ async function imprimirHistorico() {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Histórico de Cadastros - Impressão</title>
+            <title>Histórico de Cadastros Selecionados - Impressão</title>
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 h1 { text-align: center; color: #1A2B4C; }
@@ -1078,23 +1295,23 @@ async function imprimirHistorico() {
             </style>
         </head>
         <body>
-            <h1>Histórico de Cadastros do Laboratório CETEP</h1>
+            <h1>Histórico de Cadastros Selecionados do Laboratório CETEP</h1>
             <ul>
     `;
 
-    cadastros.forEach((c) => { 
-        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id}`; 
+    selectedCadastros.forEach((c) => { 
+        const protocoloDisplay = c.protocolo ? `Protocolo: ${c.protocolo}` : `ID: ${c.id || 'N/D'}`; 
         printContent += `
             <li>
                 <b>${protocoloDisplay}</b><br>
-                <p><strong>Nome:</strong> ${c.nome}</p>
-                <p><strong>CPF:</strong> ${c.cpf}</p>
-                <p><strong>Data de Nasc.:</strong> ${c.dataNasc}</p>
-                <p><strong>Idade:</strong> ${c.idade}</p>
-                <p><strong>Sexo:</strong> ${c.sexo}</p>
-                <p><strong>Endereço:</strong> ${c.endereco}</p>
-                <p><strong>Contato:</strong> ${c.contato}</p>
-                <p><strong>Exames Selecionados:</strong> ${c.exames.join(", ")}</p>
+                <p><strong>Nome:</strong> ${c.nome || 'N/D'}</p>
+                <p><strong>CPF:</strong> ${c.cpf || 'N/D'}</p>
+                <p><strong>Data de Nasc.:</strong> ${c.dataNasc || 'N/D'}</p>
+                <p><strong>Idade:</strong> ${c.idade || 'N/D'}</p>
+                <p><strong>Sexo:</strong> ${c.sexo || 'N/D'}</p>
+                <p><strong>Endereço:</strong> ${c.endereco || 'N/D'}</p>
+                <p><strong>Contato:</strong> ${c.contato || 'N/D'}</p>
+                <p><strong>Exames Selecionados:</strong> ${Array.isArray(c.exames) ? c.exames.join(", ") : 'N/D'}</p>
         `;
         if (c.examesNaoListados) {
             printContent += `<p><strong>Exames Adicionais:</strong> ${c.examesNaoListados}</p>`;
@@ -1121,101 +1338,4 @@ async function imprimirHistorico() {
         printWindow.print();
         console.log("imprimirHistorico: Janela de impressão aberta e print() chamado.");
     };
-}
-
-// Removida a função imprimirTela (para imprimir o layout HTML) foi removida conforme sua solicitação.
-
-function editarListaExamesComSenha() {
-    console.log("editarListaExamesComSenha: Solicitando senha para edição de lista de exames.");
-    const now = new Date();
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minute = now.getMinutes().toString().padStart(2, '0');
-    const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB + hour + minute;
-
-    const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha.`);
-    if (senhaDigitada === null) {
-        console.log("editarListaExamesComSenha: Usuário cancelou a entrada da senha.");
-        return;
-    }
-    if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
-        console.log("editarListaExamesComSenha: Senha correta. Carregando lista para edição.");
-        carregarListaExamesParaEdicao();
-    } else {
-        alert('Senha incorreta. Edição não permitida.');
-        console.log("editarListaExamesComSenha: Senha incorreta.");
-    }
-}
-
-async function carregarListaExamesParaEdicao() {
-    console.log("carregarListaExamesParaEdicao: Iniciando carregamento da lista de exames para edição.");
-    const editorElement = document.getElementById('editorExames');
-    const textarea = document.getElementById('listaExamesEditor');
-
-    try {
-        const timestamp = new Date().getTime();
-        const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
-        console.log("carregarListaExamesParaEdicao: Buscando Gist em:", gistRawUrl);
-        const response = await fetch(gistRawUrl);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao buscar lista de exames da Gist: ${response.status} - ${errorText}`);
         }
-
-        const fileContent = await response.text();
-        textarea.value = fileContent;
-        editorElement.style.display = 'block';
-        alert('Lista de exames carregada para edição. Lembre-se: um exame por linha.');
-        console.log("carregarListaExamesParaEdicao: Lista de exames carregada e editor exibido.");
-
-    } catch (error) {
-        console.error("carregarListaExamesParaEdicao: Erro ao carregar lista de exames da Gist:", error);
-        alert("Não foi possível carregar a lista de exames para edição. Verifique o console e a Gist ID.");
-    }
-}
-
-async function salvarListaExamesNoGitHub() {
-    console.log("salvarListaExamesNoGitHub: Iniciando salvamento da lista de exames no GitHub.");
-    const textarea = document.getElementById('listaExamesEditor');
-    const novoConteudo = textarea.value;
-
-    const confirmSave = confirm("Deseja realmente salvar essas alterações na Gist? Isso fará uma atualização.");
-    if (!confirmSave) {
-        console.log("salvarListaExamesNoGitHub: Usuário cancelou o salvamento.");
-        return;
-    }
-
-    try {
-        const gistApiUrl = `https://api.github.com/gists/${GIST_ID}`;
-        console.log("salvarListaExamesNoGitHub: Enviando PATCH para Gist API:", gistApiUrl);
-        
-        const response = await fetch(gistApiUrl, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `token ${GITHUB_PAT_GIST}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({
-                files: {
-                    [GIST_FILENAME]: {
-                        content: novoConteudo
-                    }
-                }
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao salvar na Gist: ${response.status} - ${errorText}`);
-        }
-
-        alert('Lista de exames atualizada com sucesso na Gist!');
-        document.getElementById('editorExames').style.display = 'none';
-        carregarExames();
-        console.log("salvarListaExamesNoGitHub: Lista de exames salva e editor ocultado.");
-    } catch (error) {
-        console.error("salvarListaExamesNoGitHub: Erro ao salvar lista de exames na Gist:", error);
-        alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
-    }
-                }
