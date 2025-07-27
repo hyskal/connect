@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>SISLAB 2.0.5 - Lista de Exames</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+      background-color: #E0E6EE;
+    }
+
+    .main-header-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 25px;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .sislab-logo {
+      width: 70px;
+      height: 50px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .tube {
+      background-color: #f0f0f0;
+      width: 15px;
+      height: 40px;
+      border-radius: 4px 4px 2px 2px;
+      position: relative;
+      box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .tube-cap {
+      width: 17px;
+      height: 7px;
+      position: absolute;
+      top: -7px;
+      left: -1px;
+      border-radius: 4px 4px 0 0;
+      box-shadow: 0 -1px 3px rgba(0,0,0,0.2);
+    }
+
+    .tube:nth-child(1) .tube-cap { background-color: #800080; }
+    .tube:nth-child(2) .tube-cap { background-color: #FFD700; }
+    .tube:nth-child(3) .tube-cap { background-color: #CC3333; }
+
+    h1 {
+      color: #1A2B4C;
+      margin: 0;
+      font-size: 2.5em;
+      font-weight: bold;
+      text-align: center;
+      padding: 5px 15px;
+      border-bottom: 3px solid #CC3333;
+      display: inline-block;
+      letter-spacing: 1.5px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      white-space: nowrap;
+    }
+
+    .action-buttons-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1A2B4C;
+      color: white;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0F1D33;
+    }
+
+    #editorExames {
+      display: none;
+      margin-top: 20px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 800px;
+    }
+
+    #listaExamesEditor {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-header-container">
+    <div class="sislab-logo">
+      <div class="tube"><div class="tube-cap"></div></div>
+      <div class="tube"><div class="tube-cap"></div></div>
+      <div class="tube"><div class="tube-cap"></div></div>
+    </div>
+    <h1 class="main-title">SISLAB - Cadastro de Exames (CETEP/LNAB)</h1>
+  </div>
+
+  <div class="action-buttons-container">
+    <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
+  </div>
+
+  <div id="editorExames">
+    <h3>Editar Lista de Exames</h3>
+    <textarea id="listaExamesEditor" rows="15"></textarea><br>
+    <button onclick="salvarListaExamesNoGitHub()">Salvar Alterações</button>
+    <button onclick="document.getElementById('editorExames').style.display='none';">Cancelar</button>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, orderBy, limit,
+      deleteDoc, doc, writeBatch, where, serverTimestamp, getDoc, FieldValue
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_LEim5s-_NSCk3ySVCcUzDjIq0RPlvnA",
+      authDomain: "sislab-cetep.firebaseapp.com",
+      projectId: "sislab-cetep",
+      storageBucket: "sislab-cetep.firebasestorage.app",
+      messagingSenderId: "958611861664",
+      appId: "1:958611861664:web:97a3755f2b1958b0c8d9c5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.firebaseApp = app;
+    window.firestoreDb = db;
+    window.firebaseFirestoreCollection = collection;
+    window.firebaseFirestoreAddDoc = addDoc;
+    window.firebaseFirestoreGetDocs = getDocs;
+    window.firebaseFirestoreQuery = query;
+    window.firebaseFirestoreOrderBy = orderBy;
+    window.firebaseFirestoreLimit = limit;
+    window.firebaseFirestoreDeleteDoc = deleteDoc;
+    window.firebaseFirestoreDoc = doc;
+    window.firebaseFirestoreWriteBatch = writeBatch;
+    window.firebaseFirestoreWhere = where;
+    window.firebaseFirestoreServerTimestamp = serverTimestamp;
+    window.firebaseFirestoreGetDoc = getDoc;
+    window.firebaseFirestoreFieldValue = FieldValue;
+  </script>
+
+  <!-- Script principal onde estão as funções de edição e autenticação -->
+  <script src="script.js"></script>
+
+</body>
+</html>
