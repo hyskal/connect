@@ -694,9 +694,8 @@
 
     <div class="action-buttons-container nao-imprimir">
         <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
-        <button onclick="mostrarHistorico()">Ver Histórico</button>
-        <button onclick="imprimirHistorico()">Imprimir Histórico</button>
         <button onclick="limparCampos()">Limpar Campos</button>
+        <button onclick="mostrarHistorico()">Ver Histórico</button>
         <button onclick="accessAdminWithPassword()">&#128274; Acessar Admin</button>
     </div>
 
@@ -833,7 +832,7 @@
             const minute = now.getMinutes().toString().padStart(2, '0');
             const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
 
-            const senhaDigitada = prompt(`Para acessar a Área Administrativa, digite a senha. (Formato: ${SENHA_BASE_SISLAB_ADMIN}HHmm)`);
+            const senhaDigitada = prompt(`Para acessar a Área Administrativa, digite a senha:`);
             
             if (senhaDigitada === null) { // Usuário clicou em Cancelar
                 alert("Acesso cancelado.");
