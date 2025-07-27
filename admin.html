@@ -27,7 +27,26 @@
          }
          h1 {
              color: #1A2B4C;
-             margin-bottom: 20px;
+             margin: 0; /* Remove margem padrão para controlar no container */
+             font-size: 2.5em;
+             font-weight: bold;
+             text-align: center;
+             padding: 5px 15px; /* Ajusta padding */
+             border-bottom: 3px solid #CC3333; /* Linha de destaque vermelha */
+             display: inline-block; /* Para a borda envolver o texto */
+             letter-spacing: 1.5px; /* Espaçamento entre letras */
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra sutil */
+             white-space: nowrap; /* Evita que o título quebre linha */
+         }
+         @media (max-width: 600px) {
+             h1 {
+                 font-size: 1.8em; /* Reduz fonte em telas menores */
+                 padding: 5px 10px;
+             }
+             .main-header-container {
+                 flex-direction: column;
+                 gap: 5px;
+             }
          }
          .button-group {
              display: flex;
@@ -60,35 +79,56 @@
              font-weight: bold;
              margin-bottom: 15px;
          }
-         .tubos-container {
+ 
+         /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos (migrado do index.html) */
+         .sislab-logo {
+             width: 70px; /* Largura total da logo ajustada para tubos mais finos */
+             height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
              display: flex;
-             gap: 20px;
-             margin-bottom: 30px;
+             align-items: flex-end; /* Alinha os tubos na parte inferior */
+             justify-content: space-between; /* Espaço entre os tubos */
          }
-         .tubo {
-             width: 80px;
-             height: 150px;
-             background-color: #eee;
-             border-radius: 10px;
+ 
+         .tube {
+             background-color: #f0f0f0; /* Corpo do tubo cinza claro */
+             width: 15px; /* Mais fino */
+             height: 40px; /* Mais compridos */
+             border-radius: 4px 4px 2px 2px; /* Base levemente mais arredondada */
+             position: relative; /* Para posicionar a tampa */
+             box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidade */
+         }
+ 
+         .tube-cap {
+             width: 17px; /* Ligeiramente mais largo que o tubo para sobrepor */
+             height: 7px; /* Altura da tampa */
+             position: absolute;
+             top: -7px; /* Posiciona a tampa acima do tubo */
+             left: -1px; /* Ajusta a posição lateral para centralizar */
+             border-radius: 4px 4px 0 0;
+             box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para a tampa */
+         }
+ 
+         /* Cores das tampas */
+         .tube:nth-child(1) .tube-cap {
+             background-color: #800080; /* Roxo */
+         }
+ 
+         .tube:nth-child(2) .tube-cap {
+             background-color: #FFD700; /* Amarelo dourado (mais profissional) */
+         }
+ 
+         .tube:nth-child(3) .tube-cap {
+             background-color: #CC3333; /* Vermelho */
+         }
+ 
+         /* Contêiner do cabeçalho principal (logo + título) */
+         .main-header-container {
              display: flex;
-             justify-content: center;
-             align-items: flex-end;
-             color: white;
-             font-weight: bold;
-             font-size: 0.8em;
-             text-align: center;
-             padding-bottom: 10px;
-             box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-         }
-         .tubo-roxo {
-             background-color: #a0f; /* Roxo */
-         }
-         .tubo-vermelho {
-             background-color: #f00; /* Vermelho */
-         }
-         .tubo-amarelo {
-             background-color: #ff0; /* Amarelo */
-             color: #333;
+             align-items: center; /* Alinha verticalmente a logo e o texto */
+             justify-content: center; /* Centraliza horizontalmente */
+             margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
+             gap: 15px; /* Espaço entre a logo e o título */
+             flex-wrap: wrap; /* Permite quebrar em telas menores */
          }
  
          /* CSS para o editor de lista de exames */
@@ -135,15 +175,23 @@
  </head>
  <body>
  
-     <div class="admin-container">
-         <h1>Área Administrativa SISLAB</h1>
-         <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
- 
-         <div class="tubos-container">
-             <div class="tubo tubo-roxo">EDTA</div>
-             <div class="tubo tubo-vermelho">Seco</div>
-             <div class="tubo tubo-amarelo">Gel</div>
+     <div class="main-header-container">
+         <div class="sislab-logo">
+             <div class="tube tube-1">
+                 <div class="tube-cap"></div>
+             </div>
+             <div class="tube tube-2">
+                 <div class="tube-cap"></div>
+             </div>
+             <div class="tube tube-3">
+                 <div class="tube-cap"></div>
+             </div>
          </div>
+         <h1>Área Administrativa SISLAB</h1>
+     </div>
+ 
+     <div class="admin-container">
+         <p class="warning">Cuidado: As ações nesta página podem ser irreversíveis!</p>
  
          <div class="button-group">
              <button onclick="mostrarLogGeralInventario()">Ver Log Geral de Inventário</button>
@@ -312,7 +360,7 @@
                      headers: { Authorization: `token ${tokenGist()}` }
                  });
                  const data = await response.json();
-                 const conteudo = data.files["exames.txt"].content; // Garante que a chave seja a string "exames.txt"
+                 const conteudo = data.files["exames.txt"].content;
                  document.getElementById("listaExamesEditor").value = conteudo;
                  document.getElementById("editorExames").style.display = "block";
              } catch (error) {
@@ -332,7 +380,7 @@
                      },
                      body: JSON.stringify({
                          files: {
-                             "exames.txt": { // Garante que a chave seja a string "exames.txt"
+                             "exames.txt": {
                                  content: novoConteudo
                              }
                          }
