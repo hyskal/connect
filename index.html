@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -92,7 +91,7 @@
                 padding: 5px 10px;
             }
             .main-header-container {
-                flex-direction: column; /* Empilha logo e título */
+                flex-direction: column;
                 gap: 5px;
             }
         }
@@ -106,7 +105,7 @@
         /* Contêiner principal para as três colunas */
         .main-content-container {
             display: flex;
-            flex-wrap: wrap; /* Permite que as colunas quebrem para nova linha em telas pequenas */
+            flex-wrap: wrap;
             gap: 20px; /* Espaço entre as colunas */
             width: 95%; /* Aumenta a largura para caber 3 colunas */
             max-width: 1200px; /* Aumenta o max-width */
@@ -359,24 +358,44 @@
 
         /* Seção 9: Estilos para o Histórico de Cadastros */
         #historico {
+            /* Removido padding, border-radius, box-shadow, width, max-width, margin-top, box-sizing para o contêiner interno */
+            background-color: transparent; /* A cor de fundo será definida no contêiner interno */
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            width: 100%; /* Ocupa a largura total do seu pai */
+            max-width: none;
+            margin-top: 0;
+            box-sizing: border-box;
+            display: none; /* Garante que o histórico comece oculto */
+        }
+
+        /* NOVO: Estilos para o contêiner interno do histórico (que era #historico antes) */
+        .history-container {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 95%; /* Ajusta a largura */
-            max-width: 1200px; /* Ajusta o max-width */
-            margin-top: 20px;
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto; /* Centraliza e adiciona margem superior/inferior */
             box-sizing: border-box;
+            display: flex; /* Usa flexbox para o layout interno */
+            flex-direction: column; /* Itens empilhados verticalmente */
+            align-items: center; /* Centraliza o conteúdo horizontalmente (título, botões) */
         }
 
-        #historico h3 {
+        #historico h3 { /* Mantido para especificidade, se houver */
             margin-top: 0;
             color: #1A2B4C;
+            text-align: center; /* Centraliza o texto do título */
+            width: 100%; /* Ocupa toda a largura disponível para centralização */
         }
 
         #historico ul {
             list-style-type: none;
             padding: 0;
+            width: 100%; /* Lista ocupa a largura total */
         }
 
         #historico li {
@@ -385,7 +404,7 @@
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #E0E6EE;
-            cursor: pointer;
+            /* Removido o cursor: pointer para o LI inteiro */
             transition: background-color 0.2s ease;
         }
 
@@ -493,6 +512,79 @@
                 min-width: unset; /* Remove a largura mínima para se ajustar totalmente */
             }
         }
+        /* NOVO CSS PARA A CHECKBOX DE IGNORAR CPF */
+        .patient-header {
+            display: flex;
+            align-items: center; /* Alinha o texto e a checkbox verticalmente */
+            gap: 10px; /* Espaço entre o título e a checkbox */
+            margin-bottom: 20px; /* Mantém a margem inferior original do h3 */
+        }
+
+        .ignore-cpf-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em; /* Fonte um pouco menor para a label */
+            color: #555; /* Cor mais suave */
+        }
+
+        .ignore-cpf-label input[type="checkbox"] {
+            margin-right: 5px;
+            transform: scale(1.1); /* Checkbox ligeiramente maior */
+        }
+
+        /* NOVO CSS PARA O HISTÓRICO DE CADASTROS */
+        /* Este é o contêiner DOS BOTÕES, dentro de .history-container */
+        .history-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start; /* Alinha botões à esquerda */
+            gap: 15px; /* Espaço entre o título H3 e o botão */
+            margin-bottom: 20px; /* Espaço abaixo do cabeçalho do histórico */
+            width: 100%; /* Ocupa a largura total para alinhamento */
+        }
+        .history-checkbox {
+            margin-right: 10px; /* Espaço entre a checkbox e o texto do protocolo */
+            transform: scale(1.1); /* Aumenta um pouco o tamanho da checkbox */
+        }
+        /* Ajuste para o li, para que o clique no texto não marque/desmarque a checkbox */
+        #historico li {
+            display: flex;
+            align-items: flex-start; /* Alinha a checkbox no topo do texto quebrado */
+        }
+        /* Estilo para o texto do protocolo dentro do LI para que seja clicável (se desejar) */
+        #historico li .protocol-info {
+            flex-grow: 1; /* Permite que o texto ocupe o espaço restante */
+            cursor: pointer; /* Indica que é clicável */
+            padding: 5px 0; /* Ajusta o padding para melhor área de clique */
+            white-space: normal; /* Permite quebras de linha */
+            word-break: break-word; /* Força a quebra de palavras longas */
+        }
+        /* Cores dos botões de ação do histórico */
+        #deleteSelectedHistoryBtn {
+            background-color: #CC3333; /* Vermelho */
+        }
+        #deleteSelectedHistoryBtn:hover {
+            background-color: #A02222;
+        }
+        #printSelectedHistoryBtn { /* NOVO BOTÃO */
+            background-color: #007bff; /* Azul */
+        }
+        #printSelectedHistoryBtn:hover {
+            background-color: #0056b3;
+        }
+
+        /* NOVO: Estilos para a checkbox "Selecionar Todos" */
+        .select-all-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            color: #333;
+            margin-right: 15px; /* Espaço entre "Selecionar Todos" e o primeiro botão */
+        }
+        .select-all-label input[type="checkbox"] {
+            margin-right: 5px;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -514,7 +606,12 @@
 
     <div class="main-content-container">
         <div class="column left">
-            <h3>Dados do Paciente:</h3>
+            <div class="patient-header">
+                <h3>Dados do Paciente:</h3>
+                <label class="ignore-cpf-label">
+                    <input type="checkbox" id="ignoreCpfCheckbox"> Ignorar CPF
+                </label>
+            </div>
             <div class="form-row">
                 <div class="form-field full-width">
                     <label for="nome">Nome:</label>
@@ -600,8 +697,7 @@
         <button onclick="salvarProtocoloAtendimento()" class="highlight-button">Salvar Protocolo de Atendimento</button>
         <button onclick="mostrarHistorico()">Ver Histórico</button>
         <button onclick="imprimirHistorico()">Imprimir Histórico</button>
-        <button onclick="imprimirTela()">Imprimir Tela</button> <button onclick="limparCampos()">Limpar Campos</button>
-        <button onclick="limparHistorico()">Limpar Histórico</button>
+        <button onclick="limparCampos()">Limpar Campos</button>
         <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
         <button onclick="window.location.href='admin.html'">Acessar Admin</button>
     </div>
@@ -613,7 +709,19 @@
         <button onclick="document.getElementById('editorExames').style.display='none';">Cancelar</button>
     </div>
 
-    <div id="historico" class="nao-imprimir"></div>
+    <div id="historico" class="nao-imprimir">
+        <div class="history-container">
+            <h3 class="history-title">Histórico de Cadastros</h3>
+            <div class="history-header">
+                <label class="select-all-label">
+                    <input type="checkbox" id="selectAllHistoryCheckbox"> Selecionar Todos
+                </label>
+                <button id="deleteSelectedHistoryBtn">Excluir Histórico Selecionado</button>
+                <button id="printSelectedHistoryBtn">Imprimir Histórico Selecionado</button>
+            </div>
+            <ul></ul>
+        </div>
+    </div>
 
     <div class="print-footer" id="printFooter"></div>
 
@@ -665,6 +773,54 @@
 
     </script>
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const titleElement = document.querySelector('title');
+            if (titleElement && window.SISLAB_VERSION) {
+                // Captura o texto atual do título
+                const currentTitle = titleElement.textContent;
+                // Substitui a parte da versão existente (ex: "2.0.5") pela nova versão
+                const newTitle = currentTitle.replace(/SISLAB \d+\.\d+\.\d+/, `SISLAB ${window.SISLAB_VERSION}`);
+                titleElement.textContent = newTitle;
+            }
 
+            // Adiciona o event listener para o novo botão de exclusão selecionada
+            const deleteSelectedHistoryBtn = document.getElementById('deleteSelectedHistoryBtn');
+            if (deleteSelectedHistoryBtn) {
+                deleteSelectedHistoryBtn.addEventListener('click', deleteSelectedHistory);
+                console.log("Event listener para 'deleteSelectedHistoryBtn' adicionado.");
+            } else {
+                console.warn("Elemento 'deleteSelectedHistoryBtn' não encontrado.");
+            }
+            // Adiciona o event listener para o novo botão de impressão selecionada
+            const printSelectedHistoryBtn = document.getElementById('printSelectedHistoryBtn');
+            if (printSelectedHistoryBtn) {
+                printSelectedHistoryBtn.addEventListener('click', printSelectedHistory);
+                console.log("Event listener para 'printSelectedHistoryBtn' adicionado.");
+            } else {
+                console.warn("Elemento 'printSelectedHistoryBtn' não encontrado.");
+            }
+
+            // Adiciona o event listener para a checkbox mestre "Selecionar Todos"
+            const selectAllHistoryCheckbox = document.getElementById('selectAllHistoryCheckbox');
+            if (selectAllHistoryCheckbox) {
+                selectAllHistoryCheckbox.addEventListener('change', toggleAllHistoryCheckboxes);
+                console.log("Event listener para 'selectAllHistoryCheckbox' adicionado.");
+            } else {
+                console.warn("Elemento 'selectAllHistoryCheckbox' não encontrado.");
+            }
+
+            // Adiciona o event listener delegado para as checkboxes individuais do histórico
+            const historicoList = document.querySelector('#historico ul');
+            if (historicoList) {
+                historicoList.addEventListener('change', (event) => {
+                    if (event.target.classList.contains('history-checkbox')) {
+                        updateSelectAllMasterCheckbox();
+                    }
+                });
+                console.log("Event listener para individual history checkboxes (delegado) adicionado.");
+            }
+        });
+    </script>
 </body>
 </html>
