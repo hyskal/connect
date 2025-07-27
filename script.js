@@ -21,9 +21,9 @@ let listaExames = [];
 const SENHA_BASE_SISLAB = "sislab";
 
 // --- CONFIGURAÇÃO DA GIST PÚBLICA ---
-const GITHUB_USERNAME = 'hyskal'; 
-const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
-const GIST_FILENAME = 'exames.txt'; 
+const GITHUB_USERNAME = 'hyskal';
+const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670';
+const GIST_FILENAME = 'exames.txt';
 const GITHUB_PAT_GIST = (function() {
     const p1 = "ghp_PksP";
     const p2 = "EYHmMl";
@@ -551,8 +551,8 @@ function preencherCamposComCadastro(p) {
     }
 
     // Marca os exames selecionados - CORREÇÃO CRÍTICA AQUI
-    // Usa p.exames, pois é onde os dados vêm do Firebase (e é consistente com coletarDados)
-    const examesDoPaciente = Array.isArray(p.exames) ? p.exames : []; 
+    // Usa p.examesSelecionados, pois é onde os dados vêm do pacientes_aleatorios.json
+    const examesDoPaciente = Array.isArray(p.examesSelecionados) ? p.examesSelecionados : [];
     console.log("preencherCamposComCadastro: examesDoPaciente (após Array.isArray check):", examesDoPaciente);
     console.log("preencherCamposComCadastro: Tipo de examesDoPaciente:", typeof examesDoPaciente, "É Array?", Array.isArray(examesDoPaciente));
 
@@ -709,7 +709,7 @@ async function salvarProtocoloAtendimento() {
 
 
         // Salva o cadastro no banco de dados
-        console.log("salvarProtocoloAtendimento: Salvando documento no Firestore.");
+        console.log("salvarProtocoloAtendimento: Salvando documento no banco de dados.");
         await window.firebaseFirestoreAddDoc(historicoRef, dados);
         console.log("salvarProtocoloAtendimento: Documento salvo no banco de dados com protocolo: ", dados.protocolo);
         
@@ -905,6 +905,7 @@ async function carregarCadastroFirebase(docId) {
         if (!docSnap.exists) {
             alert("Cadastro não encontrado no banco de dados.");
             console.warn("carregarCadastroFirebase: Documento não encontrado para ID:", docId);
+            clearSearchAndPatientData();
             return;
         }
 
@@ -1217,4 +1218,4 @@ async function salvarListaExamesNoGitHub() {
         console.error("salvarListaExamesNoGitHub: Erro ao salvar lista de exames na Gist:", error);
         alert("Não foi possível salvar a lista na Gist. Verifique o console, seu PAT e permissões.");
     }
-                                           }
+                }
