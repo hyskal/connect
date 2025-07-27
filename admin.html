@@ -2,9 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SISLAB - Administração V2.0.5</title>
+    <title>SISLAB - Administração V2.0.6</title>
     <style>
-        /* ... Seus estilos CSS ... */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -126,15 +125,14 @@
         window.firebaseFirestoreWriteBatch = writeBatch;
         window.firebaseFirestoreOrderBy = orderBy; 
 
-        // Define a versão do script SISLAB para uso nesta página (extraído de script.js)
-        window.SISLAB_VERSION = "2.0.16"; 
+        // Define a versão do script SISLAB para uso nesta página
+        window.SISLAB_VERSION = "2.0.16"; /* */
 
         // --- Configuração da GIST Pública (para lista de exames) ---
         const GITHUB_USERNAME = 'hyskal'; 
         const GIST_ID = '1c13fc257a5a7f42e09303eaf26da670'; 
         const GIST_FILENAME = 'exames.txt'; 
         // Token de Acesso Pessoal (PAT) para GitHub Gist - CUIDADO AO EXPOR
-        // Esta função obfuscada é extraída de script.js
         const GITHUB_PAT_GIST = (function() {
             const p1 = "ghp_PksP";
             const p2 = "EYHmMl";
@@ -155,7 +153,7 @@
             const now = new Date();
             const hour = now.getHours().toString().padStart(2, '0');
             const minute = now.getMinutes().toString().padStart(2, '0');
-            const SENHA_DINAMICA_ESPERADA = "sislab" + hour + minute; // Usando "sislab" como base para a senha dinâmica
+            const SENHA_DINAMICA_ESPERADA = "sislab" + hour + minute; 
 
             const senhaDigitada = prompt(`Para acessar o Log Geral, digite a senha.`);
             if (senhaDigitada === null) {
@@ -164,7 +162,7 @@
             }
             if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
                 alert("Redirecionando para a página do Log Geral de Inventário.");
-                window.location.href = 'log_inventario.html'; // Redireciona para uma nova página
+                window.location.href = 'log_inventario.html'; 
             } else {
                 alert('Senha incorreta. Acesso negado ao Log Geral.');
             }
@@ -175,7 +173,7 @@
             const now = new Date();
             const hour = now.getHours().toString().padStart(2, '0');
             const minute = now.getMinutes().toString().padStart(2, '0');
-            const SENHA_DINAMICA_ESPERADA = "sislab" + hour + minute; // Usando "sislab" como base para a senha dinâmica
+            const SENHA_DINAMICA_ESPERADA = "sislab" + hour + minute; 
 
             const senhaDigitada = prompt(`Para limpar o histórico, digite a senha`);
             if (senhaDigitada === null) {
@@ -197,27 +195,25 @@
                     
                     const deleteQueryBatch = async (dbInstance, queryToDelete) => {
                         const snapshot = await window.firebaseFirestoreGetDocs(queryToDelete);
-                        if (snapshot.empty) { // Verifica se não há mais documentos
+                        if (snapshot.empty) { 
                             return 0;
                         }
-                        const batch = window.firebaseFirestoreWriteBatch(dbInstance); // Cria um novo lote
+                        const batch = window.firebaseFirestoreWriteBatch(dbInstance); 
                         snapshot.docs.forEach(d => {
-                            batch.delete(d.ref); // Adiciona a exclusão ao lote
+                            batch.delete(d.ref);
                         });
-                        await batch.commit(); // Executa o lote
-                        return snapshot.size; // Retorna quantos documentos foram apagados
+                        await batch.commit();
+                        return snapshot.size; 
                     };
 
                     let totalDeleted = 0;
                     let deletedCount;
                     do {
                         console.log("limparHistorico: Iniciando lote de exclusão.");
-                        // Adicionado orderBy para garantir ordem consistente na exclusão, evitando erros de índice no Firestore
                         const q = window.firebaseFirestoreQuery(historicoRef, window.firebaseFirestoreOrderBy('protocolo', 'asc'), window.firebaseFirestoreLimit(batchSize)); 
                         deletedCount = await deleteQueryBatch(window.firestoreDb, q);
                         totalDeleted += deletedCount;
                         console.log(`Apagados ${deletedCount} documentos. Total: ${totalDeleted}`);
-                        // Adicione um pequeno atraso para evitar hitting rate limits do Firestore em deletes muito rápidos
                         await new Promise(resolve => setTimeout(resolve, 50)); 
                     } while (deletedCount === batchSize);
 
@@ -235,18 +231,17 @@
         // Função para abrir index.html em nova aba com parâmetro para gerar paciente aleatório
         async function gerarNovoPacienteAleatorio() {
             alert("Uma nova aba será aberta para gerar um paciente aleatório.");
-            // Abre em nova aba com o parâmetro 'gerar=ficticio'
             window.open('index.html?gerar=ficticio', '_blank'); 
         }
 
-        // --- Funções de Edição da Lista de Exames (extraídas de script.js e adaptadas) ---
+        // --- Funções de Edição da Lista de Exames ---
 
         function editarListaExamesComSenha() {
             console.log("editListaExamesComSenha: Solicitando senha para edição de lista de exames.");
             const now = new Date();
             const hour = now.getHours().toString().padStart(2, '0');
             const minute = now.getMinutes().toString().padStart(2, '0');
-            const SENHA_DINAMICA_ESPERADA = "sislab" + hour + minute; // Usando "sislab" como base para a senha dinâmica
+            const SENHA_DINAMICA_ESPERADA = "sislab" + hour + minute; 
 
             const senhaDigitada = prompt(`Para editar a lista de exames, digite a senha.`);
             if (senhaDigitada === null) {
@@ -328,7 +323,7 @@
 
                 alert('Lista de exames atualizada com sucesso na Gist!');
                 document.getElementById('editorExames').style.display = 'none';
-                carregarExames(); // Chama a função dummy carregarExames para evitar erros. O reload da página index.html se encarregará de carregar a lista atualizada.
+                carregarExames(); 
                 console.log("salvarListaExamesNoGitHub: Lista de exames salva e editor ocultado.");
             } catch (error) {
                 console.error("salvarListaExamesNoGitHub: Erro ao salvar lista de exames na Gist:", error);
@@ -338,12 +333,9 @@
 
         // Script para aplicar a versão do SISLAB ao título da página
         document.addEventListener('DOMContentLoaded', () => {
-            const titleElement = document.getElementById('adminTitle'); // Pega o h1 pelo ID
+            const titleElement = document.getElementById('adminTitle'); 
             if (titleElement && window.SISLAB_VERSION) {
-                // Captura o texto atual do título
                 const currentTitle = titleElement.textContent;
-                // Substitui a parte da versão existente (ex: "V2.0.5") pela nova versão
-                // Usa regex para ser mais flexível se o formato da versão no título mudar (ex: "V2.0.5", "2.0.5", "v2.0.5")
                 const newTitle = currentTitle.replace(/SISLAB (V\d+\.\d+\.\d+)?/, `SISLAB V${window.SISLAB_VERSION}`);
                 titleElement.textContent = newTitle;
             }
