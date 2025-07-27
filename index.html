@@ -23,71 +23,71 @@
         /* Contêiner do cabeçalho principal (logo + título) */
         .main-header-container {
             display: flex;
-            align-items: center; /* Alinha verticalmente a logo e o texto */
-            justify-content: center; /* Centraliza horizontalmente */
-            margin-bottom: 25px; /* Espaço abaixo do cabeçalho */
-            gap: 15px; /* Espaço entre a logo e o título */
-            flex-wrap: wrap; /* Permite quebrar em telas menores */
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         /* Estilo para a Logomarca SISLAB em CSS Puros - Três Tubos */
         .sislab-logo {
-            width: 70px; /* Largura total da logo ajustada para tubos mais finos */
-            height: 50px; /* Altura total da logo ajustada para tubos mais compridos */
+            width: 70px;
+            height: 50px;
             display: flex;
-            align-items: flex-end; /* Alinha os tubos na parte inferior */
-            justify-content: space-between; /* Espaço entre os tubos */
+            align-items: flex-end;
+            justify-content: space-between;
         }
 
         .tube {
-            background-color: #f0f0f0; /* Corpo do tubo cinza claro */
-            width: 15px; /* Mais fino */
-            height: 40px; /* Mais compridos */
-            border-radius: 4px 4px 2px 2px; /* Base levemente mais arredondada */
-            position: relative; /* Para posicionar a tampa */
-            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2); /* Sombra interna sutil para profundidade */
+            background-color: #f0f0f0;
+            width: 15px;
+            height: 40px;
+            border-radius: 4px 4px 2px 2px;
+            position: relative;
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
         }
 
         .tube-cap {
-            width: 17px; /* Ligeiramente mais largo que o tubo para sobrepor */
-            height: 7px; /* Altura da tampa */
+            width: 17px;
+            height: 7px;
             position: absolute;
-            top: -7px; /* Posiciona a tampa acima do tubo */
-            left: -1px; /* Ajusta a posição lateral para centralizar */
+            top: -7px;
+            left: -1px;
             border-radius: 4px 4px 0 0;
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.2); /* Sombra para a tampa */
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.2);
         }
 
         /* Cores das tampas */
         .tube:nth-child(1) .tube-cap {
-            background-color: #800080; /* Roxo */
+            background-color: #800080;
         }
 
         .tube:nth-child(2) .tube-cap {
-            background-color: #FFD700; /* Amarelo dourado (mais profissional) */
+            background-color: #FFD700;
         }
 
         .tube:nth-child(3) .tube-cap {
-            background-color: #CC3333; /* Vermelho - Agora a tampa do terceiro tubo é vermelha */
+            background-color: #CC3333;
         }
 
         /* Estilo para o título principal */
         h1 {
             color: #1A2B4C;
-            margin: 0; /* Remove margem padrão para controlar no container */
+            margin: 0;
             font-size: 2.5em;
             font-weight: bold;
             text-align: center;
-            padding: 5px 15px; /* Ajusta padding */
-            border-bottom: 3px solid #CC3333; /* Linha de destaque vermelha */
-            display: inline-block; /* Para a borda envolver o texto */
-            letter-spacing: 1.5px; /* Espaçamento entre letras */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra sutil */
-            white-space: nowrap; /* Evita que o título quebre linha */
+            padding: 5px 15px;
+            border-bottom: 3px solid #CC3333;
+            display: inline-block;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
         }
         @media (max-width: 600px) {
             h1 {
-                font-size: 1.8em; /* Reduz fonte em telas menores */
+                font-size: 1.8em;
                 padding: 5px 10px;
             }
             .main-header-container {
@@ -97,7 +97,7 @@
         }
 
 
-        h2, h3 { /* Mantém o estilo para os demais títulos */
+        h2, h3 {
             color: #1A2B4C;
             margin-bottom: 20px;
         }
@@ -106,9 +106,9 @@
         .main-content-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px; /* Espaço entre as colunas */
-            width: 95%; /* Aumenta a largura para caber 3 colunas */
-            max-width: 1200px; /* Aumenta o max-width */
+            gap: 20px;
+            width: 95%;
+            max-width: 1200px;
             margin-bottom: 20px;
         }
 
@@ -119,20 +119,20 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
-            flex: 1; /* Permite que as colunas cresçam e ocupem o espaço disponível */
-            min-width: 280px; /* Largura mínima antes de quebrar a linha para 3 colunas */
-            display: flex; /* Para flex-direction column dentro da coluna */
+            flex: 1;
+            min-width: 280px;
+            display: flex;
             flex-direction: column;
         }
 
         /* Largura específica para cada coluna */
         .column.left, .column.center, .column.right-display {
-            flex-basis: calc(33.33% - 14px); /* Aprox. 33.33% menos 2/3 do gap (20px * 2/3 = 13.33px) */
+            flex-basis: calc(33.33% - 14px);
         }
 
         /* Bloco com contorno para a coluna central */
         .column.center {
-            border: 1px solid #AABBDD; /* Borda suave para o bloco */
+            border: 1px solid #AABBDD;
         }
         /* Bloco com contorno para a coluna de exibição (opcional, mas bom para o design) */
         .column.right-display {
@@ -146,9 +146,9 @@
             justify-content: flex-start;
             gap: 20px;
             /* **MODIFICAÇÃO AQUI: Alinhar itens pela base** */
-            align-items: flex-end; /* Alinha os itens do flex container pela sua linha de base */
+            align-items: flex-end;
             margin-bottom: 15px;
-            width: 100%; /* Garante que a linha ocupe a largura total da coluna */
+            width: 100%;
         }
 
         /* Seção 4: Estilos dos Campos Individuais do Formulário */
@@ -157,9 +157,9 @@
             flex-direction: column;
             flex-grow: 1;
             flex-basis: 0;
-            min-width: 120px; /* Reduz min-width para caber em 3 colunas */
+            min-width: 120px;
             /* **MODIFICAÇÃO AQUI: Empurra o campo de entrada para a base** */
-            justify-content: flex-end; /* Empurra o conteúdo para o final do container flex (bottom) */
+            justify-content: flex-end;
         }
 
         .form-field.full-width {
@@ -185,17 +185,16 @@
         }
 
         /* Seção 5: Larguras Específicas dos Campos */
-        /* Ajustes para caber em 3 colunas - min-width foi para o .form-field */
         #nome, #data_nasc, #idade, #cpf, #sexo, #contato, #endereco, #observacoes, #examesNaoListados {
-            min-width: auto; /* Deixa o flex-basis e flex-grow do form-field controlar */
+            min-width: auto;
         }
 
         /* Endereço e Observações agora são textareas */
         #endereco,
         #observacoes,
         #examesNaoListados {
-            min-height: 80px; /* Altura para 2-3 linhas de texto */
-            resize: vertical; /* Permite redimensionar verticalmente */
+            min-height: 80px;
+            resize: vertical;
         }
 
         /* Estilo para campos com erro */
@@ -214,7 +213,6 @@
         }
 
         /* Seção 6: Estilos para a Caixa de Sugestões (Exames) */
-        /* A largura da sugestão precisa se adaptar à nova largura da coluna */
         .sugestoes-box {
             border: 1px solid #ccc;
             max-height: 150px;
@@ -223,8 +221,8 @@
             background: white;
             position: absolute;
             z-index: 100;
-            width: calc(100% - 60px); /* Ajustado para a largura da coluna central */
-            max-width: none; /* remove max-width fixo */
+            width: calc(100% - 60px);
+            max-width: none;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 4px;
             top: auto;
@@ -256,7 +254,7 @@
             overflow-y: auto;
             margin-top: 15px;
             margin-bottom: 20px;
-            flex-grow: 1; /* Permite que a lista de exames cresça para preencher o espaço vertical */
+            flex-grow: 1;
         }
 
         #exames label {
@@ -277,11 +275,11 @@
             padding: 15px;
             border-radius: 5px;
             background-color: #fdfdfd;
-            max-height: 350px; /* Ajusta a altura da lista de exibição */
+            max-height: 350px;
             overflow-y: auto;
             margin-top: 15px;
             margin-bottom: 20px;
-            flex-grow: 1; /* Permite que a lista de exibição cresça */
+            flex-grow: 1;
         }
 
         .display-item {
@@ -298,7 +296,7 @@
             background-color: #CC3333;
             color: white;
             border: none;
-            border-radius: 50%; /* Faz um círculo */
+            border-radius: 50%;
             width: 20px;
             height: 20px;
             display: flex;
@@ -307,7 +305,7 @@
             font-size: 1.2em;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            line-height: 1; /* Alinha o "-" verticalmente */
+            line-height: 1;
         }
         .remove-item-btn:hover {
             background-color: #A02222;
@@ -319,8 +317,8 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            width: 95%; /* Ajusta a largura */
-            max-width: 1200px; /* Ajusta o max-width */
+            width: 95%;
+            max-width: 1200px;
             margin-top: 20px;
             padding: 20px;
             background-color: white;
@@ -359,15 +357,15 @@
         /* Seção 9: Estilos para o Histórico de Cadastros */
         #historico {
             /* Removido padding, border-radius, box-shadow, width, max-width, margin-top, box-sizing para o contêiner interno */
-            background-color: transparent; /* A cor de fundo será definida no contêiner interno */
+            background-color: transparent;
             padding: 0;
             border-radius: 0;
             box-shadow: none;
-            width: 100%; /* Ocupa a largura total do seu pai */
+            width: 100%;
             max-width: none;
             margin-top: 0;
             box-sizing: border-box;
-            display: none; /* Garante que o histórico comece oculto */
+            display: none;
         }
 
         /* NOVO: Estilos para o contêiner interno do histórico (que era #historico antes) */
@@ -378,24 +376,24 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             width: 95%;
             max-width: 1200px;
-            margin: 20px auto; /* Centraliza e adiciona margem superior/inferior */
+            margin: 20px auto;
             box-sizing: border-box;
-            display: flex; /* Usa flexbox para o layout interno */
-            flex-direction: column; /* Itens empilhados verticalmente */
-            align-items: center; /* Centraliza o conteúdo horizontalmente (título, botões) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        #historico h3 { /* Mantido para especificidade, se houver */
+        #historico h3 {
             margin-top: 0;
             color: #1A2B4C;
-            text-align: center; /* Centraliza o texto do título */
-            width: 100%; /* Ocupa toda a largura disponível para centralização */
+            text-align: center;
+            width: 100%;
         }
 
         #historico ul {
             list-style-type: none;
             padding: 0;
-            width: 100%; /* Lista ocupa a largura total */
+            width: 100%;
         }
 
         #historico li {
@@ -404,7 +402,6 @@
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #E0E6EE;
-            /* Removido o cursor: pointer para o LI inteiro */
             transition: background-color 0.2s ease;
         }
 
@@ -417,11 +414,11 @@
             .nao-imprimir { display: none; }
             body {
                 background-color: white;
-                position: relative; /* Para posicionar o rodapé */
-                padding-bottom: 50px; /* Espaço para o rodapé */
+                position: relative;
+                padding-bottom: 50px;
             }
             .main-content-container {
-                flex-direction: column; /* Impressão em coluna única */
+                flex-direction: column;
                 gap: 0;
                 width: auto;
                 max-width: none;
@@ -432,48 +429,48 @@
                 padding: 0;
                 width: auto;
                 max-width: none;
-                flex-basis: auto; /* Remove flex-basis para que a largura seja auto */
+                flex-basis: auto;
                 min-width: unset;
             }
             /* Exibir apenas o título, coluna 1 (dados paciente) e coluna 3 (exames selecionados) */
             .column.left, .column.right-display {
-                display: block; /* Garante que estejam visíveis */
-                width: 48%; /* Divide o espaço da página entre as duas colunas */
-                float: left; /* Flutua para ficarem lado a lado */
-                margin-right: 2%; /* Espaço entre elas */
-                page-break-inside: avoid; /* Tenta evitar quebrar o conteúdo da coluna */
+                display: block;
+                width: 48%;
+                float: left;
+                margin-right: 2%;
+                page-break-inside: avoid;
             }
             /* Ocultar a coluna 2 (pesquisa e exames disponíveis) */
             .column.center {
                 display: none;
             }
             /* Ocultar elementos específicos na impressão */
-            .action-buttons-container, #historico, .sugestoes-box, #pesquisaExame, .sislab-logo, h2, h3 { /* Oculta títulos menores, etc. */
+            .action-buttons-container, #historico, .sugestoes-box, #pesquisaExame, .sislab-logo, h2, h3 {
                 display: none;
             }
             /* Ajustar margens para o conteúdo impresso */
             .main-header-container {
-                margin-bottom: 10px; /* Reduz margem do cabeçalho */
+                margin-bottom: 10px;
             }
             h1.main-title {
-                font-size: 1.8em; /* Reduz o tamanho do título para impressão */
-                border-bottom: none; /* Remove a borda do título na impressão */
-                width: 100%; /* Ocupa a largura total para o título */
-                display: block; /* Garante que seja um bloco */
-                float: none; /* Remove flutuação */
-                margin-bottom: 20px; /* Espaço após o título */
+                font-size: 1.8em;
+                border-bottom: none;
+                width: 100%;
+                display: block;
+                float: none;
+                margin-bottom: 20px;
             }
             /* Forçar examesSelecionadosDisplay a imprimir seu conteúdo */
             #examesSelecionadosDisplay {
-                height: auto; /* Permite que a altura se ajuste ao conteúdo */
-                max-height: unset; /* Remove max-height */
-                overflow-y: visible; /* Garante que todo o conteúdo seja visível */
+                height: auto;
+                max-height: unset;
+                overflow-y: visible;
             }
 
             /* Estilo do rodapé de impressão */
             .print-footer {
-                display: block; /* Exibe o rodapé apenas na impressão */
-                position: fixed; /* Fixa no final da página impressa */
+                display: block;
+                position: fixed;
                 bottom: 0;
                 left: 0;
                 width: 100%;
@@ -487,16 +484,16 @@
 
             /* Estilo para exibir o bloco de exames não listados abaixo das duas colunas */
             #examesNaoListadosRow {
-                display: block !important; /* Força a exibição */
-                width: 98% !important; /* Quase 100% da largura, deixando margem */
-                float: none !important; /* Remove flutuação para quebra de linha */
-                clear: both !important; /* Garante que ele apareça abaixo das colunas flutuantes */
-                margin: 20px 1% 0 1% !important; /* Centraliza e adiciona margem superior */
-                page-break-before: auto; /* Permite quebrar página antes se não couber */
-                page-break-after: auto; /* Permite quebrar página depois */
-                box-shadow: none; /* Remove sombra na impressão */
-                border: 1px solid #eee; /* Adiciona uma borda sutil na impressão */
-                padding: 10px; /* Espaçamento interno */
+                display: block !important;
+                width: 98% !important;
+                float: none !important;
+                clear: both !important;
+                margin: 20px 1% 0 1% !important;
+                page-break-before: auto;
+                page-break-after: auto;
+                box-shadow: none;
+                border: 1px solid #eee;
+                padding: 10px;
             }
 
         }
@@ -509,27 +506,27 @@
             }
             .column.left, .column.center, .column.right-display {
                 flex-basis: 100%;
-                min-width: unset; /* Remove a largura mínima para se ajustar totalmente */
+                min-width: unset;
             }
         }
         /* NOVO CSS PARA A CHECKBOX DE IGNORAR CPF */
         .patient-header {
             display: flex;
-            align-items: center; /* Alinha o texto e a checkbox verticalmente */
-            gap: 10px; /* Espaço entre o título e a checkbox */
-            margin-bottom: 20px; /* Mantém a margem inferior original do h3 */
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .ignore-cpf-label {
             display: flex;
             align-items: center;
-            font-size: 0.9em; /* Fonte um pouco menor para a label */
-            color: #555; /* Cor mais suave */
+            font-size: 0.9em;
+            color: #555;
         }
 
         .ignore-cpf-label input[type="checkbox"] {
             margin-right: 5px;
-            transform: scale(1.1); /* Checkbox ligeiramente maior */
+            transform: scale(1.1);
         }
 
         /* NOVO CSS PARA O HISTÓRICO DE CADASTROS */
@@ -537,37 +534,39 @@
         .history-header {
             display: flex;
             flex-wrap: wrap;
-            justify-content: flex-start; /* Alinha botões à esquerda */
-            gap: 15px; /* Espaço entre o título H3 e o botão */
-            margin-bottom: 20px; /* Espaço abaixo do cabeçalho do histórico */
-            width: 100%; /* Ocupa a largura total para alinhamento */
+            justify-content: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            /* MODIFICAÇÃO PARA ALINHAMENTO */
+            align-items: center; /* Alinha os itens verticalmente ao centro */
         }
         .history-checkbox {
-            margin-right: 10px; /* Espaço entre a checkbox e o texto do protocolo */
-            transform: scale(1.1); /* Aumenta um pouco o tamanho da checkbox */
+            margin-right: 10px;
+            transform: scale(1.1);
         }
         /* Ajuste para o li, para que o clique no texto não marque/desmarque a checkbox */
         #historico li {
             display: flex;
-            align-items: flex-start; /* Alinha a checkbox no topo do texto quebrado */
+            align-items: flex-start;
         }
         /* Estilo para o texto do protocolo dentro do LI para que seja clicável (se desejar) */
         #historico li .protocol-info {
-            flex-grow: 1; /* Permite que o texto ocupe o espaço restante */
-            cursor: pointer; /* Indica que é clicável */
-            padding: 5px 0; /* Ajusta o padding para melhor área de clique */
-            white-space: normal; /* Permite quebras de linha */
-            word-break: break-word; /* Força a quebra de palavras longas */
+            flex-grow: 1;
+            cursor: pointer;
+            padding: 5px 0;
+            white-space: normal;
+            word-break: break-word;
         }
         /* Cores dos botões de ação do histórico */
         #deleteSelectedHistoryBtn {
-            background-color: #CC3333; /* Vermelho */
+            background-color: #CC3333;
         }
         #deleteSelectedHistoryBtn:hover {
             background-color: #A02222;
         }
-        #printSelectedHistoryBtn { /* NOVO BOTÃO */
-            background-color: #007bff; /* Azul */
+        #printSelectedHistoryBtn {
+            background-color: #007bff;
         }
         #printSelectedHistoryBtn:hover {
             background-color: #0056b3;
@@ -579,7 +578,7 @@
             align-items: center;
             font-size: 0.9em;
             color: #333;
-            margin-right: 15px; /* Espaço entre "Selecionar Todos" e o primeiro botão */
+            margin-right: 15px;
         }
         .select-all-label input[type="checkbox"] {
             margin-right: 5px;
@@ -698,8 +697,7 @@
         <button onclick="mostrarHistorico()">Ver Histórico</button>
         <button onclick="imprimirHistorico()">Imprimir Histórico</button>
         <button onclick="limparCampos()">Limpar Campos</button>
-        <button onclick="editarListaExamesComSenha()">Editar Lista de Exames</button>
-        <button onclick="window.location.href='admin.html'">Acessar Admin</button>
+        <button onclick="accessAdminWithPassword()">&#128274; Acessar Admin</button>
     </div>
 
     <div id="editorExames" style="display:none; margin-top:20px; background-color:white; padding:20px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -825,6 +823,31 @@
                 console.log("Event listener para individual history checkboxes (delegado) adicionado.");
             }
         });
+
+        // INICIO DO JAVASCRIPT EMBUTIDO PARA ACESSAR ADMIN COM SENHA
+        const SENHA_BASE_SISLAB_ADMIN = "sislab"; // Base da senha, compartilhada com admin.html
+
+        function accessAdminWithPassword() {
+            const now = new Date();
+            const hour = now.getHours().toString().padStart(2, '0');
+            const minute = now.getMinutes().toString().padStart(2, '0');
+            const SENHA_DINAMICA_ESPERADA = SENHA_BASE_SISLAB_ADMIN + hour + minute;
+
+            const senhaDigitada = prompt(`Para acessar a Área Administrativa, digite a senha. (Formato: ${SENHA_BASE_SISLAB_ADMIN}HHmm)`);
+            
+            if (senhaDigitada === null) { // Usuário clicou em Cancelar
+                alert("Acesso cancelado.");
+                return;
+            }
+
+            if (senhaDigitada === SENHA_DINAMICA_ESPERADA) {
+                alert("Senha correta. Redirecionando para a Área Administrativa.");
+                window.location.href = 'admin.html';
+            } else {
+                alert('Senha incorreta. Acesso negado.');
+            }
+        }
+        // FIM DO JAVASCRIPT EMBUTIDO
     </script>
 </body>
 </html>
