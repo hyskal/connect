@@ -716,6 +716,9 @@
                 <label class="select-all-label">
                     <input type="checkbox" id="selectAllHistoryCheckbox"> Selecionar Todos
                 </label>
+                <div class="form-field" style="flex-grow: 1; min-width: 200px;">
+                    <input type="text" id="historySearchInput" placeholder="Buscar protocolo, CPF ou nome..." autocomplete="off" style="font-size: 0.9em; padding: 7px;">
+                </div>
                 <button id="deleteSelectedHistoryBtn">Excluir Histórico Selecionado</button>
                 <button id="printSelectedHistoryBtn">Imprimir Histórico Selecionado</button>
             </div>
@@ -773,6 +776,7 @@
 
     </script>
     <script src="script.js"></script>
+    <script type="module" src="busca_historico.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const titleElement = document.querySelector('title');
