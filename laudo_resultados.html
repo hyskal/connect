@@ -174,20 +174,21 @@
             margin-top: 5px;
         }
 
-        .exam-result-item .result-row input {
+        .exam-result-item .result-row input,
+        .exam-result-item .result-row select { /* Adicionado select aqui */
             flex-grow: 1;
             min-width: 100px;
             padding: 8px;
         }
-        .exam-result-item .result-row input[placeholder="Resultado"] {
+        .exam-result-item .result-row .exam-result-value { /* Classe específica para o campo resultado */
             flex-basis: 40%;
             min-width: 180px;
         }
-        .exam-result-item .result-row input[placeholder="Unidade"] {
+        .exam-result-item .result-row .exam-unit-value { /* Classe específica para o campo unidade */
             flex-basis: 20%;
             min-width: 80px;
         }
-        .exam-result-item .result-row input[placeholder="Ref. (opcional)"] {
+        .exam-result-item .result-row .exam-ref-value { /* Classe específica para o campo referência */
             flex-basis: 30%;
             min-width: 120px;
         }
@@ -202,7 +203,7 @@
         }
         .exam-result-item .edit-button-container {
             width: 100%;
-            text-align: right;
+            text-align: left;
             margin-top: 5px;
         }
         .exam-result-item .edit-exam-btn {
@@ -219,6 +220,7 @@
         }
 
         .exam-result-item.read-only input,
+        .exam-result-item.read-only select, /* Adicionado select aqui */
         .exam-result-item.read-only textarea {
             background-color: #e9ecef;
             cursor: not-allowed;
@@ -257,15 +259,14 @@
         <div class="search-section">
             <h2>Buscar Paciente:</h2>
             <div class="form-row">
-                <div class="form-field">
-                    <label for="searchQuery">Protocolo, CPF ou Nome:</label>
+                <div class="form-field full-width"> <label for="searchQuery">Protocolo, CPF ou Nome:</label>
                     <input type="text" id="searchQuery" placeholder="Digite para buscar...">
                     <div id="searchQuery-error" class="error-message"></div>
                 </div>
-                <div class="form-field" style="flex-grow: 0;">
-                    <button id="searchPatientBtn">Buscar</button>
-                    <button id="clearSearchBtn">Limpar Busca</button>
-                </div>
+            </div>
+            <div class="search-buttons-row" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+                <button id="searchPatientBtn">Buscar</button>
+                <button id="clearSearchBtn">Limpar Busca</button>
             </div>
             <div class="patient-search-results">
                 <p id="searchResultStatus">Nenhum paciente encontrado ou selecionado.</p>
@@ -310,8 +311,14 @@
         <div class="signature-section" style="display: none;">
             <p>__________________________________________</p>
             <p>Assinatura do <strong>Responsável Técnico</strong></p>
-            <p>Nome: Dr(a). <span id="responsavelTecnicoNome">[Nome do Responsável Técnico]</span></p>
-            <p>Registro: CRBM/CRF <span id="responsavelTecnicoRegistro">[Número de Registro]</span></p>
+            <p>
+                <label for="responsavelTecnicoNome">Nome: Dr(a). </label>
+                <input type="text" id="responsavelTecnicoNome" placeholder="Digite o nome do Dr." style="width: auto; flex-grow: 1;">
+            </p>
+            <p>
+                <label for="responsavelTecnicoRegistro">Registro: CRBM/CRF </label>
+                <input type="text" id="responsavelTecnicoRegistro" maxlength="6" placeholder="Ex: 123456" style="width: auto; flex-grow: 1;">
+            </p>
             <p style="font-size: 0.8em; color: #888;">Laudo gerado em: <span id="laudoGenerationDate"></span></p>
         </div>
     </div>
