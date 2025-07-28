@@ -1,38 +1,20 @@
 // laudo_scripts.js
-// VERSÃO: 1.0.13 (laudo_scripts.js)
+// VERSÃO: 1.0.14 (laudo_scripts.js) - Alterações para PDF de Laudo conforme solicitação do usuário.
 // CHANGELOG:
-// - CORREÇÃO CRÍTICA FINAL DEFINITIVA: Corrigido o erro de digitação na linha de fallback de parâmetros
-//   e simplificada a definição de parâmetros padrão para 'savedExamesResults' e 'savedObservacoesGerais'
-//   DIRETAMENTE NA ASSINATURA DA FUNÇÃO 'displayPatientExamsForLaudo'.
-//   As linhas de fallback redundantes no corpo da função foram removidas.
-//   Esta é a implementação ideal e corrige o "ReferenceError: savedExamesResults is not defined".
-// - CORREÇÃO: Adicionadas entradas específicas em EXAM_DETAILS para nomes de exames que estavam vindo
-//   com pequenas variações/erros de digitação do banco de dados (ex: "Colestetol Total e Frações", "Creatinina (Creat)").
-//   Isso garante que as unidades e referências sejam pré-preenchidas corretamente para esses casos.
-// - ADIÇÃO: Depuração extensiva e checklist de módulos/testes carregados.
-// - ADIÇÃO: Verificação explícita de carregamento do script e de módulos dependentes.
-// - ADIÇÃO: Mais logs para rastreamento de eventos, chamadas de funções e valores de variáveis.
-// - CORREÇÃO: Função searchPatient agora carrega TODO o histórico se o termo de busca estiver vazio, similar ao index.html.
-// - NOVO: Implementação da funcionalidade de busca de paciente por protocolo, CPF ou nome no Firebase Firestore.
-// - NOVO: Exibição dos resultados da busca e dos dados do paciente selecionado.
-// - NOVO: Implementação de funcionalidade para alternar modo de edição dos resultados dos exames.
-// - NOVO: Adicionado objeto EXAM_DETAILS com unidades, valores de referência e tipo de input (texto/select) para diversos exames.
-// - NOVO: Função displayPatientExamsForLaudo agora preenche dinamicamente os campos de resultado com base no EXAM_DETAILS.
-// - NOVO: Gerar PDF do Laudo: Implementação completa da geração do PDF com cabeçalho, dados do paciente, resultados dos exames, observações e rodapé de assinatura em cada página.
-// - AJUSTE: Campos de Nome e Registro do Responsável Técnico no HTML foram preenchidos com valores de exemplo.
-// - CORREÇÃO CRÍTICA: Reimplementada a função 'calcularIdade' (e 'validarDataNascimento') diretamente neste script
-//   para contornar o erro de exportação em sislab_utils.js, respeitando a restrição de não modificar outros arquivos.
-//   Removida a importação de 'calcularIdade' de 'sislab_utils.js'.
-// - ADIÇÃO: Mais logs específicos em displayPatientExamsForLaudo para depurar o preenchimento de unidades e referências.
-// - ADIÇÃO: Mais logs específicos em generatePdfLaudo para depurar o fluxo de geração.
+// - CORREÇÃO: Erro de propriedade 'nomePaciente' em 'selectedPatientData' corrigido para 'nome'.
+// - ALTERADO: Título da seção de resultados de "RESULTADOS DOS EXAMES" para "RESULTADOS".
+// - ADICIONADO: Seção de assinatura do Responsável Técnico antes das Observações Gerais do Laudo.
+// - AJUSTADO: Tamanho da fonte do título e do texto das Observações Gerais do Laudo.
+// - MODIFICADO: Conteúdo do rodapé do PDF para incluir o responsável técnico e registro.
 
-console.log("DEBUG(laudo_scripts): Script carregado e iniciando execução. Versão 1.0.13."); // INÍCIO DE DEPURAÇÃO GLOBAL
+console.log("DEBUG(laudo_scripts): Script carregado e iniciando execução. Versão 1.0.14."); // INÍCIO DE DEPURAÇÃO GLOBAL
 
 // Seção 1: Importações e Variáveis Globais
 // As funções do Firebase são globalizadas em laudo_resultados.html.
 // Importamos APENAS as funções de utilidade de sislab_utils.js que são exportadas corretamente.
 // 'calcularIdade' não será importada, pois será reimplementada localmente.
 import { formatDateTimeToDisplay, formatDateToDisplay, showError, clearError } from './sislab_utils.js';
+import { EXAM_DETAILS } from './exames_ref.js'; // Importa EXAM_DETAILS do novo arquivo
 
 console.log("DEBUG(laudo_scripts): Módulo sislab_utils.js importado. Verificando acessibilidade das funções:");
 console.log("DEBUG(laudo_scripts): formatDateTimeToDisplay é tipo:", typeof formatDateTimeToDisplay);
@@ -78,111 +60,7 @@ function validarDataNascimento(dataString) {
 console.log("DEBUG(laudo_scripts): Funções 'calcularIdade' e 'validarDataNascimento' reimplementadas localmente.");
 console.log("DEBUG(laudo_scripts): calcularIdade (local) é tipo:", typeof calcularIdade);
 
-
-// NOVO: Objeto EXAM_DETAILS com dados predefinidos para os exames
-const EXAM_DETAILS = {
-    "Hemograma Completo": { defaultUnit: "N/A", referenceRange: { general: "Varia (Texto Livre)" }, inputType: "text" },
-    "Glicemia": { defaultUnit: "mg/dL", referenceRange: { general: "< 99 mg/dL" }, inputType: "text" },
-    "Colesterol Total": { defaultUnit: "mg/dL", referenceRange: { general: "< 190 mg/dL" }, inputType: "text" },
-    "Colestetol Total e Frações": { defaultUnit: "mg/dL", referenceRange: { general: "< 190 mg/dL" }, inputType: "text" }, // Adicionado para match exato
-    "Triglicerídeos": { defaultUnit: "mg/dL", referenceRange: { general: "< 150 mg/dL" }, inputType: "text" },
-    "Ureia": { defaultUnit: "mg/dL", referenceRange: { general: "15 - 45 mg/dL" }, inputType: "text" },
-    "Ureia (BUN)": { defaultUnit: "mg/dL", referenceRange: { general: "15 - 45 mg/dL" }, inputType: "text" }, // Adicionado para match exato
-    "Creatinina": { defaultUnit: "mg/dL", referenceRange: { male: "0.7 - 1.2 mg/dL", female: "0.5 - 0.9 mg/dL" }, inputType: "text" },
-    "Creatinina (Creat)": { defaultUnit: "mg/dL", referenceRange: { male: "0.7 - 1.2 mg/dL", female: "0.5 - 0.9 mg/dL" }, inputType: "text" }, // Adicionado para match exato
-    "Exame de Urina": { defaultUnit: "N/A", referenceRange: { general: "Normal" }, inputType: "select", options: ["Normal", "Anormal"] },
-    "Urina Tipo I (EAS)": { defaultUnit: "N/A", referenceRange: { general: "Normal" }, inputType: "select", options: ["Normal", "Anormal"] },
-    "Sumário de Urina": { defaultUnit: "N/A", referenceRange: { general: "Normal" }, inputType: "select", options: ["Normal", "Anormal"] },
-    "TSH": { defaultUnit: "µUI/mL", referenceRange: { general: "0.4 - 4.0 µUI/mL" }, inputType: "text" },
-    "T4 Livre": { defaultUnit: "ng/dL", referenceRange: { general: "0.8 - 1.9 ng/dL" }, inputType: "text" },
-    "Vitamina D": { defaultUnit: "ng/mL", referenceRange: { general: "30 - 100 ng/mL" }, inputType: "text" },
-    "Ácido Úrico": { defaultUnit: "mg/dL", referenceRange: { male: "3.5 - 7.2 mg/dL", female: "2.6 - 6.0 mg/dL" }, inputType: "text" },
-    "Bilirrubinas": { defaultUnit: "mg/dL", referenceRange: { general: "Total: < 1.2 mg/dL" }, inputType: "text" },
-    "Ferro Sérico": { defaultUnit: "µg/dL", referenceRange: { general: "60 - 170 µg/dL" }, inputType: "text" },
-    "Gama GT": { defaultUnit: "U/L", referenceRange: { male: "11 - 50 U/L", female: "7 - 32 U/L" }, inputType: "text" },
-    "PCR (Proteína C Reativa)": { defaultUnit: "mg/L", referenceRange: { general: "< 5 mg/L" }, inputType: "text" },
-    "Cálcio": { defaultUnit: "mg/dL", referenceRange: { general: "8.5 - 10.2 mg/dL" }, inputType: "text" },
-    "Cálcio Total (Ca Total)": { defaultUnit: "mg/dL", referenceRange: { general: "8.5 - 10.2 mg/dL" }, inputType: "text" },
-    "Potássio": { defaultUnit: "mEq/L", referenceRange: { general: "3.5 - 5.1 mEq/L" }, inputType: "text" },
-    "Sódio": { defaultUnit: "mEq/L", referenceRange: { general: "136 - 145 mEq/L" }, inputType: "text" },
-    "Magnésio": { defaultUnit: "mg/dL", referenceRange: { general: "1.7 - 2.2 mg/dL" }, inputType: "text" },
-    "TGO (AST)": { defaultUnit: "U/L", referenceRange: { general: "Até 35 U/L" }, inputType: "text" },
-    "TGP (ALT)": { defaultUnit: "U/L", referenceRange: { general: "Até 35 U/L" }, inputType: "text" },
-    "Fator Reumatoide (FR)": { defaultUnit: "UI/mL", referenceRange: { general: "< 14 UI/mL" }, inputType: "text" },
-    "VHS (Velocidade de Hemossedimentação)": { defaultUnit: "mm/h", referenceRange: { general: "Varia com idade e sexo" }, inputType: "text" },
-    "FAN (Fator Antinúcleo)": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "HDL-Colesterol (Colesterol de Alta Densidade)": { defaultUnit: "mg/dL", referenceRange: { general: "> 40 mg/dL" }, inputType: "text" },
-    "LDL-Colesterol (Colesterol de Baixa Densidade)": { defaultUnit: "mg/dL", referenceRange: { general: "< 130 mg/dL (ótimo <100)" }, inputType: "text" },
-    "Urocultura (Cultura de Urina)": { defaultUnit: "UFC/mL", referenceRange: { general: "< 10.000 UFC/mL (Negativa)" }, inputType: "select", options: ["Negativa", "Positiva"] },
-    "Fosfatase Alcalina (FA)": { defaultUnit: "U/L", referenceRange: { general: "40 - 129 U/L" }, inputType: "text" },
-    "Cloro (Cl)": { defaultUnit: "mEq/L", referenceRange: { general: "98 - 107 mEq/L" }, inputType: "text" },
-    "Ácido Fólico (Folato)": { defaultUnit: "ng/mL", referenceRange: { general: "3.1 - 17.5 ng/mL" }, inputType: "text" },
-    "Ferritina (Ferr)": { defaultUnit: "ng/mL", referenceRange: { male: "20 - 300 ng/mL", female: "10 - 150 ng/mL" }, inputType: "text" },
-    "Vitamina B12 (Cobalamina)": { defaultUnit: "pg/mL", referenceRange: { general: "200 - 900 pg/mL" }, inputType: "text" },
-    "Proteínas Totais e Frações (PTF)": { defaultUnit: "g/dL", referenceRange: { general: "Total: 6.0 - 8.0 g/dL" }, inputType: "text" },
-    "Parasitológico de Fezes (EPF)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Pesquisa de Sangue Oculto nas Fezes (PSOMF)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Cultura de Fezes (Coprocultura)": { defaultUnit: "N/A", referenceRange: { general: "Negativa" }, inputType: "select", options: ["Negativa", "Positiva"] },
-    "Peptídeo Natriurético Cerebral (BNP)": { defaultUnit: "pg/mL", referenceRange: { general: "< 100 pg/mL" }, inputType: "text" },
-    "Eletroforese de Proteínas (Eletroforese)": { defaultUnit: "N/A", referenceRange: { general: "Padrão Normal" }, inputType: "text" },
-    "Chumbo (Pb)": { defaultUnit: "µg/dL", referenceRange: { general: "< 10 µg/dL" }, inputType: "text" },
-    "Cromo (Cr)": { defaultUnit: "µg/L", referenceRange: { general: "< 1.0 µg/L" }, inputType: "text" },
-    "Fator V Leiden (FVL)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "D-Dímero (D-Dimer)": { defaultUnit: "ng/mL FEU", referenceRange: { general: "< 500 ng/mL FEU" }, inputType: "text" },
-    "Tempo de Protrombina (TP)": { defaultUnit: "Segundos", referenceRange: { general: "10 - 14 Segundos" }, inputType: "text" },
-    "Tempo de Tromboplastina Parcial Ativada (TTPA)": { defaultUnit: "Segundos", referenceRange: { general: "25 - 35 Segundos" }, inputType: "text" },
-    "Pesquisa de Malária (Gota Espessa)": { defaultUnit: "N/A", referenceRange: { general: "Negativa" }, inputType: "select", options: ["Negativa", "Positiva"] },
-    "Apolipoproteína A1 (ApoA1)": { defaultUnit: "mg/dL", referenceRange: { male: "100 - 190 mg/dL", female: "120 - 220 mg/dL" }, inputType: "text" },
-    "Apolipoproteína B (ApoB)": { defaultUnit: "mg/dL", referenceRange: { general: "< 120 mg/dL" }, inputType: "text" },
-    "Estradiol (E2)": { defaultUnit: "pg/mL", referenceRange: { general: "Varia com fase do ciclo" }, inputType: "text" },
-    "Progesterona (Prog)": { defaultUnit: "ng/mL", referenceRange: { general: "Varia com fase do ciclo" }, inputType: "text" },
-    "LH (Hormônio Luteinizante)": { defaultUnit: "mUI/mL", referenceRange: { general: "Varia com fase do ciclo" }, inputType: "text" },
-    "FSH (Hormônio Folículo Estimulante)": { defaultUnit: "mUI/mL", referenceRange: { general: "Varia com fase do ciclo" }, inputType: "text" },
-    "Prolactina (PRL)": { defaultUnit: "ng/mL", referenceRange: { general: "< 25 ng/mL" }, inputType: "text" },
-    "PSA Total (Antígeno Prostático Específico Total)": { defaultUnit: "ng/mL", referenceRange: { general: "< 4.0 ng/mL (Varia com idade)" }, inputType: "text" },
-    "PSA Livre (Antígeno Prostático Específico Livre)": { defaultUnit: "ng/mL", referenceRange: { general: "Proporção PSA L/T > 0.15" }, inputType: "text" },
-    "Testosterona Total (Testo Total)": { defaultUnit: "ng/dL", referenceRange: { male: "240 - 950 ng/dL", female: "8 - 60 ng/dL" }, inputType: "text" },
-    "Testosterona Livre (Testo Livre)": { defaultUnit: "pg/mL", referenceRange: { male: "50 - 210 pg/mL", female: "0.5 - 8.0 pg/mL" }, inputType: "text" },
-    "Transferrina (Transf)": { defaultUnit: "mg/dL", referenceRange: { general: "200 - 400 mg/dL" }, inputType: "text" },
-    "Fenitoína (Difenil-hidantoína)": { defaultUnit: "µg/mL", referenceRange: { general: "10 - 20 µg/mL" }, inputType: "text" },
-    "Ácido Valproico (Valproato)": { defaultUnit: "µg/mL", referenceRange: { general: "50 - 100 µg/mL" }, inputType: "text" },
-    "HBsAg (Antígeno de Superfície da Hepatite B)": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "Anti-HCV (Anticorpo Anti-Hepatite C)": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "VDRL (Sífilis)": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "FTA-Abs (Sífilis (Teste Confirmatório))": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Pesquisa de Tuberculose (Cultura para TB)": { defaultUnit: "N/A", referenceRange: { general: "Negativa" }, inputType: "select", options: ["Negativa", "Positiva"] },
-    "Beta-HCG (HCG Quantitativo)": { defaultUnit: "mUI/mL", referenceRange: { general: "Varia (Gravidez)" }, inputType: "text" },
-    "Pesquisa de Fungos (Micológico Direto)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Pesquisa de Leishmania (Leishmania)": { defaultUnit: "N/A", referenceRange: { general: "Negativa" }, inputType: "select", options: ["Negativa", "Positivo"] },
-    "Alfa-1 Glicoproteína Ácida (AGP)": { defaultUnit: "mg/dL", referenceRange: { general: "50 - 120 mg/dL" }, inputType: "text" },
-    "Alfa-Fetoproteína (AFP)": { defaultUnit: "ng/mL", referenceRange: { general: "< 10 ng/mL" }, inputType: "text" },
-    "Bacterioscopia (Gram)": { defaultUnit: "N/A", referenceRange: { general: "Negativa" }, inputType: "select", options: ["Negativa", "Positiva"] },
-    "Lítio (Li)": { defaultUnit: "mEq/L", referenceRange: { general: "0.6 - 1.2 mEq/L" }, inputType: "text" },
-    "Troponina I (TnI)": { defaultUnit: "ng/mL", referenceRange: { general: "< 0.04 ng/mL" }, inputType: "text" },
-    "Painel Viral Respiratório (PCR Viral)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Microalbuminúria (MAU)": { defaultUnit: "mg/24h", referenceRange: { general: "< 30 mg/24h" }, inputType: "text" },
-    "Fibrinogênio (Fibrin)": { defaultUnit: "mg/dL", referenceRange: { general: "200 - 400 mg/dL" }, inputType: "text" },
-    "Tireoglobulina (TG)": { defaultUnit: "ng/mL", referenceRange: { general: "< 33 ng/mL" }, inputType: "text" },
-    "Anticorpos Anti-Tireoglobulina (Anti-TG)": { defaultUnit: "UI/mL", referenceRange: { general: "< 40 UI/mL" }, inputType: "text" },
-    "Homocisteína (Hcy)": { defaultUnit: "µmol/L", referenceRange: { general: "4 - 15 µmol/L" }, inputType: "text" },
-    "Procalcitonina (PCT)": { defaultUnit: "ng/mL", referenceRange: { general: "< 0.05 ng/mL" }, inputType: "text" },
-    "Cobre (Cu)": { defaultUnit: "µg/dL", referenceRange: { general: "70 - 140 µg/dL" }, inputType: "text" },
-    "Amônia (NH3)": { defaultUnit: "µmol/L", referenceRange: { general: "18 - 72 µmol/L" }, inputType: "text" },
-    "Cálcio Iônico (Ca Iônico)": { defaultUnit: "mmol/L", referenceRange: { general: "1.12 - 1.32 mmol/L" }, inputType: "text" },
-    "Hepatite A IgM (Anti-HAV IgM)": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "Hepatite A IgG (Anti-HAV IgG)": { defaultUnit: "N/A", referenceRange: { general: "Não Reagente" }, inputType: "select", options: ["Não Reagente", "Reagente"] },
-    "Insulina (Ins)": { defaultUnit: "µUI/mL", referenceRange: { general: "2.6 - 24.9 µUI/mL" }, inputType: "text" },
-    "Glicosilada (Hemoglobina Glicada, HbA1c)": { defaultUnit: "%", referenceRange: { general: "< 5.7%" }, inputType: "text" },
-    "Cadeias Leves Kappa e Lambda (Cadeias Leves)": { defaultUnit: "N/A", referenceRange: { general: "Varia" }, inputType: "text" },
-    "Meta-Hemoglobina (MetHb)": { defaultUnit: "%", referenceRange: { general: "< 1.5%" }, inputType: "text" },
-    "Pesquisa de Criptococos (Tinta da China)": { defaultUnit: "N/A", referenceRange: { general: "Negativa" }, inputType: "select", options: ["Negativa", "Positiva"] },
-    "Coombs Direto (CD)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Coombs Indireto (CI)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
-    "Glicemia de Jejum (GJ)": { defaultUnit: "mg/dL", referenceRange: { general: "< 99 mg/dL" }, inputType: "text" },
-    "Glicemia Pós-Prandial (GPP)": { defaultUnit: "mg/dL", referenceRange: { general: "< 140 mg/dL" }, inputType: "text" },
-};
-
+// A constante EXAM_DETAILS foi movida para exames_ref.js
 
 // Seção 2: Event Listeners Iniciais (DOMContentLoaded)
 document.addEventListener('DOMContentLoaded', () => {
@@ -584,7 +462,7 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
         return;
     }
 
-    console.log(`DEBUG(displayPatientExamsForLaudo): Total de exames a processar: ${allExames.length}.`);
+    console.log(`DEBUG(displayPatientExamsForLaudo): Total de exames a processar: ${allExams.length}.`);
 
     // Converte savedExamesResults para um mapa para busca eficiente
     const savedResultsMap = new Map();
@@ -774,7 +652,7 @@ async function saveLaudo() {
     const laudoData = {
         patientId: selectedPatientData.id,
         protocolo: selectedPatientData.protocolo,
-        nomePaciente: selectedPatientData.nome,
+        nomePaciente: selectedPatientData.nome, // Ensure this matches Firestore (selectedPatientData.nome)
         cpfPaciente: selectedPatientData.cpf,
         examesResultados: examResults,
         observacoesGerais: observacoesLaudoGeral,
@@ -826,6 +704,12 @@ function generatePdfLaudo() {
     const marginX = 20;
     const pageHeightLimit = 280; // Limite para adicionar rodapé e nova página
 
+    // Get responsible technician data from inputs (populated from saved laudo or manual input)
+    const responsavelNome = document.getElementById('responsavelTecnicoNome').value.trim();
+    const responsavelRegistro = document.getElementById('responsavelTecnicoRegistro').value.trim();
+    const laudoDate = document.getElementById('laudoGenerationDate').textContent;
+
+
     console.log("DEBUG(generatePdfLaudo): jsPDF inicializado.");
 
     // Helper para adicionar rodapé e nova página com cabeçalho repetido
@@ -833,17 +717,11 @@ function generatePdfLaudo() {
         console.log(`DEBUG(addPageWithHeaderAndFooter): Adicionando rodapé e nova página. yPosition atual: ${yPosition}.`);
         // Adiciona rodapé na página atual antes de adicionar uma nova
         docInstance.setFontSize(9);
-        const responsavelNome = document.getElementById('responsavelTecnicoNome').value.trim() || ''; // Lendo do input
-        const responsavelRegistro = document.getElementById('responsavelTecnicoRegistro').value.trim() || ''; // Lendo do input
-        const laudoDate = document.getElementById('laudoGenerationDate').textContent;
-
-        docInstance.text("__________________________________________", 105, pageHeightLimit + 5, null, null, "center");
-        docInstance.text("Assinatura do Responsável Técnico", 105, pageHeightLimit + 10, null, null, "center");
-        docInstance.text(`Nome: ${responsavelNome}`, 105, pageHeightLimit + 15, null, null, "center");
-        docInstance.text(`Registro: ${responsavelRegistro}`, 105, pageHeightLimit + 20, null, null, "center");
-        docInstance.setFontSize(8);
-        docInstance.text(`Laudo gerado em: ${laudoDate}`, 105, pageHeightLimit + 25, null, null, "center");
+        // NEW FOOTER:
+        const footerText = `Liberado por: ${responsavelNome || 'N/D'}${responsavelRegistro ? `, CRF/CRBM: ${responsavelRegistro}` : ''}`;
+        docInstance.text(footerText, 105, pageHeightLimit + 20, null, null, "center"); // Adjusted Y position for consistency
         console.log("DEBUG(addPageWithHeaderAndFooter): Rodapé da página anterior adicionado.");
+
 
         docInstance.addPage();
         yPosition = 15; // Reset Y para a nova página
@@ -920,10 +798,10 @@ function generatePdfLaudo() {
     console.log("DEBUG(generatePdfLaudo): Seção 'DADOS DO PACIENTE' adicionada.");
 
     // --- Resultados dos Exames ---
-    console.log("DEBUG(generatePdfLaudo): Adicionando seção 'RESULTADOS DOS EXAMES'.");
-    if (currentY + 20 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY, "RESULTADOS DOS EXAMES:"); }
+    console.log("DEBUG(generatePdfLaudo): Adicionando seção 'RESULTADOS'.");
+    if (currentY + 20 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY, "RESULTADOS:"); }
     doc.setFontSize(12);
-    doc.text("RESULTADOS DOS EXAMES:", marginX, currentY);
+    doc.text("RESULTADOS:", marginX, currentY); // Changed title
     currentY += 8;
     doc.setFontSize(10); // Fonte menor para os detalhes dos exames
 
@@ -949,7 +827,7 @@ function generatePdfLaudo() {
 
             const textHeight = examContentLines.length * lineHeight;
             if (currentY + textHeight + 5 > pageHeightLimit) { 
-                currentY = addPageWithHeaderAndFooter(doc, currentY, "RESULTADOS DOS EXAMES (Continuação):");
+                currentY = addPageWithHeaderAndFooter(doc, currentY, "RESULTADOS (Continuação):");
             }
 
             examContentLines.forEach(line => {
@@ -967,17 +845,44 @@ function generatePdfLaudo() {
     doc.setLineWidth(0.2);
     doc.line(marginX, currentY, 190, currentY);
     currentY += 10;
-    console.log("DEBUG(generatePdfLaudo): Seção 'RESULTADOS DOS EXAMES' concluída.");
+    console.log("DEBUG(generatePdfLaudo): Seção 'RESULTADOS' concluída.");
+
+    // --- Signature Section before General Observations ---
+    console.log("DEBUG(generatePdfLaudo): Adicionando seção de Assinatura do Responsável Técnico.");
+    if (currentY + (lineHeight * 4) + 10 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY, "ASSINATURA DO RESPONSÁVEL TÉCNICO:"); }
+    
+    // Draw the signature line and text
+    doc.setFontSize(10); // Adjust font size for signature block
+    doc.text("__________________________________________", 105, currentY, null, null, "center");
+    currentY += lineHeight;
+    doc.text("Assinatura do Responsável Técnico", 105, currentY, null, null, "center");
+    currentY += lineHeight;
+
+    // Use the collected responsavelNome and responsavelRegistro
+    const nomeResponsavelText = `Nome: ${responsavelNome || 'N/D'}`;
+    const registroResponsavelText = `Registro: ${responsavelRegistro ? `CRF/CRBM: ${responsavelRegistro}` : 'N/D'}`;
+
+    doc.text(nomeResponsavelText, 105, currentY, null, null, "center");
+    currentY += lineHeight;
+    doc.text(registroResponsavelText, 105, currentY, null, null, "center");
+    currentY += 5; // Extra space after signature block
+
+    if (currentY + 10 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY); }
+    doc.setLineWidth(0.2);
+    doc.line(marginX, currentY, 190, currentY);
+    currentY += 10;
+    console.log("DEBUG(generatePdfLaudo): Seção 'Assinatura do Responsável Técnico' adicionada.");
+
 
     // --- Observações Gerais do Laudo ---
     const observacoesLaudoGeral = document.getElementById('observacoesLaudoGeral').value.trim();
     if (observacoesLaudoGeral) {
-        console.log("DEBUG(generatePdfLaudo): Adicionando seção 'OBSERVATIONS GERAIS DO LAUDO'.");
-        if (currentY + 20 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY, "OBSERVATIONS GERAIS DO LAUDO:"); }
-        doc.setFontSize(12);
-        doc.text("OBSERVATIONS GERAIS DO LAUDO:", marginX, currentY);
+        console.log("DEBUG(generatePdfLaudo): Adicionando seção 'OBSERVAÇÕES GERAIS DO LAUDO'.");
+        if (currentY + 20 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY, "OBSERVAÇÕES GERAIS DO LAUDO:"); }
+        doc.setFontSize(10); // Changed title font size (2 levels smaller than 12)
+        doc.text("OBSERVAÇÕES GERAIS DO LAUDO:", marginX, currentY);
         currentY += 8;
-        doc.setFontSize(11);
+        doc.setFontSize(9); // Changed text font size (2 levels smaller than 11)
         const splitText = doc.splitTextToSize(observacoesLaudoGeral, 170);
         
         splitText.forEach(line => {
@@ -988,22 +893,17 @@ function generatePdfLaudo() {
         currentY += 5;
         if (currentY + 10 > pageHeightLimit) { currentY = addPageWithHeaderAndFooter(doc, currentY); }
         doc.setLineWidth(0.2);
+        doc.line(marginX, currentY, 190, currentY); // Line after observations
     }
 
     console.log("DEBUG(generatePdfLaudo): Conteúdo do PDF gerado. Tentando abrir o PDF em nova janela."); // NOVO LOG AQUI
     try {
-        // A linha abaixo remove uma página vazia extra que pode ter sido criada no final se o conteúdo não forçar uma quebra.
-        // O helper 'addPageWithHeaderAndFooter' adiciona o rodapé da página atual antes de uma nova página,
-        // então a última página sempre terá o rodapé se o conteúdo não a preencher totalmente.
-        // Se a última adição de conteúdo não atingiu o limite, mas a lógica do helper adicionou uma página e rodapé,
-        // esta linha garante que não haja uma página em branco indesejada.
-        if (doc.internal.getNumberOfPages() > 1 && currentY <= (pageHeightLimit - 50)) { // Se a última página tem pouco conteúdo e não houve mais quebras
-             doc.deletePage(doc.internal.getNumberOfPages()); // Remove a última página se ela estiver quase vazia (critério ajustável)
+        if (doc.internal.getNumberOfPages() > 1 && currentY <= (pageHeightLimit - 50)) { 
+             doc.deletePage(doc.internal.getNumberOfPages()); 
              console.log("DEBUG(generatePdfLaudo): Página vazia no final removida, se existia.");
         }
 
-
-        doc.output('dataurlnewwindow', { filename: `Laudo_${selectedPatientData.nomePaciente.replace(/\s+/g, "_")}_${selectedPatientData.protocolo}.pdf` });
+        doc.output('dataurlnewwindow', { filename: `Laudo_${selectedPatientData.nome.replace(/\s+/g, "_")}_${selectedPatientData.protocolo}.pdf` }); // Corrected property name here
         console.log("DEBUG(generatePdfLaudo): Chamada doc.output() aparentemente bem-sucedida."); // NOVO LOG AQUI
         alert("PDF do laudo gerado com sucesso! Verifique a nova aba para visualizar e imprimir.");
         console.log("DEBUG(generatePdfLaudo): PDF aberto em nova janela.");
@@ -1013,4 +913,4 @@ function generatePdfLaudo() {
     } finally {
         console.log("DEBUG(generatePdfLaudo): Final do processo de geração do PDF.");
     }
-        }
+}
