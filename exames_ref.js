@@ -104,4 +104,6 @@ export const EXAM_DETAILS = {
     "Coombs Indireto (CI)": { defaultUnit: "N/A", referenceRange: { general: "Negativo" }, inputType: "select", options: ["Negativo", "Positivo"] },
     "Glicemia de Jejum (GJ)": { defaultUnit: "mg/dL", referenceRange: { general: "< 99 mg/dL" }, inputType: "text" },
     "Glicemia Pós-Prandial (GPP)": { defaultUnit: "mg/dL", referenceRange: { general: "< 140 mg/dL" }, inputType: "text" },
+"Grupo Sanguíneo (Tipagem)": { defaultUnit: "N/A", referenceRange: { general: "Variável" }, inputType: "text" },
+
 };
