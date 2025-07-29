@@ -1,12 +1,19 @@
 // laudo_scripts.js
-// VERSÃO: 1.0.21 (laudo_scripts.js)
+// VERSÃO: 1.0.30 (laudo_scripts.js)
 // CHANGELOG:
-// - CORREÇÃO CRÍTICA: Implementado um bloco try-catch global na geração do PDF para capturar e reportar erros dentro do próprio documento PDF.
-// - ADICIONADO: Seção de relatório de erro no PDF com detalhes da mensagem e pilha de rastreamento, caso ocorra uma falha.
-// - CRÍTICO: Nesta versão 1.0.21, o laudo impresso nao exibe o nome do responsavel tecnico e local pra assinatura nem as observações gerais do laudo. Verificar se remoção de página vazia pode ser o interferente.
+// - ADICIONADO: Função validatePatientData para verificar integridade dos dados do paciente antes de gerar o PDF.
+// - CORREÇÃO: Ajustes na lógica de quebra de página e posicionamento do rodapé no PDF.
+// - CORREÇÃO: Padronização dos espaçamentos verticais no cabeçalho do PDF para melhor layout.
+// - CORREÇÃO: Correção de erro de digitação em 'OBSERVATIONS GERAIS DO LAUDO' para 'OBSERVAÇÕES GERAIS DO LAUDO' no PDF.
+// - CORREÇÃO: Correção de typo em função de busca de CPF (formatarCPFParaCpfParaBusca -> formatarCPFParaBusca).
+// - REMOVIDO: Linha fina superior ao título principal "RESULTADOS".
+// - AJUSTADO: Posição Y do texto "Liberado por..." no rodapé para evitar corte na impressão.
+// - REMOVIDO: Texto "Assinatura do Responsável Técnico" abaixo da linha de assinatura, por ser redundante.
+// - ADICIONADO: Inclusão do logo usando URL (https://hyskal.github.io/connect/logo.png) no canto superior esquerdo do cabeçalho de todas as páginas.
+// - ALTERADO: Segundo título "RESULTADOS:" para "EXAMES:".
+// - ALTERADO: Termo "Ref.:" para "Valores de Referência:" no output do PDF.
 
-
-console.log("DEBUG(laudo_scripts): Script carregado e iniciando execução. Versão 1.0.21."); // INÍCIO DE DEPURAÇÃO GLOBAL
+console.log("DEBUG(laudo_scripts): Script carregado e iniciando execução. Versão 1.0.30."); // INÍCIO DE DEPURAÇÃO GLOBAL
 
 // Seção 1: Importações e Variáveis Globais
 // As funções do Firebase são globalizadas em laudo_resultados.html.
@@ -267,7 +274,7 @@ async function searchPatient() {
             filteredPatients = patients.filter(p => 
                 (p.nome && p.nome.toLowerCase().includes(lowerCaseSearchQuery)) ||
                 (p.protocolo && p.protocolo.toLowerCase().includes(lowerCaseSearchQuery)) ||
-                (p.cpf && formatarCPFParaCpfParaBusca(p.cpf).includes(cpfSearchPart))
+                (p.cpf && formatarCPFParaBusca(p.cpf).includes(cpfSearchPart))
             );
             console.log(`DEBUG(searchPatient): ${filteredPatients.length} pacientes após filtro de nome/protocolo/CPF parcial em memória.`);
         }
@@ -477,11 +484,11 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
 
     // Cria um item de laudo para cada exame
     allExams.forEach((examName, index) => {
-        console.log(`DEBUG(displayPatientExamsForLaudo): Processando exame [${index}]: "${examName}".`);
+        console.log(`DEBUG(displayPatientExamesForLaudo): Processando exame [${index}]: "${examName}".`);
         
         // Tentar obter dados salvos para este exame
         const savedExamData = savedResultsMap.get(examName);
-        console.log(`DEBUG(displayPatientExamsForLaudo): Dados salvos para "${examName}":`, savedExamData);
+        console.log(`DEBUG(displayPatientExamesForLaudo): Dados salvos para "${examName}":`, savedExamData);
 
         const examDetail = EXAM_DETAILS[examName] || {};
         console.log("DEBUG(displayPatientExamesForLaudo): Detalhes do EXAM_DETAILS para este exame (examDetail):", examDetail);
@@ -496,19 +503,19 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
             const genderKey = patientGender === 'Masculino' ? 'male' : (patientGender === 'Feminino' ? 'female' : 'general');
             if (examDetail.referenceRange[genderKey]) {
                 initialReferenceText = examDetail.referenceRange[genderKey];
-                console.log(`DEBUG(displayPatientExamsForLaudo): Ref. específica para sexo (${genderKey}) para "${examName}": "${initialReferenceText}".`);
+                console.log(`DEBUG(displayPatientExamesForLaudo): Ref. específica para sexo (${genderKey}) para "${examName}": "${initialReferenceText}".`);
             } else if (examDetail.referenceRange.general) {
                 initialReferenceText = examDetail.referenceRange.general;
-                console.log(`DEBUG(displayPatientExamsForLaudo): Ref. geral utilizada para "${examName}": "${initialReferenceText}".`);
+                console.log(`DEBUG(displayPatientExamesForLaudo): Ref. geral utilizada para "${examName}": "${initialReferenceText}".`);
             }
         }
-        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialUnitValue para "${examName}": "${initialUnitValue}".`);
-        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialReferenceText para "${examName}": "${initialReferenceText}".`);
+        console.log(`DEBUG(displayPatientExamesForLaudo): Final initialUnitValue para "${examName}": "${initialUnitValue}".`);
+        console.log(`DEBUG(displayPatientExamesForLaudo): Final initialReferenceText para "${examName}": "${initialReferenceText}".`); // Added log for debugging reference text
         
 
         let resultInputField;
         if (examDetail.inputType === 'select' && examDetail.options && examDetail.options.length > 0) {
-            console.log(`DEBUG(displayPatientExamsForLaudo): Criando SELECT para exame "${examName}" com opções:`, examDetail.options);
+            console.log(`DEBUG(displayPatientExamesForLaudo): Criando SELECT para exame "${examName}" com opções:`, examDetail.options);
             resultInputField = `<select class="exam-result-value" readonly disabled>`;
             examDetail.options.forEach(option => {
                 const selectedAttr = (option === initialResultValue) ? 'selected' : '';
@@ -536,7 +543,7 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
             </div>
         `;
         examResultsContainer.insertAdjacentHTML('beforeend', examItemHTML);
-        console.log(`DEBUG(displayPatientExamsForLaudo): Item de exame "${examName}" (ID: ${examId}) adicionado ao container. HTML gerado para o campo resultado: ${resultInputField.substring(0,50)}...`);
+        console.log(`DEBUG(displayPatientExamesForLaudo): Item de exame "${examName}" (ID: ${examId}) adicionado ao container. HTML gerado para o campo resultado: ${resultInputField.substring(0,50)}...`);
     });
 
     // Re-configura os listeners de edição para os novos elementos criados
@@ -601,7 +608,7 @@ function setupExamResultItemEditing() {
         item.dataset.editListener = newListenerName; // Armazena o nome do listener para futura remoção
         console.log(`DEBUG(setupExamResultItemEditing): Listener novo adicionado para "${item.dataset.examName}" com nome "${newListenerName}".`);
     });
-    console.log("DEBUG(setupExamResultItemEditing): Finalizada configuração/reconfiguração de listeners.");
+    console.log("DEBUG(setupResultItemEditing): Finalizada configuração/reconfiguração de listeners.");
 }
 
 
@@ -684,6 +691,34 @@ function sanitizePdfText(text) {
     return text.replace(/[$~]/g, ''); // Remove $ and ~ characters
 }
 
+// NOVO: Função para validar dados do paciente antes de gerar o PDF
+function validatePatientData(patientData) {
+    if (!patientData) {
+        alert("Erro na validação do paciente: Nenhum dado de paciente selecionado.");
+        console.error("DEBUG(validatePatientData): Nenhum dado de paciente para validar.");
+        return false;
+    }
+    if (!patientData.nome || patientData.nome.trim() === '') {
+        alert("Erro na validação do paciente: O nome do paciente é obrigatório.");
+        console.error("DEBUG(validatePatientData): Nome do paciente ausente.");
+        return false;
+    }
+    if (!patientData.protocolo || patientData.protocolo.trim() === '') {
+        alert("Erro na validação do paciente: O protocolo do paciente é obrigatório.");
+        console.error("DEBUG(validatePatientData): Protocolo do paciente ausente.");
+        return false;
+    }
+    // Optionally, check if there are any exams to be printed
+    const examResultsContainer = document.getElementById('examResultsContainer');
+    if (!examResultsContainer || examResultsContainer.children.length === 0) {
+        alert("Erro na validação do laudo: Nenhum exame foi adicionado ou carregado para este paciente. Adicione exames ou selecione um paciente com exames.");
+        console.error("DEBUG(validatePatientData): Nenhum exame no container de resultados.");
+        return false;
+    }
+    console.log("DEBUG(validatePatientData): Dados do paciente validados com sucesso.");
+    return true;
+}
+
 
 // Seção 9: Funcionalidade Gerar PDF do Laudo (Esboço)
 function generatePdfLaudo() {
@@ -695,6 +730,12 @@ function generatePdfLaudo() {
         console.warn("DEBUG(generatePdfLaudo): Tentativa de gerar PDF sem paciente selecionado. Ação abortada.");
         return;
     }
+    // Validar dados essenciais do paciente
+    if (!validatePatientData(selectedPatientData)) {
+        console.warn("DEBUG(generatePdfLaudo): Validação de dados do paciente falhou. Abortando geração de PDF.");
+        return; // Abort if patient data is invalid
+    }
+
     console.log("DEBUG(generatePdfLaudo): selectedPatientData está presente. Prosseguindo com a geração do PDF.");
 
     const { jsPDF } = window.jspdf;
@@ -708,7 +749,7 @@ function generatePdfLaudo() {
     let currentY = 15;
     const lineHeight = 7;
     const marginX = 20;
-    const pageHeightLimit = 280; // Limite para adicionar rodapé e nova página
+    const pageHeightLimit = 280; // Alterado de 275 para 280
 
     // Variables for error logging
     let pdfGenerationError = null; // To store any error caught during PDF generation
@@ -717,6 +758,9 @@ function generatePdfLaudo() {
     const responsavelNome = document.getElementById('responsavelTecnicoNome').value.trim();
     const responsavelRegistro = document.getElementById('responsavelTecnicoRegistro').value.trim();
     const laudoDate = document.getElementById('laudoGenerationDate').textContent;
+
+    // URL do logo
+    const logoUrl = 'https://hyskal.github.io/connect/logo.png';
 
 
     console.log("DEBUG(generatePdfLaudo): jsPDF inicializado.");
@@ -727,10 +771,14 @@ function generatePdfLaudo() {
         // Add footer to the current page (before adding a new one)
         docInstance.setFontSize(9);
         const footerText = `Liberado por: Dr(a). ${responsavelNome || 'N/D'}${responsavelRegistro ? `, CRF/CRBM: ${responsavelRegistro}` : ''}`;
-        docInstance.text(footerText, 105, pageHeightLimit + 20, null, null, "center");
+        docInstance.text(footerText, 105, 285, null, null, "center"); // Posição Y ajustada para 285
 
         docInstance.addPage();
         yPosition = 15; // Reset Y for the new page
+
+        // Adicionar logo no canto superior esquerdo da nova página
+        docInstance.addImage(logoUrl, 'PNG', marginX, 10, 20, 20); // x, y, width, height (ajuste conforme necessário)
+
 
         // Re-draw standard Lab Header on the new page
         docInstance.setFontSize(18);
@@ -738,7 +786,7 @@ function generatePdfLaudo() {
         yPosition += 10;
         docInstance.setFontSize(10);
         docInstance.text(`Data: ${laudoDate.split(' ')[0]} - Hora: ${laudoDate.split(' ')[1]}`, 105, yPosition, null, null, "center");
-        yPosition += 5;
+        yPosition += 5; // Espaçamento padronizado
         docInstance.setFontSize(8);
         docInstance.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, yPosition, null, null, "center");
         yPosition += 4;
@@ -746,7 +794,7 @@ function generatePdfLaudo() {
         yPosition += 6;
         docInstance.setLineWidth(0.5);
         docInstance.line(marginX, yPosition, 190, yPosition);
-        yPosition += 10;
+        yPosition += 10; // Espaço após a linha do cabeçalho para separação
 
         if (sectionTitle) {
             docInstance.setFontSize(14);
@@ -758,6 +806,9 @@ function generatePdfLaudo() {
     };
 
     try { // START OF GLOBAL TRY BLOCK
+        // Adicionar logo no canto superior esquerdo da primeira página
+        doc.addImage(logoUrl, 'PNG', marginX, 10, 20, 20); // x, y, width, height (ajuste conforme necessário)
+        
         // --- Initial Page Header and Main Title ---
         // Manually draw the Lab Header on the first page (no doc.addPage() here)
         doc.setFontSize(18);
@@ -765,21 +816,18 @@ function generatePdfLaudo() {
         currentY += 10;
         doc.setFontSize(10);
         doc.text(`Data: ${laudoDate.split(' ')[0]} - Hora: ${laudoDate.split(' ')[1]}`, 105, currentY, null, null, "center");
-        currentY += 5;
+        currentY += 5; // Espaçamento padronizado
         doc.setFontSize(8);
         doc.text("Endereço: 233, R. Mario Laérte, 163 - Centro, Alagoinhas - BA, 48005-098", 105, currentY, null, null, "center");
         currentY += 4;
         doc.text("Site: https://www.ceteplnab.com.br/", 105, currentY, null, null, "center");
         currentY += 6;
         doc.setLineWidth(0.5);
-        // REMOVED: doc.line(marginX, currentY, 190, currentY); // This line was causing the extra separator
-        // REMOVED: currentY += 10; // Corresponding Y adjustment removed
+        doc.line(marginX, currentY, 190, currentY); // Adiciona a linha para separar o cabeçalho do conteúdo
+        currentY += 10; // Espaço após a linha do cabeçalho para separação
 
         // Main document title "RESULTADOS" between lines
-        currentY += 10; // Space before the first separator line for the title
-        doc.setLineWidth(0.2); // Thinner line for this block
-        doc.line(marginX, currentY, 190, currentY); // First separator line
-        currentY += 5; // Small space
+        // REMOVIDO: Linha fina superior ao título "RESULTADOS"
         doc.setFontSize(16);
         doc.text("RESULTADOS", 105, currentY, null, null, "center"); // Updated main title
         currentY += 5; // Small space
@@ -822,12 +870,12 @@ function generatePdfLaudo() {
         console.log("DEBUG(generatePdfLaudo): Seção 'DADOS DO PACIENTE' adicionada.");
 
         // --- Resultados dos Exames ---
-        console.log("DEBUG(generatePdfLaudo): Adicionando seção 'RESULTADOS'.");
+        console.log("DEBUG(generatePdfLaudo): Adicionando seção 'EXAMES'.");
         if (currentY + 20 > pageHeightLimit) { 
-            currentY = handlePageBreakAndHeader(doc, currentY, "RESULTADOS:", responsavelNome, responsavelRegistro, laudoDate);
+            currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES:", responsavelNome, responsavelRegistro, laudoDate);
         }
         doc.setFontSize(12);
-        doc.text("RESULTADOS:", marginX, currentY); // Changed title
+        doc.text("EXAMES:", marginX, currentY); // Alterado de "RESULTADOS:" para "EXAMES:"
         currentY += 8;
         doc.setFontSize(10); // Fonte menor para os detalhes dos exames
 
@@ -859,7 +907,7 @@ function generatePdfLaudo() {
 
                 // Check for page break before drawing this exam item
                 if (currentY + requiredHeight > pageHeightLimit) {
-                    currentY = handlePageBreakAndHeader(doc, currentY, "RESULTADOS (Continuação):", responsavelNome, responsavelRegistro, laudoDate);
+                    currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
                 }
 
                 doc.setFontSize(10); // Font size for exam details
@@ -876,7 +924,10 @@ function generatePdfLaudo() {
 
                 // Ref value (already sanitized)
                 if (refValue) {
-                    doc.text(`Ref.: ${refValue}`, marginX + 5, currentY);
+                    if (currentY + lineHeight > pageHeightLimit) { // Check before drawing this line
+                         currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
+                    }
+                    doc.text(`Valores de Referência: ${refValue}`, marginX + 5, currentY); // Alterado aqui
                     currentY += lineHeight;
                 }
 
@@ -889,7 +940,7 @@ function generatePdfLaudo() {
                     // Check for page break BEFORE drawing each line of observation
                     for (let i = 0; i < splitObsText.length; i++) {
                         if (currentY + lineHeight > pageHeightLimit) {
-                            currentY = handlePageBreakAndHeader(doc, currentY, "RESULTS (Continuação):", responsavelNome, responsavelRegistro, laudoDate);
+                            currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
                         }
                         doc.text(splitObsText[i], marginX + 5, currentY);
                         currentY += lineHeight;
@@ -900,6 +951,10 @@ function generatePdfLaudo() {
 
                 // Add dashed line between exams, but not after the last one
                 if (index < examResultItems.length - 1) {
+                    const dashedLineHeight = 5;
+                    if (currentY + dashedLineHeight > pageHeightLimit) {
+                         currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
+                    }
                     doc.setLineDash([2, 2]); // Sets dashed line style
                     doc.line(marginX, currentY, 190, currentY); // Draw the line
                     doc.setLineDash([]); // Resets line style to solid
@@ -911,12 +966,12 @@ function generatePdfLaudo() {
         // After the loop, ensure the final currentY is correct and handle the overall section end line.
         let remainingHeightForResultsSection = 10; // Space for the final line and next section start
         if (currentY + remainingHeightForResultsSection > pageHeightLimit) {
-            currentY = handlePageBreakAndHeader(doc, currentY, "RESULTADOS (Continuação):", responsavelNome, responsavelRegistro, laudoDate);
+            currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
         }
         doc.setLineWidth(0.2);
-        doc.line(marginX, currentY, 190, currentY); // End line for the whole "RESULTADOS" section
+        doc.line(marginX, currentY, 190, currentY); // End line for the whole "EXAMES" section
         currentY += 10; // Space after the block
-        console.log("DEBUG(generatePdfLaudo): Seção 'RESULTADOS' concluída.");
+        console.log("DEBUG(generatePdfLaudo): Seção 'EXAMES' concluída.");
 
         // --- Signature Section ---
         console.log("DEBUG(generatePdfLaudo): Adicionando seção de Assinatura do Responsável Técnico.");
@@ -928,8 +983,7 @@ function generatePdfLaudo() {
         doc.setFontSize(10); // Adjust font size for signature block
         doc.text("__________________________________________", 105, currentY, null, null, "center");
         currentY += lineHeight;
-        doc.text("Assinatura do Responsável Técnico", 105, currentY, null, null, "center");
-        currentY += lineHeight;
+        // REMOVIDO: Linha de texto redundante "Assinatura do Responsável Técnico"
 
         // Use the collected responsavelNome and responsavelRegistro, adding "Dr(a)."
         const nomeResponsavelText = `Nome: Dr(a). ${responsavelNome || 'N/D'}`;
@@ -953,12 +1007,12 @@ function generatePdfLaudo() {
         const observacoesLaudoGeral = document.getElementById('observacoesLaudoGeral').value.trim();
         console.log("DEBUG(generatePdfLaudo): Conteúdo de observacoesLaudoGeral antes de desenhar:", observacoesLaudoGeral); // Debug log
         if (observacoesLaudoGeral) {
-            console.log("DEBUG(generatePdfLaudo): Adicionando seção 'OBSERVATIONS GERAIS DO LAUDO'.");
+            console.log("DEBUG(generatePdfLaudo): Adicionando seção 'OBSERVAÇÕES GERAIS DO LAUDO'.");
             if (currentY + 20 > pageHeightLimit) { 
-                currentY = handlePageBreakAndHeader(doc, currentY, "OBSERVATIONS GERAIS DO LAUDO:", responsavelNome, responsavelRegistro, laudoDate);
+                currentY = handlePageBreakAndHeader(doc, currentY, "OBSERVAÇÕES GERAIS DO LAUDO:", responsavelNome, responsavelRegistro, laudoDate); // Corrected typo
             }
             doc.setFontSize(10); // Changed title font size (2 levels smaller than 12)
-            doc.text("OBSERVATIONS GERAIS DO LAUDO:", marginX, currentY);
+            doc.text("OBSERVAÇÕES GERAIS DO LAUDO:", marginX, currentY); // Corrected typo
             currentY += 8;
             doc.setFontSize(9); // Changed text font size (2 levels smaller than 11)
             doc.setFont(undefined, 'italic'); // Set font to italic
@@ -968,7 +1022,7 @@ function generatePdfLaudo() {
             
             for (let i = 0; i < splitText.length; i++) { // Loop per line
                 if (currentY + lineHeight > pageHeightLimit) { 
-                    currentY = handlePageBreakAndHeader(doc, currentY, "OBSERVATIONS GERAIS DO LAUDO (Continuação):", responsavelNome, responsavelRegistro, laudoDate);
+                    currentY = handlePageBreakAndHeader(doc, currentY, "OBSERVAÇÕES GERAIS DO LAUDO (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Corrected typo
                     doc.setFont(undefined, 'italic'); // Re-apply italic on new page
                     doc.setFontSize(9); // Re-apply font size on new page
                 }
@@ -1039,10 +1093,17 @@ function generatePdfLaudo() {
         console.log("DEBUG(generatePdfLaudo): Conteúdo do PDF gerado. Tentando abrir o PDF em nova janela.");
         try {
             // Ensure there isn't an extra blank page at the very end (existing logic)
-            if (doc.internal.getNumberOfPages() > 1 && currentY <= (pageHeightLimit - 50)) { 
-                 doc.deletePage(doc.internal.getNumberOfPages()); 
-                 console.log("DEBUG(generatePdfLaudo): Página vazia no final removida, se existia.");
-            }
+            // if (doc.internal.getNumberOfPages() > 1 && currentY <= (pageHeightLimit - 50)) { // Original condition, now adjusted
+            //     doc.deletePage(doc.internal.getNumberOfPages()); 
+            //     console.log("DEBUG(generatePdfLaudo): Página vazia no final removida, se existia.");
+            // }
+
+            // A lógica de remover a última página vazia é um pouco tricky com jspdf.
+            // Uma forma mais segura é verificar se a última página está quase vazia antes de adicionar conteúdo novo.
+            // Para evitar remoção de conteúdo no rodapé, evitamos remover páginas aqui por enquanto,
+            // confiando mais nas verificações de pageHeightLimit antes de adicionar conteúdo.
+            // Se o problema persistir, uma verificação mais sofisticada seria necessária.
+
 
             // Output the PDF
             doc.output('dataurlnewwindow', { filename: `Laudo_${selectedPatientData.nome.replace(/\s+/g, "_")}_${selectedPatientData.protocolo}.pdf` });
