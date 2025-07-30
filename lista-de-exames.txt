@@ -1,10 +1,15 @@
 Hemograma Completo
 Glicemia
 Colesterol Total
+Colestetol Total e Frações
 Triglicerídeos
 Ureia
+Ureia (BUN)
 Creatinina
+Creatinina (Creat)
 Exame de Urina
+Urina Tipo I (EAS)
+Sumário de Urina
 TSH
 T4 Livre
 Vitamina D
@@ -13,8 +18,84 @@ Bilirrubinas
 Ferro Sérico
 Gama GT
 PCR (Proteína C Reativa)
-Sumário de Urina
 Cálcio
+Cálcio Total (Ca Total)
 Potássio
 Sódio
 Magnésio
+TGO (AST)
+TGP (ALT)
+Fator Reumatoide (FR)
+VHS (Velocidade de Hemossedimentação)
+FAN (Fator Antinúcleo)
+HDL-Colesterol (Colesterol de Alta Densidade)
+LDL-Colesterol (Colesterol de Baixa Densidade)
+Urocultura (Cultura de Urina)
+Fosfatase Alcalina (FA)
+Cloro (Cl)
+Ácido Fólico (Folato)
+Ferritina (Ferr)
+Vitamina B12 (Cobalamina)
+Proteínas Totais e Frações (PTF)
+Parasitológico de Fezes (EPF)
+Pesquisa de Sangue Oculto nas Fezes (PSOMF)
+Cultura de Fezes (Coprocultura)
+Peptídeo Natriurético Cerebral (BNP)
+Eletroforese de Proteínas (Eletroforese)
+Chumbo (Pb)
+Cromo (Cr)
+Fator V Leiden (FVL)
+D-Dímero (D-Dimer)
+Tempo de Protrombina (TP)
+Tempo de Tromboplastina Parcial Ativada (TTPA)
+Pesquisa de Malária (Gota Espessa)
+Apolipoproteína A1 (ApoA1)
+Apolipoproteína B (ApoB)
+Estradiol (E2)
+Progesterona (Prog)
+LH (Hormônio Luteinizante)
+FSH (Hormônio Folículo Estimulante)
+Prolactina (PRL)
+PSA Total (Antígeno Prostático Específico Total)
+PSA Livre (Antígeno Prostático Específico Livre)
+Testosterona Total (Testo Total)
+Testosterona Livre (Testo Livre)
+Transferrina (Transf)
+Fenitoína (Difenil-hidantoína)
+Ácido Valproico (Valproato)
+HBsAg (Antígeno de Superfície da Hepatite B)
+Anti-HCV (Anticorpo Anti-Hepatite C)
+VDRL (Sífilis)
+FTA-Abs (Sífilis (Teste Confirmatório))
+Pesquisa de BAAR (Bacilo Álcool-Ácido Resistente)
+Pesquisa de Tuberculose (Cultura para TB)
+Beta-HCG (HCG Quantitativo)
+Pesquisa de Fungos (Micológico Direto)
+Pesquisa de Leishmania (Leishmania)
+Alfa-1 Glicoproteína Ácida (AGP)
+Alfa-Fetoproteína (AFP)
+Bacterioscopia (Gram)
+Lítio (Li)
+Troponina I (TnI)
+Painel Viral Respiratório (PCR Viral)
+Microalbuminúria (MAU)
+Fibrinogênio (Fibrin)
+Tireoglobulina (TG)
+Anticorpos Anti-Tireoglobulina (Anti-TG)
+Homocisteína (Hcy)
+Procalcitonina (PCT)
+Cobre (Cu)
+Amônia (NH3)
+Cálcio Iônico (Ca Iônico)
+Hepatite A IgM (Anti-HAV IgM)
+Hepatite A IgG (Anti-HAV IgG)
+Insulina (Ins)
+Glicosilada (Hemoglobina Glicada, HbA1c)
+Cadeias Leves Kappa e Lambda (Cadeias Leves)
+Meta-Hemoglobina (MetHb)
+Pesquisa de Criptococos (Tinta da China)
+Coombs Direto (CD)
+Coombs Indireto (CI)
+Glicemia de Jejum (GJ)
+Glicemia Pós-Prandial (GPP)
+Grupo Sanguíneo (Tipagem)
