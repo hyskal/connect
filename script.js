@@ -187,39 +187,55 @@ async function gerarECarregarPacienteAleatorio() {
 }
 
 
-function carregarExames() {
+async function carregarExames() { // Função agora é assíncrona
     const timestamp = new Date().getTime();
     const gistRawUrl = `https://gist.githubusercontent.com/${GITHUB_USERNAME}/${GIST_ID}/raw/${GIST_FILENAME}?t=${timestamp}`;
+    let loadedText = ''; // Variável para armazenar o conteúdo de texto, inicializada como string vazia
 
-    // Retorna a Promise para que window.onload possa aguardar
-    return fetch(gistRawUrl)
-        .then(response => {
-            console.log("carregarExames: Conteúdo Gist/Local - Status da resposta:", response.status); 
-            if (!response.ok) {
-                console.warn(`carregarExames: Erro ao carregar da Gist (${response.status}). Tentando lista-de-exames.txt local.`);
-                // Tenta carregar do arquivo local caso a Gist falhe
-                return fetch(`lista-de-exames.txt?t=${timestamp}`); 
+    try {
+        // Tenta carregar da Gist primeiro
+        const gistResponse = await fetch(gistRawUrl);
+        console.log("carregarExames: Conteúdo Gist/Local - Status da resposta:", gistResponse.status);
+
+        if (gistResponse.ok) {
+            loadedText = await gistResponse.text(); // Converte a resposta para texto
+            console.log("carregarExames: Conteúdo carregado da Gist com sucesso.");
+        } else {
+            console.warn(`carregarExames: Erro ao carregar da Gist (${gistResponse.status}). Tentando lista-de-exames.txt local.`);
+            // Se a Gist falhar, tenta o arquivo local
+            const localResponse = await fetch(`lista-de-exames.txt?t=${timestamp}`); // Espera a resposta
+            if (localResponse.ok) {
+                loadedText = await localResponse.text(); // Converte a resposta local para texto
+                console.log("carregarExames: Conteúdo carregado do arquivo local com sucesso.");
+            } else {
+                console.error(`carregarExames: Erro ao carregar do arquivo local (${localResponse.status}).`);
+                throw new Error("Falha ao carregar a lista de exames de ambas as fontes."); // Lança um erro fatal
             }
-            return response.text();
-        })
-        .then(text => {
-            console.log("carregarExames: Conteúdo bruto listaExames recebido (primeiros 100 chars):", text.substring(0, 100) + "..."); 
-            listaExames = text.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
-            console.log("carregarExames: listaExames após processamento:", listaExames); 
-            
+        }
+
+        // Garante que loadedText é uma string antes de tentar substring
+        if (typeof loadedText === 'string' && loadedText.length > 0) {
+            console.log("carregarExames: Conteúdo bruto listaExames recebido (primeiros 100 chars):", loadedText.substring(0, Math.min(loadedText.length, 100)) + "...");
+            listaExames = loadedText.trim().split('\n').map(e => e.trim()).filter(e => e !== '');
+            console.log("carregarExames: listaExames após processamento:", listaExames);
+
             if (listaExames.length === 0) {
                 console.warn("carregarExames: A lista de exames está vazia após o processamento. Verifique o conteúdo do arquivo Gist/local.");
             }
+        } else {
+            console.warn("carregarExames: O conteúdo carregado está vazio ou não é uma string.");
+            listaExames = []; // Garante que listaExames é um array vazio
+        }
 
-            atualizarListaExamesCompleta(); // Removeu a chamada direta de atualizarExamesSelecionadosDisplay aqui
-            configurarPesquisa();
-        })
-        .catch(error => {
-            console.error("carregarExames: Erro FATAL ao carregar lista de exames:", error);
-            alert("Não foi possível carregar a lista de exames. Verifique a Gist ID ou o arquivo local.");
-            // Re-lança o erro para que o await em window.onload possa capturá-lo
-            throw error; 
-        });
+        atualizarListaExamesCompleta();
+        configurarPesquisa();
+
+    } catch (error) {
+        console.error("carregarExames: Erro FATAL ao carregar lista de exames:", error);
+        alert("Não foi possível carregar a lista de exames. Verifique sua conexão ou os arquivos de lista de exames.");
+        listaExames = []; // Garante que listaExames é um array vazio em caso de erro fatal
+        throw error; // Re-lança o erro para o window.onload
+    }
 }
 
 function atualizarListaExamesCompleta() {
@@ -778,6 +794,11 @@ async function salvarProtocoloAtendimento() {
         const dataNascFormatada = `${dia}/${mes}/${ano}`;
 
         let currentY = 15; // Posição Y inicial no PDF
+        const marginX = 20; // Definindo marginX como 20, conforme laudo_scripts.js
+        const logoUrl = 'https://hyskal.github.io/connect/logo.png'; // Definindo a URL do logo
+
+        // Inserir logo no canto superior esquerdo
+        doc.addImage(logoUrl, 'PNG', marginX, 10, 20, 20);
 
         // --- Seção: Cabeçalho do PDF ---
         doc.setFontSize(18);
@@ -1338,4 +1359,4 @@ async function printSelectedHistory() {
         printWindow.print();
         console.log("imprimirHistorico: Janela de impressão aberta e print() chamado.");
     };
-        }
+}
