@@ -206,29 +206,39 @@
             display: block;
         }
 
+        /* Contêiner principal para a seção de resultado e inputs */
         .result-row {
+            display: flex;
+            flex-direction: column; 
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        /* Contêiner interno para os inputs de resultado, unidade e referência */
+        .result-inputs {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             align-items: center;
-            margin-top: 5px;
         }
 
-        .result-row input,
-        .result-row select { /* Adicionado select aqui */
+        /* Regras para os inputs dentro do contêiner .result-inputs */
+        .result-inputs .exam-result-value,
+        .result-inputs .exam-unit-value,
+        .result-inputs .exam-ref-value {
             flex-grow: 1;
             min-width: 100px;
             padding: 8px;
         }
-        .result-row .exam-result-value { /* Classe específica para o campo resultado */
+        .result-inputs .exam-result-value {
             flex-basis: 40%;
             min-width: 180px;
         }
-        .result-row .exam-unit-value { /* Classe específica para o campo unidade */
+        .result-inputs .exam-unit-value {
             flex-basis: 20%;
             min-width: 80px;
         }
-        .result-row .exam-ref-value { /* Classe específica para o campo referência */
+        .result-inputs .exam-ref-value {
             flex-basis: 30%;
             min-width: 120px;
         }
@@ -332,7 +342,43 @@
         <div class="results-input-section" style="display: none;">
             <h2>Resultados dos Exames:</h2>
             <div id="examResultsContainer">
+                <div class="exam-result-item read-only" data-exam-id="exam-0-Creatinina" data-exam-name="Creatinina (Creat)">
+                    <div class="exam-item-header">
+                        <strong>Creatinina (Creat)</strong>
+                    </div>
+                    <div class="mat-met-row">
+                        <div class="field-group">
+                            <label>Material:</label>
+                            <select class="exam-material-value" readonly="true" disabled="true">
+                                <option value="Soro" selected="">Soro</option>
+                                <option value="Urina">Urina</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Método:</label>
+                            <select class="exam-method-value" readonly="true" disabled="true">
+                                <option value="Colorimétrico (Jaffe)" selected="">Colorimétrico (Jaffe)</option>
+                                <option value="Enzimático">Enzimático</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="result-row">
+                        <div>
+                            <label>Resultado / Unidade de Medida / Valores de Referência:</label>
+                        </div>
+                        <div class="result-inputs">
+                            <input type="text" class="exam-result-value" value="0.9" placeholder="Resultado" readonly="true">
+                            <input type="text" class="exam-unit-value" value="mg/dL" placeholder="Unidade" readonly="true">
+                            <input type="text" class="exam-ref-value" value="0.5 - 0.9 mg/dL" placeholder="Ref. (opcional)" readonly="true">
+                        </div>
+                    </div>
+                    <textarea class="exam-observation" rows="2" placeholder="Observações específicas para este exame." readonly="true">A creatinina é um produto do metabolismo muscular, filtrado e excretado pelos rins, o que a torna um indicador fundamental da função renal. Níveis séricos elevados podem indicar um comprometimento significativo da filtração renal, geralmente em torno de 40% a 50%. Variações podem sinalizar problemas renais crônicos ou agudos, necessitando de investigação médica especializada.</textarea>
+                    <div class="edit-button-container">
+                        <button class="edit-exam-btn" data-action="edit">Editar</button>
+                    </div>
                 </div>
+
+            </div>
 
             <div class="form-row" style="margin-top: 20px;">
                 <div class="form-field full-width">
