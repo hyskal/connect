@@ -1,6 +1,16 @@
 // laudo_scripts.js
-// VERSÃO: 1.0.30 (laudo_scripts.js)
+// VERSÃO: 1.0.39 (laudo_scripts.js)
 // CHANGELOG:
+// - CORREÇÃO: O alinhamento do resultado e da unidade no PDF foi corrigido para que fiquem imediatamente após o nome do exame na mesma linha, alinhados à esquerda.
+// - ATUALIZADO: A lógica de geração do HTML na página foi ajustada para corresponder ao layout solicitado, com o nome do exame em uma linha, material e método na linha seguinte, e o resultado, unidade e referência na linha abaixo.
+// - ADICIONADO: Campo 'Método:' com lista suspensa ao lado do nome de cada exame na interface.
+// - ATUALIZADO: A lógica de pré-preenchimento em 'displayPatientExamsForLaudo' foi modificada para carregar o material de coleta padrão do 'exames_ref.js' e permitir a edição via lista suspensa.
+// - ATUALIZADO: As funções 'saveLaudo' e 'generatePdfLaudo' foram ajustadas para capturar e processar o novo campo de material de coleta.
+// - ATUALIZADO: O alinhamento do material de coleta no PDF de saída foi ajustado para ficar em uma nova linha, abaixo do nome do exame e do resultado, e antes do valor de referência.
+// - ADICIONADO: Novo atributo 'specificObservation' com textos baseados em laboratórios de referência para a maioria dos exames.
+// - ATUALIZADO: A lógica de pré-preenchimento e exibição do laudo foi ajustada para buscar a observação padrão do objeto 'EXAM_DETAILS' e pré-preencher a área de texto de observações de cada exame.
+// - ADICIONADO: O código de geração do PDF foi modificado para incluir a nova observação específica de cada exame.
+// - ADICIONADO: A função de salvamento do laudo foi alterada para armazenar a nova observação no banco de dados.
 // - ADICIONADO: Função validatePatientData para verificar integridade dos dados do paciente antes de gerar o PDF.
 // - CORREÇÃO: Ajustes na lógica de quebra de página e posicionamento do rodapé no PDF.
 // - CORREÇÃO: Padronização dos espaçamentos verticais no cabeçalho do PDF para melhor layout.
@@ -13,7 +23,7 @@
 // - ALTERADO: Segundo título "RESULTADOS:" para "EXAMES:".
 // - ALTERADO: Termo "Ref.:" para "Valores de Referência:" no output do PDF.
 
-console.log("DEBUG(laudo_scripts): Script carregado e iniciando execução. Versão 1.0.30."); // INÍCIO DE DEPURAÇÃO GLOBAL
+console.log("DEBUG(laudo_scripts): Script carregado e iniciando execução. Versão 1.0.39."); // INÍCIO DE DEPURAÇÃO GLOBAL
 
 // Seção 1: Importações e Variáveis Globais
 // As funções do Firebase são globalizadas em laudo_resultados.html.
@@ -484,11 +494,11 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
 
     // Cria um item de laudo para cada exame
     allExams.forEach((examName, index) => {
-        console.log(`DEBUG(displayPatientExamesForLaudo): Processando exame [${index}]: "${examName}".`);
+        console.log(`DEBUG(displayPatientExamsForLaudo): Processando exame [${index}]: "${examName}".`);
         
         // Tentar obter dados salvos para este exame
         const savedExamData = savedResultsMap.get(examName);
-        console.log(`DEBUG(displayPatientExamesForLaudo): Dados salvos para "${examName}":`, savedExamData);
+        console.log(`DEBUG(displayPatientExamsForLaudo): Dados salvos para "${examName}":`, savedExamData);
 
         const examDetail = EXAM_DETAILS[examName] || {};
         console.log("DEBUG(displayPatientExamesForLaudo): Detalhes do EXAM_DETAILS para este exame (examDetail):", examDetail);
@@ -496,8 +506,10 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
         // Prioriza valores salvos, senão usa os defaults do EXAM_DETAILS
         const initialResultValue = savedExamData ? savedExamData.resultado : "";
         const initialUnitValue = savedExamData ? savedExamData.unidade : (examDetail.defaultUnit || 'N/A'); // Corrected from savedData.unidade
-        const initialObservation = savedExamData ? savedExamData.observacaoExame : "";
-        
+        const initialObservation = savedExamData ? savedExamData.observacaoExame : (examDetail.specificObservation || ""); // Adiciona a busca pela nova observação padrão
+        const initialMaterialValue = savedExamData ? savedExamData.material : (examDetail.defaultMaterial || 'Soro'); // Adiciona a busca pelo material padrão
+        const initialMethodValue = savedExamData ? savedExamData.metodo : (examDetail.defaultMethod || 'N/A'); // NOVO: Adiciona a busca pelo método padrão
+
         let initialReferenceText = savedExamData ? savedExamData.referencia : 'N/A'; // Prioriza salvo, senão calcula
         if (!savedExamData && examDetail.referenceRange) { // Se não houver salvo e tiver ref no EXAM_DETAILS
             const genderKey = patientGender === 'Masculino' ? 'male' : (patientGender === 'Feminino' ? 'female' : 'general');
@@ -509,9 +521,11 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
                 console.log(`DEBUG(displayPatientExamesForLaudo): Ref. geral utilizada para "${examName}": "${initialReferenceText}".`);
             }
         }
-        console.log(`DEBUG(displayPatientExamesForLaudo): Final initialUnitValue para "${examName}": "${initialUnitValue}".`);
-        console.log(`DEBUG(displayPatientExamesForLaudo): Final initialReferenceText para "${examName}": "${initialReferenceText}".`); // Added log for debugging reference text
-        
+        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialUnitValue para "${examName}": "${initialUnitValue}".`);
+        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialReferenceText para "${examName}": "${initialReferenceText}".`); // Added log for debugging reference text
+        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialObservation para "${examName}": "${initialObservation}".`);
+        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialMaterialValue para "${examName}": "${initialMaterialValue}".`);
+        console.log(`DEBUG(displayPatientExamsForLaudo): Final initialMethodValue para "${examName}": "${initialMethodValue}".`);
 
         let resultInputField;
         if (examDetail.inputType === 'select' && examDetail.options && examDetail.options.length > 0) {
@@ -527,23 +541,54 @@ function displayPatientExamsForLaudo(examesList, examesNaoListados, patientGende
             resultInputField = `<input type="text" class="exam-result-value" value="${initialResultValue}" placeholder="Resultado" readonly>`;
         }
 
+        // Cria o select de materiais
+        let materialSelect = '<select class="exam-material-value" readonly disabled>';
+        const materialOptions = examDetail.materialOptions || ['Soro', 'Sangue Total', 'Plasma (Citrato)', 'Urina', 'Fezes'];
+        materialOptions.forEach(option => {
+            const selectedAttr = (option === initialMaterialValue) ? 'selected' : '';
+            materialSelect += `<option value="${option}" ${selectedAttr}>${option}</option>`;
+        });
+        materialSelect += '</select>';
+        
+        // NOVO: Cria o select de métodos
+        let methodSelect = '<select class="exam-method-value" readonly disabled>';
+        const methodOptions = examDetail.methodOptions || ['N/A'];
+        methodOptions.forEach(option => {
+            const selectedAttr = (option === initialMethodValue) ? 'selected' : '';
+            methodSelect += `<option value="${option}" ${selectedAttr}>${option}</option>`;
+        });
+        methodSelect += '</select>';
+
         const examId = `exam-${index}-${examName.replace(/[^a-zA-Z0-9]/g, '')}`; // ID único para o elemento
         const examItemHTML = `
             <div class="exam-result-item read-only" data-exam-id="${examId}" data-exam-name="${examName}">
-                <strong>${examName}</strong>
+                <div class="exam-item-header">
+                    <strong>${examName}</strong>
+                </div>
+                <div class="mat-met-row">
+                    <div class="field-group">
+                        <label>Material:</label>
+                        ${materialSelect}
+                    </div>
+                    <div class="field-group">
+                        <label>Método:</label>
+                        ${methodSelect}
+                    </div>
+                </div>
                 <div class="result-row">
+                    <label>Resultado / Unidade de Medida / Valores de Referência:</label>
                     ${resultInputField}
                     <input type="text" class="exam-unit-value" value="${initialUnitValue}" placeholder="Unidade" readonly>
                     <input type="text" class="exam-ref-value" value="${initialReferenceText}" placeholder="Ref. (opcional)" readonly>
                 </div>
+                <textarea class="exam-observation" rows="2" placeholder="Observações específicas para este exame." readonly>${initialObservation}</textarea>
                 <div class="edit-button-container">
                     <button class="edit-exam-btn" data-action="edit">Editar</button>
                 </div>
-                <textarea class="exam-observation" rows="2" placeholder="Observações específicas para este exame." readonly>${initialObservation}</textarea>
             </div>
         `;
         examResultsContainer.insertAdjacentHTML('beforeend', examItemHTML);
-        console.log(`DEBUG(displayPatientExamesForLaudo): Item de exame "${examName}" (ID: ${examId}) adicionado ao container. HTML gerado para o campo resultado: ${resultInputField.substring(0,50)}...`);
+        console.log(`DEBUG(displayPatientExamsForLaudo): Item de exame "${examName}" (ID: ${examId}) adicionado ao container. HTML gerado para o campo resultado: ${resultInputField.substring(0,50)}...`);
     });
 
     // Re-configura os listeners de edição para os novos elementos criados
@@ -586,16 +631,21 @@ function setupExamResultItemEditing() {
             if (editButton.dataset.action === 'edit') {
                 // Mudar para modo de edição
                 item.classList.remove('read-only');
-                resultInputs.forEach(input => input.removeAttribute('readonly'));
-                item.querySelectorAll('select').forEach(select => select.removeAttribute('disabled')); // Habilita selects
+                // Habilitar todos os campos, incluindo o select de material
+                item.querySelectorAll('input, select, textarea').forEach(input => {
+                    input.removeAttribute('readonly');
+                    input.removeAttribute('disabled'); // Remove o disabled dos selects
+                });
                 editButton.textContent = 'Salvar';
                 editButton.dataset.action = 'save';
                 console.log(`DEBUG(setupExamResultItemEditing): Modo de edição HABILITADO para ${item.dataset.examName}.`);
             } else {
                 // Mudar para modo de visualização (simular salvar)
                 item.classList.add('read-only');
-                resultInputs.forEach(input => input.setAttribute('readonly', true));
-                item.querySelectorAll('select').forEach(select => select.setAttribute('disabled', true)); // Desabilita selects
+                item.querySelectorAll('input, select, textarea').forEach(input => {
+                    input.setAttribute('readonly', true);
+                    input.setAttribute('disabled', true); // Desabilita os selects
+                });
                 editButton.textContent = 'Editar';
                 editButton.dataset.action = 'edit';
                 console.log(`DEBUG(setupExamResultItemEditing): Campos de exame SALVOS (simulado) para ${item.dataset.examName}.`);
@@ -640,15 +690,19 @@ async function saveLaudo() {
         const unitValue = item.querySelector('.exam-unit-value')?.value.trim() || ''; // Optional chaining
         const refValue = item.querySelector('.exam-ref-value')?.value.trim() || ''; // Optional chaining
         const observation = item.querySelector('.exam-observation')?.value.trim() || ''; // Optional chaining
+        const materialValue = item.querySelector('.exam-material-value')?.value.trim() || ''; // NOVO: Coletando o valor do material
+        const methodValue = item.querySelector('.exam-method-value')?.value.trim() || ''; // NOVO: Coletando o valor do método
 
         examResults.push({
             nomeExame: examName,
             resultado: resultValue,
             unidade: unitValue,
             referencia: refValue,
-            observacaoExame: observation
+            observacaoExame: observation,
+            material: materialValue, // NOVO: Adicionando o material ao objeto de resultados
+            metodo: methodValue // NOVO: Adicionando o método ao objeto de resultados
         });
-        console.log(`DEBUG(saveLaudo): Exame [${index}] - Nome: "${examName}", Resultado: "${resultValue}", Unidade: "${unitValue}".`);
+        console.log(`DEBUG(saveLaudo): Exame [${index}] - Nome: "${examName}", Resultado: "${resultValue}", Unidade: "${unitValue}", Material: "${materialValue}", Método: "${methodValue}".`);
     });
     console.log("DEBUG(saveLaudo): Resultados dos exames coletados:", examResults);
 
@@ -895,6 +949,8 @@ function generatePdfLaudo() {
                 const unitValue = sanitizePdfText(item.querySelector('.exam-unit-value').value.trim());    // Sanitize
                 const refValue = sanitizePdfText(item.querySelector('.exam-ref-value').value.trim());      // Sanitize
                 const observation = sanitizePdfText(item.querySelector('.exam-observation').value.trim()); // Sanitize
+                const materialValue = sanitizePdfText(item.querySelector('.exam-material-value')?.value.trim() || 'Soro'); // NOVO: Captura o valor do material
+                const methodValue = sanitizePdfText(item.querySelector('.exam-method-value')?.value.trim() || 'N/A'); // NOVO: Captura o valor do método
 
                 // Calculate height needed for this exam entry BEFORE drawing
                 let requiredHeight = lineHeight; // for exam name and result line
@@ -909,28 +965,31 @@ function generatePdfLaudo() {
                 if (currentY + requiredHeight > pageHeightLimit) {
                     currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
                 }
-
+                
                 doc.setFontSize(10); // Font size for exam details
 
-                // Draw exam name
-                doc.text(`${examName}:`, marginX + 5, currentY);
-
-                // Draw result value in bold
-                const examNameTextWidth = doc.getStringUnitWidth(`${examName}: `) * (doc.internal.getFontSize() / doc.internal.scaleFactor);
-                doc.setFont(undefined, 'bold'); // Set bold font
-                doc.text(`${resultValue} ${unitValue}`, marginX + 5 + examNameTextWidth, currentY);
-                doc.setFont(undefined, 'normal'); // Reset to normal font
+                // --- NOVO: LÓGICA DE ALINHAMENTO CORRIGIDA ---
+                // Linha 1: Nome do exame e Resultado + Unidade (combinados)
+                doc.setFont(undefined, 'bold');
+                doc.text(`${examName}: ${resultValue} ${unitValue}`, marginX + 5, currentY);
+                currentY += lineHeight;
+                doc.setFont(undefined, 'normal');
+                
+                // Linha 2: Material
+                doc.text(`Material: ${materialValue}`, marginX + 5, currentY);
+                currentY += lineHeight;
+                
+                // Linha 3: Método
+                doc.text(`Método: ${methodValue}`, marginX + 5, currentY);
                 currentY += lineHeight;
 
-                // Ref value (already sanitized)
+                // Linha 4: Valores de Referência
                 if (refValue) {
-                    if (currentY + lineHeight > pageHeightLimit) { // Check before drawing this line
-                         currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
-                    }
-                    doc.text(`Valores de Referência: ${refValue}`, marginX + 5, currentY); // Alterado aqui
+                    doc.text(`Valores de Referência: ${refValue}`, marginX + 5, currentY);
                     currentY += lineHeight;
                 }
-
+                // --- FIM DA LÓGICA DE ALINHAMENTO CORRIGIDA ---
+                
                 // Observations (now with per-line page break check)
                 if (observation) {
                     // The `Obs.:` prefix should be added here
@@ -939,11 +998,12 @@ function generatePdfLaudo() {
                     
                     // Check for page break BEFORE drawing each line of observation
                     for (let i = 0; i < splitObsText.length; i++) {
-                        if (currentY + lineHeight > pageHeightLimit) {
+                        const smallerLineHeight = 4;
+                        if (currentY + smallerLineHeight > pageHeightLimit) {
                             currentY = handlePageBreakAndHeader(doc, currentY, "EXAMES (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Alterado aqui também
                         }
                         doc.text(splitObsText[i], marginX + 5, currentY);
-                        currentY += lineHeight;
+                        currentY += smallerLineHeight;
                     }
                 }
 
@@ -987,7 +1047,7 @@ function generatePdfLaudo() {
 
         // Use the collected responsavelNome and responsavelRegistro, adding "Dr(a)."
         const nomeResponsavelText = `Nome: Dr(a). ${responsavelNome || 'N/D'}`;
-        const registroResponsavelText = `Registro: ${responsavelRegistro ? `CRF/CRBM: ${responsavelRegistro}` : 'N/D'}`;
+        const registroResponsavelText = `Registro: ${responsavelRegistro ? `, CRF/CRBM: ${responsavelRegistro}` : 'N/D'}`;
 
         doc.text(nomeResponsavelText, 105, currentY, null, null, "center");
         currentY += lineHeight;
@@ -1021,13 +1081,14 @@ function generatePdfLaudo() {
             const splitText = doc.splitTextToSize(observationContent, 170);
             
             for (let i = 0; i < splitText.length; i++) { // Loop per line
-                if (currentY + lineHeight > pageHeightLimit) { 
+                const smallerLineHeight = 4;
+                if (currentY + smallerLineHeight > pageHeightLimit) { 
                     currentY = handlePageBreakAndHeader(doc, currentY, "OBSERVAÇÕES GERAIS DO LAUDO (Continuação):", responsavelNome, responsavelRegistro, laudoDate); // Corrected typo
                     doc.setFont(undefined, 'italic'); // Re-apply italic on new page
                     doc.setFontSize(9); // Re-apply font size on new page
                 }
                 doc.text(splitText[i], marginX + 5, currentY);
-                currentY += lineHeight;
+                currentY += smallerLineHeight;
             }
             doc.setFont(undefined, 'normal'); // Reset font to normal after italic text
             currentY += 5;
