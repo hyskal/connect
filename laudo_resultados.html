@@ -164,9 +164,49 @@
 
         .exam-result-item {
             margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .exam-result-item .result-row {
+        /* Estilo para a linha que contém material e método */
+        .mat-met-row {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Espaçamento entre os dois campos */
+            flex-wrap: wrap; /* Permite quebrar em telas menores */
+            margin-top: 5px;
+            margin-bottom: 10px; /* Adiciona espaçamento abaixo da linha */
+        }
+        .mat-met-row .field-group {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* Espaçamento entre o label e o select */
+        }
+        .mat-met-row label {
+            font-size: 0.9em;
+            font-weight: normal;
+            color: #555;
+            margin-bottom: 0;
+        }
+        .mat-met-row select {
+            width: auto;
+            min-width: 120px;
+            padding: 5px;
+            font-size: 0.9em;
+            background-color: #f9f9f9;
+        }
+        
+        /* NOVO: Estilo para a label de resultados */
+        .result-label {
+            font-size: 0.9em;
+            font-weight: normal;
+            color: #555;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .result-row {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
@@ -174,24 +214,25 @@
             margin-top: 5px;
         }
 
-        .exam-result-item .result-row input,
-        .exam-result-item .result-row select { /* Adicionado select aqui */
+        .result-row input,
+        .result-row select { /* Adicionado select aqui */
             flex-grow: 1;
             min-width: 100px;
             padding: 8px;
         }
-        .exam-result-item .result-row .exam-result-value { /* Classe específica para o campo resultado */
+        .result-row .exam-result-value { /* Classe específica para o campo resultado */
             flex-basis: 40%;
             min-width: 180px;
         }
-        .exam-result-item .result-row .exam-unit-value { /* Classe específica para o campo unidade */
+        .result-row .exam-unit-value { /* Classe específica para o campo unidade */
             flex-basis: 20%;
             min-width: 80px;
         }
-        .exam-result-item .result-row .exam-ref-value { /* Classe específica para o campo referência */
+        .result-row .exam-ref-value { /* Classe específica para o campo referência */
             flex-basis: 30%;
             min-width: 120px;
         }
+
         .exam-result-item textarea.exam-observation {
             width: 100%;
             margin-top: 10px;
@@ -245,7 +286,6 @@
     </style>
 </head>
 <body>
-
     <div class="main-header-container">
         <div class="sislab-logo">
             <div class="tube tube-1"><div class="tube-cap"></div></div>
@@ -259,7 +299,8 @@
         <div class="search-section">
             <h2>Buscar Paciente:</h2>
             <div class="form-row">
-                <div class="form-field full-width"> <label for="searchQuery">Protocolo, CPF ou Nome:</label>
+                <div class="form-field full-width">
+                    <label for="searchQuery">Protocolo, CPF ou Nome:</label>
                     <input type="text" id="searchQuery" placeholder="Digite para buscar...">
                     <div id="searchQuery-error" class="error-message"></div>
                 </div>
@@ -343,7 +384,6 @@
         const db = getFirestore(app);
 
         // --- Torna as instâncias e funções do Firebase acessíveis globalmente ---
-        // Isso permite que o laudo_scripts.js as utilize, mesmo sendo um módulo.
         window.firestoreDb = db;
         window.firebaseFirestoreCollection = collection;
         window.firebaseFirestoreAddDoc = addDoc;
