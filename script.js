@@ -1,4 +1,4 @@
-// VERSÃO: 2.0.16 (script.js)
+// VERSÃO: 2.0.17 (script.js)
 // CHANGELOG:
 // - Alterado: Mensagens do sistema relacionadas ao Firebase agora se referem a "banco de dados".
 // - Corrigido: Agora o CPF é salvo no banco de dados sem máscara (apenas dígitos) para garantir compatibilidade com a função de busca checkCpfInHistory.
@@ -22,7 +22,7 @@
 // - NOVO: Adicionadas funções e lógica para a checkbox "Selecionar Todos/Nenhum" no histórico.
 
 // Define a versão do script para acesso global
-window.SISLAB_VERSION = "2.0.16";
+window.SISLAB_VERSION = "2.0.17";
 
 const { jsPDF } = window.jspdf;
 let listaExames = [];
@@ -701,7 +701,8 @@ function coletarDados() {
     console.log("coletarDados: Coletando e validando dados do formulário.");
     const isAgeValid = validateAge();
     const cpfLimpo = document.getElementById('cpf').value.replace(/\D/g, '');
-    const isCpfFormatValid = validarCPF(cpfLimpo);
+    const ignoreCpfChecked = document.getElementById('ignoreCpfCheckbox').checked; // NOVO: Obter o estado da checkbox
+    const isCpfFormatValid = ignoreCpfChecked || validarCPF(cpfLimpo); // MODIFICADO: A validação só é necessária se a checkbox NÃO estiver marcada
     const isContactValid = validateContact();
 
     if (!isCpfFormatValid) {
