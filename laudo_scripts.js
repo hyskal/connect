@@ -42,25 +42,39 @@ let selectedPatientData = null; // Armazena os dados do paciente atualmente sele
 console.log("DEBUG(laudo_scripts): Seção 1 - Variáveis globais declaradas. selectedPatientData:", selectedPatientData);
 
 // NOVO: Reimplementação local de calcularIdade e validarDataNascimento (copiado de script.js)
+// Função Corrigida para cálculo de idade
 function calcularIdade(dataString) {
     console.log("DEBUG(calcularIdade - local): Calculando idade para data:", dataString);
     const hoje = new Date();
     const nascimento = new Date(dataString + 'T00:00:00');
+
     if (isNaN(nascimento.getTime()) || nascimento > hoje) {
         console.log("DEBUG(calcularIdade - local): Data de nascimento inválida ou no futuro.");
         return null;
     }
 
     let anos = hoje.getFullYear() - nascimento.getFullYear();
-    let meses = hoje.getMonth() - nascimento.getMonth();
+    const mesAtual = hoje.getMonth();
+    const diaAtual = hoje.getDate();
+    const mesNascimento = nascimento.getMonth();
+    const diaNascimento = nascimento.getDate();
 
+    // Se o mês atual for anterior ao mês de nascimento,
+    // ou se for o mesmo mês, mas o dia atual for anterior ao dia de nascimento,
+    // a pessoa ainda não fez aniversário no ano corrente.
+    if (mesAtual < mesNascimento || (mesAtual === mesNascimento && diaAtual < diaNascimento)) {
+        anos--;
+    }
+
+    // Calcula os meses restantes
+    let meses = hoje.getMonth() - nascimento.getMonth();
     if (hoje.getDate() < nascimento.getDate()) {
         meses--;
     }
-
     if (meses < 0) {
         meses += 12;
     }
+
     console.log(`DEBUG(calcularIdade - local): Idade calculada: ${anos} anos e ${meses} meses.`);
     return { anos: anos, meses: meses };
 }
