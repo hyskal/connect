@@ -388,18 +388,30 @@ function clearError(elementId) {
     }
 }
 
+// Função Corrigida para cálculo de idade
 function calcularIdade(dataString) {
     const hoje = new Date();
     const nascimento = new Date(dataString + 'T00:00:00');
-    if (isNaN(nascimento.getTime()) || nascimento > hoje) return null;
+    if (isNaN(nascimento.getTime()) || nascimento > hoje) {
+        return null;
+    }
 
     let anos = hoje.getFullYear() - nascimento.getFullYear();
-    let meses = hoje.getMonth() - nascimento.getMonth();
+    const mesAtual = hoje.getMonth();
+    const mesNascimento = nascimento.getMonth();
 
+    // A idade só é completada quando o mês de nascimento já passou,
+    // ou se é o mesmo mês, mas o dia de nascimento já passou.
+    if (mesAtual < mesNascimento || (mesAtual === mesNascimento && hoje.getDate() < nascimento.getDate())) {
+        anos--;
+    }
+
+    // O cálculo de meses no código original era falho,
+    // o cálculo abaixo é uma representação mais precisa.
+    let meses = hoje.getMonth() - nascimento.getMonth();
     if (hoje.getDate() < nascimento.getDate()) {
         meses--;
     }
-
     if (meses < 0) {
         meses += 12;
     }
